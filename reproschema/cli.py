@@ -28,6 +28,7 @@ def print_version(ctx, param, value):
 )
 def main(log_level, pdb=False):
     """A client to support interactions with ReproSchema
+
     To see help for a specific command, run
 
     reproschema COMMAND --help
