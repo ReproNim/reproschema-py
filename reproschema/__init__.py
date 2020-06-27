@@ -37,3 +37,12 @@ lgr = get_logger()
 set_logger_level(lgr, os.environ.get("PYDRAML_LOG_LEVEL", logging.INFO))
 FORMAT = "%(asctime)-15s [%(levelname)8s] %(message)s"
 logging.basicConfig(format=FORMAT)
+
+try:
+    import etelemetry
+
+    etelemetry.check_available_version("repronim/reproschema-py", __version__, lgr=lgr)
+except Exception as exc:
+    lgr.warning(
+        "Failed to check for a more recent version available with etelemetry: %s", exc
+    )
