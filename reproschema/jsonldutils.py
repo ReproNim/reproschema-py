@@ -16,7 +16,8 @@ def file2shape(filename, shape_dir):
             shape_file_path = os.path.join(shape_dir, "ActivityShape.ttl")
         elif "Field" in data["@type"]:
             shape_file_path = os.path.join(shape_dir, "FieldShape.ttl")
-    print(filename, shape_file_path)
+        elif "ResponseOptions" in data["@type"]:
+            shape_file_path = os.path.join(shape_dir, "ResponseOptionsShape.ttl")
     return data, shape_file_path
 
 
