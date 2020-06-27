@@ -43,7 +43,6 @@ def simple_http_server(host="localhost", port=4001, path="."):
 def start_server(port=8000, path=None, tmpdir=None):
     if path is None:
         path = os.getcwd()
-        lgr.info(os.listdir(path))
     requests_cache.install_cache(tmpdir or mkdtemp())
     start, stop = simple_http_server(port=port, path=path)
     start()
