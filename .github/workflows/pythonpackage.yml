@@ -15,7 +15,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-18.04, windows-2016]
+        os: [macos-latest, ubuntu-18.04]
         python-version: [3.7, 3.8]
 
     steps:
@@ -30,4 +30,5 @@ jobs:
         pip install .[test]
     - name: Test with pytest
       run: |
+        reproschema -l DEBUG validate reproschema/tests/data
         pytest reproschema

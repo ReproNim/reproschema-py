@@ -15,6 +15,29 @@ pip install reproschema
 
 This package installs `reproschema` a CLI.
 
+```
+$ reproschema
+Usage: reproschema [OPTIONS] COMMAND [ARGS]...
+
+  A client to support interactions with ReproSchema
+
+  To see help for a specific command, run
+
+  reproschema COMMAND --help     e.g. reproschema validate --help
+
+Options:
+  --version
+  -l, --log-level [DEBUG|INFO|WARNING|ERROR|CRITICAL]
+                                  Log level name  [default: INFO]
+  --help                          Show this message and exit.
+
+Commands:
+  convert
+  create
+  serve
+  validate
+```
+
 ## Developer installation
 
 Install repo in developer mode:

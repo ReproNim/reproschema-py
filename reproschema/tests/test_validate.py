@@ -1,7 +1,7 @@
-from glob import glob
 import os
+from ..validate import validate_dir
 
 
-def test_validate(tmpdir):
-    files = glob(os.path.join(os.path.dirname(__file__), "data", "*.json"))
-    assert len(files) == 0
+def test_validate():
+    os.chdir(os.path.dirname(__file__))
+    assert validate_dir("data", os.path.abspath("validation"))
