@@ -1,3 +1,4 @@
+import os
 import click
 
 from . import get_logger, set_logger_level
@@ -26,7 +27,7 @@ def print_version(ctx, param, value):
     default="INFO",
     show_default=True,
 )
-def main(log_level, pdb=False):
+def main(log_level):
     """A client to support interactions with ReproSchema
 
     To see help for a specific command, run
@@ -39,8 +40,10 @@ def main(log_level, pdb=False):
 
 @main.command()
 @click.option("--shapedir", default=None, type=click.Path(exists=True, dir_okay=True))
-@click.argument("path", nargs=1, type=click.Path(exists=True, dir_okay=True))
+@click.argument("path", nargs=1, type=str)
 def validate(shapedir, path):
+    if not (path.startswith("http") or os.path.exists(path)):
+        raise ValueError(f"{path} must be a URL or an existing file or directory")
     from .validate import validate
 
     validate(shapedir, path)
@@ -50,15 +53,17 @@ def validate(shapedir, path):
 @click.option(
     "--format",
     help="Output format",
-    type=click.Choice(["n-triples", "turtle"]),
+    type=click.Choice(["jsonld", "n-triples", "turtle"]),
     default="n-triples",
     show_default=True,
 )
-@click.argument("path", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.argument("path", nargs=1, type=str)
 def convert(path, format):
-    from .jsonldutils import to_nt
+    if not (path.startswith("http") or os.path.exists(path)):
+        raise ValueError(f"{path} must be a URL or an existing file or directory")
+    from .jsonldutils import to_newformat
 
-    print(to_nt(path, format))
+    print(to_newformat(path, format))
 
 
 @main.command()
@@ -69,8 +74,10 @@ def convert(path, format):
     default="csv",
     show_default=True,
 )
-@click.argument("path", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.argument("path", nargs=1, type=str)
 def create(path, format):
+    if not (path.startswith("http") or os.path.exists(path)):
+        raise ValueError(f"{path} must be a URL or an existing file or directory")
     raise NotImplementedError
 
 

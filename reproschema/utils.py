@@ -37,16 +37,16 @@ def simple_http_server(host="localhost", port=4001, path="."):
         server.socket.close()
         lgr.debug("stopping server on port {}".format(server.server_port))
 
-    return start, stop
+    return start, stop, port
 
 
 def start_server(port=8000, path=None, tmpdir=None):
     if path is None:
         path = os.getcwd()
     requests_cache.install_cache(tmpdir or mkdtemp())
-    start, stop = simple_http_server(port=port, path=path)
+    start, stop, port = simple_http_server(port=port, path=path)
     start()
-    return stop
+    return stop, port
 
 
 def stop_server(stop):
