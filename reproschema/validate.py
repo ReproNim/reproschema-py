@@ -1,50 +1,6 @@
 import os
-from pyshacl import validate as shacl_validate
 from .utils import start_server, stop_server, lgr
-from .jsonldutils import file2shape, localnormalize
-
-
-def validate_data(data, root, shape_file_path, started=False, http_kwargs={}):
-    """Validate a jsonld document against a shape.
-
-    Since PyLD requires an http url, a local server is started to serve the
-    document.
-
-    Parameters
-    ----------
-    data : dict
-        Python dictionary containing JSONLD object
-    root : str
-        Server path to the document such that relative links hold
-    shape_file_path : str
-        SHACL file for the document
-    started : bool
-        Whether an http server exists or not
-    http_kwargs : dict
-        Keyword arguments for the http server. Valid keywords are: port, path
-        and tmpdir
-
-    Returns
-    -------
-    conforms: bool
-        Whether the document is conformant with the shape
-    v_text: str
-        Validation information returned by PySHACL
-
-    """
-    normalized = localnormalize(data, root, started, http_kwargs)
-    data_file_format = "nquads"
-    shape_file_format = "turtle"
-    conforms, v_graph, v_text = shacl_validate(
-        normalized,
-        shacl_graph=shape_file_path,
-        data_graph_format=data_file_format,
-        shacl_graph_format=shape_file_format,
-        inference="rdfs",
-        debug=False,
-        serialize_report_graph=True,
-    )
-    return conforms, v_text
+from .jsonldutils import file2shape, validate_data
 
 
 def validate_dir(directory, shape_dir, started=False, http_kwargs={}):
@@ -73,17 +29,29 @@ def validate_dir(directory, shape_dir, started=False, http_kwargs={}):
     """
     stop = None
     if not started:
-        stop = start_server(**http_kwargs)
+        stop, port = start_server(**http_kwargs)
+        http_kwargs["port"] = port
+    else:
+        if "port" not in http_kwargs:
+            raise KeyError(f"HTTP server started, but port key is missing")
     for root, dirs, files in os.walk(directory):
         for name in files:
             full_file_name = os.path.join(root, name)
-            data, shape_file_path = file2shape(full_file_name, shape_dir)
-            conforms, vtext = validate_data(data, root, shape_file_path, started=True)
-            if not conforms:
-                lgr.critical(f"File {full_file_name} has validation errors.")
+            try:
+                data, shape_file_path = file2shape(
+                    full_file_name, shape_dir, started=True, http_kwargs=http_kwargs
+                )
+                conforms, vtext = validate_data(data, shape_file_path)
+            except (ValueError,):
                 if stop is not None:
                     stop_server(stop)
-                raise ValueError(vtext)
+                raise
+            else:
+                if not conforms:
+                    lgr.critical(f"File {full_file_name} has validation errors.")
+                    if stop is not None:
+                        stop_server(stop)
+                    raise ValueError(vtext)
     if not started:
         stop_server(stop)
     return True
@@ -111,9 +79,8 @@ def validate(shapedir, path):
     if os.path.isdir(path):
         conforms = validate_dir(path, shapedir)
     else:
-        data, shape_file_path = file2shape(path, shapedir)
-        root = os.path.dirname(path)
-        conforms, vtext = validate_data(data, root, shape_file_path)
+        data, shape_file_path = file2shape(path, shapedir, started=False)
+        conforms, vtext = validate_data(data, shape_file_path)
         if not conforms:
             lgr.critical(f"File {path} has validation errors.")
             raise ValueError(vtext)
