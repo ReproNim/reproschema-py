@@ -31,4 +31,5 @@ jobs:
     - name: Test with pytest
       run: |
         reproschema -l DEBUG validate reproschema/tests/data
+        reproschema -l DEBUG convert reproschema/tests/data/protocols/protocol1.jsonld
         pytest reproschema
