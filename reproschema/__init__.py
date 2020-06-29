@@ -14,7 +14,7 @@ del get_versions
 def get_logger(name=None):
     """Return a logger to use
     """
-    return logging.getLogger("pydra_ml" + (".%s" % name if name else ""))
+    return logging.getLogger("reproschema" + (".%s" % name if name else ""))
 
 
 def set_logger_level(lgr, level):
@@ -34,7 +34,7 @@ _DEFAULT_LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
 lgr = get_logger()
 # Basic settings for output, for now just basic
-set_logger_level(lgr, os.environ.get("PYDRAML_LOG_LEVEL", logging.INFO))
+set_logger_level(lgr, os.environ.get("REPROSCHEMA_LOG_LEVEL", logging.INFO))
 FORMAT = "%(asctime)-15s [%(levelname)8s] %(message)s"
 logging.basicConfig(format=FORMAT)
 

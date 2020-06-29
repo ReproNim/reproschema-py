@@ -39,14 +39,14 @@ def main(log_level):
 
 
 @main.command()
-@click.option("--shapedir", default=None, type=click.Path(exists=True, dir_okay=True))
+@click.option("--shapefile", default=None, type=click.Path(exists=True, dir_okay=False))
 @click.argument("path", nargs=1, type=str)
-def validate(shapedir, path):
+def validate(shapefile, path):
     if not (path.startswith("http") or os.path.exists(path)):
         raise ValueError(f"{path} must be a URL or an existing file or directory")
     from .validate import validate
 
-    validate(shapedir, path)
+    validate(shapefile, path)
 
 
 @main.command()

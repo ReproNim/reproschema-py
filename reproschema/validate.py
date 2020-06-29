@@ -1,9 +1,9 @@
 import os
 from .utils import start_server, stop_server, lgr
-from .jsonldutils import file2shape, validate_data
+from .jsonldutils import load_file, validate_data
 
 
-def validate_dir(directory, shape_dir, started=False, http_kwargs={}):
+def validate_dir(directory, shape_file, started=False, http_kwargs={}):
     """Validate a directory containing JSONLD documents
 
     .. warning:: This assumes every file in the directory can be read by a json parser.
@@ -12,7 +12,7 @@ def validate_dir(directory, shape_dir, started=False, http_kwargs={}):
     ----------
     directory: str
         Path to directory to walk for validation
-    shape_dir: str
+    shape_file: str
         Path containing validation SHACL shape files
     started : bool
         Whether an http server exists or not
@@ -38,10 +38,10 @@ def validate_dir(directory, shape_dir, started=False, http_kwargs={}):
         for name in files:
             full_file_name = os.path.join(root, name)
             try:
-                data, shape_file_path = file2shape(
-                    full_file_name, shape_dir, started=True, http_kwargs=http_kwargs
-                )
-                conforms, vtext = validate_data(data, shape_file_path)
+                data = load_file(full_file_name, started=True, http_kwargs=http_kwargs)
+                if len(data) == 0:
+                    raise ValueError("Empty data graph")
+                conforms, vtext = validate_data(data, shape_file)
             except (ValueError,):
                 if stop is not None:
                     stop_server(stop)
@@ -57,13 +57,13 @@ def validate_dir(directory, shape_dir, started=False, http_kwargs={}):
     return True
 
 
-def validate(shapedir, path):
+def validate(shapefile, path):
     """Helper function to validate directory or path
 
     Parameters
     ----------
-    shapedir : path-like
-        Path to folder containing ReproSchema shape files.
+    shapefile : path-like
+        Path to folder or file containing ReproSchema SHACL descriptors
     path : path-like
         Path to folder or file containing JSONLD documents.
 
@@ -74,13 +74,15 @@ def validate(shapedir, path):
         exception.
 
     """
-    if shapedir is None:
-        shapedir = os.path.join(os.path.dirname(__file__), "tests", "validation")
+    if shapefile is None:
+        shapefile = os.path.join(
+            os.path.dirname(__file__), "tests", "reproschema-shacl.ttl"
+        )
     if os.path.isdir(path):
-        conforms = validate_dir(path, shapedir)
+        conforms = validate_dir(path, shapefile)
     else:
-        data, shape_file_path = file2shape(path, shapedir, started=False)
-        conforms, vtext = validate_data(data, shape_file_path)
+        data = load_file(path, started=False)
+        conforms, vtext = validate_data(data, shapefile)
         if not conforms:
             lgr.critical(f"File {path} has validation errors.")
             raise ValueError(vtext)

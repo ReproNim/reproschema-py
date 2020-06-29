@@ -33,27 +33,6 @@ def load_file(path_or_url, started=False, http_kwargs={}):
     return data
 
 
-def file2shape(filename, shape_dir, started, http_kwargs={}):
-    data = load_file(filename, started, http_kwargs)
-    no_type = True
-    shape_file_path = []
-    for val in data:
-        if "@type" not in val:
-            continue
-        for schema_type in val["@type"]:
-            for key in ["Protocol", "Activity", "Field", "ResponseOption"]:
-                if schema_type.endswith(f"/{key}"):
-                    shape_file_path.append(os.path.join(shape_dir, f"{key}Shape.ttl"))
-                    no_type = False
-    if no_type:
-        raise ValueError(f"{filename} missing @type")
-    if len(shape_file_path) > 1:
-        raise ValueError(
-            f"Multiple reproschema types in {filename}. Not " f"supported yet"
-        )
-    return data, shape_file_path.pop()
-
-
 def validate_data(data, shape_file_path):
     """Validate an expanded jsonld document against a shape.
 
