@@ -3,9 +3,6 @@
         {
             "@version": 1.1,
             "@language": "en",
-            "schema:description": {
-                "@container": "@language"
-            },
             "description": {
                 "@id": "schema:description",
                 "@container": "@language"
@@ -18,28 +15,20 @@
                 "@id": "schema:value",
                 "@container": "@language"
             },
-            "schema:name": {
-                "@container": "@language"
-            },
-            "schema:value": {
-                "@container": "@language"
-            },
-            "schema:image": {
+            "image": {
+                "@id": "schema:image",
                 "@type": "@vocab"
             },
-            "schema:citation": {
+            "citation": {
+                "@id": "schema:citation",
                 "@container": "@language"
             },
-            "schema:version": {
+            "version": {
+                "@id": "schema:version",
                 "@container": "@language"
             },
-            "schema:schemaVersion": {
-                "@container": "@language"
-            },
-            "skos:prefLabel": {
-                "@container": "@language"
-            },
-            "skos:altLabel": {
+            "schemaVersion": {
+                "@id": "schema:schemaVersion",
                 "@container": "@language"
             },
             "prefLabel": {
@@ -60,7 +49,7 @@
             },
             "landingPage": {
                 "@id": "reproschema:landingPage",
-                "@container": "@language"
+                "@container": "@set"
             },
             "question": {
                 "@id": "schema:question",
@@ -68,14 +57,6 @@
             },
             "choices": {
                 "@id": "schema:itemListElement"
-            },
-            "choiceUrl": {
-                "@id": "schema:DigitalDocument",
-                "@type": "@id"
-            },
-            "requiredValue": {
-                "@id": "reproschema:requiredValue",
-                "@type": "schema:Boolean"
             },
             "valueRequired": "https://schema.org/valueRequired",
             "multipleChoice": {
@@ -105,7 +86,7 @@
             },
             "addProperties": {
                 "@id": "reproschema:addProperties",
-                "@type": "reproschema:AddProperties",
+                "@type": "reproschema:AdditionalProperty",
                 "@container": "@set",
                 "@nest": "ui"
             },
@@ -124,12 +105,10 @@
                 "@type": "xsd:string",
                 "@nest": "ui"
             },
-            "readOnly": {
-                "@id": "reproschema:readOnly",
-                "@type": "xsd:boolean",
+            "readonlyValue": {
+                "@id": "https://schema.org/readonlyValue",
                 "@nest": "ui"
             },
-            "readonlyValue": "https://schema.org/readonlyValue",
             "scoringLogic": {
                 "@id": "reproschema:scoringLogic",
                 "@container": "@index"
@@ -140,11 +119,6 @@
             "isVis": {
                 "@id": "reproschema:isVis"
             },
-            "required": {
-                "@id": "reproschema:required",
-                "@container": "@index",
-                "@nest": "ui"
-            },
             "variableName": "reproschema:variableName",
             "isAbout": {
                 "@id": "reproschema:isAbout",
@@ -152,16 +126,17 @@
             },
             "allow": {
                 "@id": "reproschema:allow",
-                "@container": "@list",
+                "@container": "@set",
                 "@type": "@id",
                 "@nest": "ui"
             },
-            "skipped": "reproschema:Skipped",
-            "dontKnow": "reproschema:DontKnow",
-            "timedOut": "reproschema:TimedOut",
-            "autoAdvance": "reproschema:AutoAdvance",
-            "disableBack": "reproschema:DisableBack",
-            "allowExport": "reproschema:AllowExport",
+            "reproschema:Skipped": {"@id": "reproschema:Skipped"},
+            "reproschema:DontKnow": {"@id": "reproschema:DontKnow"},
+            "reproschema:TimedOut": {"@id": "reproschema:TimedOut"},
+            "reproschema:AutoAdvance": {"@id": "reproschema:AutoAdvance"},
+            "reproschema:DisableBack": {"@id": "reproschema:DisableBack"},
+            "reproschema:AllowExport": {"@id": "reproschema:AllowExport"},
+            "reproschema:AllowReplay": {"@id": "reproschema:AllowReplay"},
             "timer": {
                 "@id": "reproschema:timer",
                 "@type": "@id",
@@ -190,7 +165,7 @@
             },
             "createdOn": {
                 "@id": "pav:createdOn",
-                "@type": "xsd:date"
+                "@type": "xsd:dateTime"
             },
             "previousVersion": {
                 "@id": "pav:previousVersion",
@@ -198,7 +173,7 @@
             },
             "lastUpdateOn": {
                 "@id": "pav:lastUpdateOn",
-                "@type": "xsd:date"
+                "@type": "xsd:dateTime"
             },
             "derivedFrom": {
                 "@id": "prov:wasDerivedFrom",

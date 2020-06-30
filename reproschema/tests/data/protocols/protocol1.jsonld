@@ -6,13 +6,13 @@
 		"en": "Protocol1",
 		"es": "Protocol1_es"
 	},
-	"schema:description": "example Protocol",
-	"schema:schemaVersion": "0.0.1",
-	"schema:version": "0.0.1",
+	"description": "example Protocol",
+	"schemaVersion": "0.0.1",
+	"version": "0.0.1",
 	"ui": {
 		"addProperties": [
 			{
-				"isAbout": "activities/activity1.jsonld",
+				"isAbout": "../activities/activity1.jsonld",
 				"variableName": "activity1",
 				"prefLabel": {
 					"en": "Screening",
@@ -22,13 +22,13 @@
 			}
 		],
 		"order": [
-			"activities/activity1.jsonld"
+			"../activities/activity1.jsonld"
 		],
 		"shuffle": false,
 		"allow": [
-			"autoAdvance",
-			"disableBack",
-			"allowExport"
+			"reproschema:AutoAdvance",
+			"reproschema:DisableBack",
+			"reproschema:AllowExport"
 		]
 	}
 }
