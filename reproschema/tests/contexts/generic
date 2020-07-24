@@ -166,6 +166,18 @@
                 "@id": "reproschema:column",
                 "@type": "xsd:string"
             },
+            "randomMaxDelay": {
+                "@id": "reproschema:randomMaxDelay"
+            },
+            "schedule": {
+                "@id": "reproschema:schedule"
+            },
+             "limit": {
+                "@id": "reproschema:limit"
+            },
+            "maxRetakes": {
+                "@id": "reproschema:maxRetakes"
+            },
             "importedFrom": {
                 "@id": "pav:importedFrom",
                 "@type": "@id"
