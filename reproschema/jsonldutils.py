@@ -107,5 +107,10 @@ def to_newformat(path, format):
     import rdflib as rl
 
     g = rl.Graph()
+    g.bind("rs", "http://schema.repronim.org/")
+    g.bind("sdo", "http://schema.org/")
+    g.bind("nidm", "http://purl.org/nidash/nidm#")
+    g.bind("skos", "http://www.w3.org/2004/02/skos/core#")
+    g.bind("prov", "http://www.w3.org/ns/prov#")
     g.parse(data=nt, format="nt")
     return g.serialize(format=format).decode()
