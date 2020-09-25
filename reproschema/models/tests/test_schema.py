@@ -12,3 +12,9 @@ def test_constructors():
     assert act.schema["schemaVersion"] == version
     item = Item(version)
     assert item.schema["schemaVersion"] == version
+
+
+def test_constructors_from_data():
+    Protocol.from_data({"@type": "reproschema:Protocol"})
+    Activity.from_data({"@type": "reproschema:Activity"})
+    Item.from_data({"@type": "reproschema:Field"})

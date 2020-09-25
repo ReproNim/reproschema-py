@@ -6,9 +6,10 @@ class Protocol(SchemaBase):
     class to deal with reproschema protocols
     """
 
+    schema_type = "reproschema:Protocol"
+
     def __init__(self, version=None):
         super().__init__(version)
-        self.schema["@type"] = "reproschema:Protocol"
         self.schema["ui"] = {
             "allow": [],
             "shuffle": [],

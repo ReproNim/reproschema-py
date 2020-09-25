@@ -6,9 +6,10 @@ class Item(SchemaBase):
     class to deal with reproschema activities
     """
 
+    schema_type = "reproschema:Field"
+
     def __init__(self, version=None):
         super().__init__(version)
-        self.schema["@type"] = "reproschema:Field"
         self.schema["ui"] = {"inputType": []}
         self.schema["question"] = {}
         self.schema["responseOptions"] = {}

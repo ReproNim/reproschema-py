@@ -1,7 +1,13 @@
+import json
+import os
+
+
 class SchemaBase:
     """
     class to deal with reproschema schemas
     """
+
+    schema_type = None
 
     def __init__(self, version):
 
@@ -10,6 +16,7 @@ class SchemaBase:
 
         self.schema = {
             "@context": URL + VERSION + "/contexts/generic",
+            "@type": self.schema_type,
             "schemaVersion": VERSION,
             "version": "0.0.1",
         }
@@ -50,8 +57,23 @@ class SchemaBase:
         self.schema["ui"] = reordered_dict
 
     def write(self, output_dir):
-        import os
-        import json
-
         with open(os.path.join(output_dir, self.schema_file), "w") as ff:
             json.dump(self.schema, ff, sort_keys=False, indent=4)
+
+    @classmethod
+    def from_data(cls, data):
+        if cls.schema_type is None:
+            raise ValueError("SchemaBase cannot be used to instantiate class")
+        if cls.schema_type != data["@type"]:
+            raise ValueError(f"Mismatch in type {data['@type']} != {cls.schema_type}")
+        klass = cls()
+        klass.schema = data
+        return klass
+
+    @classmethod
+    def from_file(cls, filepath):
+        with open(filepath) as fp:
+            data = json.load(fp)
+        if "@type" not in data:
+            raise ValueError("Missing @type key")
+        return cls.from_data(data)

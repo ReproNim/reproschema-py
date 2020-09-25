@@ -6,9 +6,10 @@ class Activity(SchemaBase):
     class to deal with reproschema activities
     """
 
+    schema_type = "reproschema:Activity"
+
     def __init__(self, version=None):
         super().__init__(version)
-        self.schema["@type"] = "reproschema:Activity"
         self.schema["ui"] = {"shuffle": [], "order": [], "addProperties": []}
 
     def set_ui_shuffle(self, shuffle=False):
