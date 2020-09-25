@@ -15,5 +15,5 @@ def test_type_error():
 
 
 def test_url():
-    url = "https://raw.githubusercontent.com/ReproNim/reproschema-py/master/reproschema/tests/data/activities/activity1.jsonld"
+    url = "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc1/examples/activities/activity1.jsonld"
     assert validate(os.path.abspath("reproschema-shacl.ttl"), url)
