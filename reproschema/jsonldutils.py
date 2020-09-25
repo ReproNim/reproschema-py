@@ -8,6 +8,9 @@ from .utils import start_server, stop_server, lgr
 def load_file(path_or_url, started=False, http_kwargs={}):
     try:
         data = jsonld.expand(path_or_url)
+        if len(data) == 1:
+            if "@id" not in data[0]:
+                data[0]["@id"] = path_or_url
     except jsonld.JsonLdError as e:
         if 'only "http" and "https"' in str(e):
             lgr.debug("Reloading with local server")
@@ -18,7 +21,9 @@ def load_file(path_or_url, started=False, http_kwargs={}):
                 if "port" not in http_kwargs:
                     raise KeyError("port key missing in http_kwargs")
                 port = http_kwargs["port"]
-            base_url = f"http://localhost:{port}/{root}/"
+            base_url = f"http://localhost:{port}/"
+            if root:
+                base_url += f"{root}/"
             with open(path_or_url) as json_file:
                 data = json.load(json_file)
             try:
@@ -28,6 +33,9 @@ def load_file(path_or_url, started=False, http_kwargs={}):
             finally:
                 if not started:
                     stop_server(stop)
+            if len(data) == 1:
+                if "@id" not in data[0]:
+                    data[0]["@id"] = base_url + os.path.basename(path_or_url)
         else:
             raise
     return data
@@ -99,5 +107,10 @@ def to_newformat(path, format):
     import rdflib as rl
 
     g = rl.Graph()
+    g.bind("rs", "http://schema.repronim.org/")
+    g.bind("sdo", "http://schema.org/")
+    g.bind("nidm", "http://purl.org/nidash/nidm#")
+    g.bind("skos", "http://www.w3.org/2004/02/skos/core#")
+    g.bind("prov", "http://www.w3.org/ns/prov#")
     g.parse(data=nt, format="nt")
     return g.serialize(format=format).decode()

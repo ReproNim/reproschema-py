@@ -1,5 +1,5 @@
 {
-	"@context": "../../contexts/generic",
+    "@context": "../../contexts/generic",
 	"@type": "reproschema:Protocol",
 	"@id": "protocol1.jsonld",
 	"prefLabel": {
@@ -7,8 +7,14 @@
 		"es": "Protocol1_es"
 	},
 	"description": "example Protocol",
-	"schemaVersion": "0.0.1",
+	"schemaVersion": "1.0.0-rc2",
 	"version": "0.0.1",
+	"messages": [
+		{
+			"message": "Test message: Triggered when item1 value is greater than 0",
+			"jsExpression": "item1 > 0"
+		}
+	],
 	"ui": {
 		"addProperties": [
 			{
@@ -18,7 +24,10 @@
 					"en": "Screening",
 					"es": "Screening_es"
 				},
-				"isVis": true
+				"isVis": true,
+				"schedule": "R5/2008-01-01T13:00:00Z/P1Y2M10DT2H30M",
+				"randomMaxDelay": "PT12H",
+				"limit": "P1W/2020-08-01T13:00:00Z"
 			}
 		],
 		"order": [
