@@ -73,11 +73,5 @@ class ReproschemaProtocol(ReproschemaSchema):
         ]
         self.sort_schema(schema_order)
 
-        ui_order = [
-            "allow",
-            "shuffle",
-            "order",
-            "addProperties",
-        ]
+        ui_order = ["allow", "shuffle", "order", "addProperties"]
         self.sort_ui(ui_order)
-

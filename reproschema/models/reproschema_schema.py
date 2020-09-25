@@ -53,6 +53,5 @@ class ReproschemaSchema:
         import os
         import json
 
-        with open(os.path.join(output_dir, self.schema_file), "w",) as ff:
+        with open(os.path.join(output_dir, self.schema_file), "w") as ff:
             json.dump(self.schema, ff, sort_keys=False, indent=4)
-

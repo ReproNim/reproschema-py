@@ -62,9 +62,5 @@ class ReproschemaActivity(ReproschemaSchema):
         ]
         self.sort_schema(schema_order)
 
-        ui_order = [
-            "shuffle",
-            "order",
-            "addProperties",
-        ]
+        ui_order = ["shuffle", "order", "addProperties"]
         self.sort_ui(ui_order)

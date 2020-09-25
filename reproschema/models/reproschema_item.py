@@ -18,7 +18,7 @@ class ReproschemaItem(ReproschemaSchema):
     def set_URI(self, URI):
         self.URI = URI
 
-    # TODO   
+    # TODO
     # image
     # readonlyValue
 
