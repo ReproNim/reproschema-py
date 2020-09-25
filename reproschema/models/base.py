@@ -1,12 +1,12 @@
-class ReproschemaSchema:
+class SchemaBase:
     """
     class to deal with reproschema schemas
     """
 
-    def __init__(self):
+    def __init__(self, version):
 
         URL = "https://raw.githubusercontent.com/ReproNim/reproschema/"
-        VERSION = "1.0.0-rc1"
+        VERSION = version or "1.0.0-rc2"
 
         self.schema = {
             "@context": URL + VERSION + "/contexts/generic",

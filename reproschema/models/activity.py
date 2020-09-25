@@ -1,13 +1,13 @@
-from reproschema_schema import ReproschemaSchema
+from .base import SchemaBase
 
 
-class ReproschemaActivity(ReproschemaSchema):
+class Activity(SchemaBase):
     """
     class to deal with reproschema activities
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, version=None):
+        super().__init__(version)
         self.schema["@type"] = "reproschema:Activity"
         self.schema["ui"] = {"shuffle": [], "order": [], "addProperties": []}
 

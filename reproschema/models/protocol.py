@@ -1,13 +1,13 @@
-from reproschema_schema import ReproschemaSchema
+from .base import SchemaBase
 
 
-class ReproschemaProtocol(ReproschemaSchema):
+class Protocol(SchemaBase):
     """
     class to deal with reproschema protocols
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, version=None):
+        super().__init__(version)
         self.schema["@type"] = "reproschema:Protocol"
         self.schema["ui"] = {
             "allow": [],
