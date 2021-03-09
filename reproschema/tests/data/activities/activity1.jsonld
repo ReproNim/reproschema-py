@@ -36,12 +36,14 @@
             {   "isAbout": "items/item2.jsonld",
                 "variableName": "item2",
                 "requiredValue": true,
-                "isVis": true
+                "isVis": true,
+                "allow": ["reproschema:Skipped"]
             }
         ],
         "order": [
             "items/item1.jsonld",
-            "items/item2.jsonld"
+            "items/item2.jsonld",
+            "items/activity1_total_score"
         ],
         "shuffle": false
     }
