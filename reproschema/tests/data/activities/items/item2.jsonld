@@ -10,11 +10,32 @@
         "en": "Current temperature.",
         "es": "Fiebre actual."
     },
+    "video": {
+      "@type": "VideoObject",
+      "contentUrl": "http://media.freesound.org/data/0/previews/719__elmomo__12oclock_girona_preview.mp4"
+    },
+    "imageUrl": "http://example.com/sample-image.jpg",
     "ui": {
         "inputType": "float"
     },
     "responseOptions": {
-        "valueType": "xsd:float"
+        "valueType": "xsd:float",
+        "unitOptions": [
+        {
+            "prefLabel": {
+                "en": "Fahrenheit",
+                "es": "Fahrenheit"
+            },
+            "value": "°F"
+        },
+        {
+            "prefLabel": {
+                "en": "Celsius",
+                "es": "Celsius"
+            },
+            "value": "°C"
+        }
+        ]
     }
 }
 
