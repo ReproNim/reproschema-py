@@ -12,14 +12,27 @@
                 "@container": "@language"
             },
             "value": {
-                "@id": "reproschema:value",
-                "@type": "@id",
-                "@container": "@language"
+                "@id": "reproschema:value"
             },
             "image": {
-                "@id": "schema:image",
-                "@type": "@id"
+                "@id": "schema:image"
             },
+            "imageUrl": {
+                "@id": "schema:image",
+                "@type": "xsd:anyURI"
+            },
+            "audio": {
+                "@id": "schema:audio"
+            },
+            "video": {
+                "@id": "schema:video"
+            },
+            "contentUrl": {
+                "@id": "schema:contentUrl",
+                "@type": "xsd:anyURI"
+            },
+            "VideoObject": "schema:VideoObject",
+            "AudioObject": "schema:AudioObject",
             "inLanguage": {
                 "@id": "schema:inLanguage"
             },
@@ -181,6 +194,7 @@
             },
             "additionalNotesObj": {
                 "@id": "reproschema:additionalNotesObj",
+                "@type": "reproschema:AdditionalNoteObj",
                 "@container": "@set"
             },
             "source": {
