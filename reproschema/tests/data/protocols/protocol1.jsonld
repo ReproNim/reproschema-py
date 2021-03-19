@@ -7,8 +7,9 @@
 		"es": "Protocol1_es"
 	},
 	"description": "example Protocol",
-	"schemaVersion": "1.0.0-rc2",
+	"schemaVersion": "1.0.0-rc3",
 	"version": "0.0.1",
+	"landingPage": "http://example.com/sample-readme.md",
 	"messages": [
 		{
 			"message": "Test message: Triggered when item1 value is greater than 0",
