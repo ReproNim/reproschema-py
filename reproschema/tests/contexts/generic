@@ -19,7 +19,7 @@
             },
             "imageUrl": {
                 "@id": "schema:image",
-                "@type": "xsd:anyURI"
+                "@type": "@id"
             },
             "audio": {
                 "@id": "schema:audio"
@@ -29,7 +29,7 @@
             },
             "contentUrl": {
                 "@id": "schema:contentUrl",
-                "@type": "xsd:anyURI"
+                "@type": "@id"
             },
             "VideoObject": "schema:VideoObject",
             "AudioObject": "schema:AudioObject",
@@ -45,12 +45,10 @@
                 "@container": "@language"
             },
             "version": {
-                "@id": "schema:version",
-                "@container": "@language"
+                "@id": "schema:version"
             },
             "schemaVersion": {
-                "@id": "schema:schemaVersion",
-                "@container": "@language"
+                "@id": "schema:schemaVersion"
             },
             "prefLabel": {
                 "@id": "skos:prefLabel",
@@ -71,6 +69,7 @@
             },
             "landingPage": {
                 "@id": "reproschema:landingPage",
+                "@type": "@id",
                 "@container": "@set"
             },
             "question": {
@@ -152,11 +151,11 @@
             },
             "compute": {
                 "@id": "reproschema:compute",
-                "@container": "@index"
+                "@container": "@set"
             },
             "messages": {
                 "@id": "reproschema:messages",
-                "@container": "@index"
+                "@container": "@set"
             },
             "jsExpression": {
                 "@id": "reproschema:jsExpression"
