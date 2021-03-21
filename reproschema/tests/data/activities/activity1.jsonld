@@ -4,7 +4,7 @@
     "@id": "activity1.jsonld",
     "prefLabel": "Example 1",
     "description": "Activity example 1",
-    "schemaVersion": "1.0.0-rc2",
+    "schemaVersion": "1.0.0-rc4",
     "version": "0.0.1",
     "citation": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1495268/",
     "image": {
@@ -15,18 +15,18 @@
         "en": "Over the last 2 weeks, how often have you been bothered by any of the following problems?",
         "es": "Durante las últimas 2 semanas, ¿con qué frecuencia le han molestado los siguintes problemas?"
     },
-    "messages": [
-      {
-        "message": "Test message: Triggered when item1 value is greater than 1",
-        "jsExpression": "item1 > 1"
-      }
-    ],
     "compute": [
         {
             "variableName": "activity1_total_score",
             "jsExpression": "item1 + item2"
         }
     ],
+    "messages": [
+		{
+			"message": "Test message: Triggered when item1 value is greater than 1",
+			"jsExpression": "item1 > 1"
+		}
+	],
     "ui": {
         "addProperties": [
             {   "isAbout": "items/item1.jsonld",
@@ -42,6 +42,11 @@
                 "requiredValue": true,
                 "isVis": true,
                 "allow": ["reproschema:Skipped"]
+            },
+            {   "isAbout": "items/activity1_total_score",
+                "variableName": "activity1_total_score",
+                "requiredValue": true,
+                "isVis": false
             }
         ],
         "order": [
