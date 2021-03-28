@@ -75,7 +75,7 @@ def validate_data(data, shape_file_path):
     return conforms, v_text
 
 
-def to_newformat(path, format, prefixfile, contextfile):
+def to_newformat(path, format, prefixfile=None, contextfile=None):
     """Convert a JSONLD document to n-triples format
 
     Since PyLD requires an http url, a local server is started to serve the
