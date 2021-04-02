@@ -57,13 +57,19 @@ def validate(shapefile, path):
     default="n-triples",
     show_default=True,
 )
+@click.option(
+    "--prefixfile", default=None, type=click.Path(exists=True, dir_okay=False)
+)
+@click.option(
+    "--contextfile", default=None, type=click.Path(exists=True, dir_okay=False)
+)
 @click.argument("path", nargs=1, type=str)
-def convert(path, format):
+def convert(path, format, prefixfile, contextfile):
     if not (path.startswith("http") or os.path.exists(path)):
         raise ValueError(f"{path} must be a URL or an existing file or directory")
     from .jsonldutils import to_newformat
 
-    print(to_newformat(path, format))
+    print(to_newformat(path, format, prefixfile, contextfile))
 
 
 @main.command()
