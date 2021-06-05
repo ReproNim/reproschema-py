@@ -1,9 +1,12 @@
 from .base import SchemaBase
 
 
+DEFAULT_LANG = "en"
+
+
 class Item(SchemaBase):
     """
-    class to deal with reproschema activities
+    class to deal with reproschema items
     """
 
     schema_type = "reproschema:Field"
@@ -13,8 +16,9 @@ class Item(SchemaBase):
         self.schema["ui"] = {"inputType": []}
         self.schema["question"] = {}
         self.schema["responseOptions"] = {}
-        # default input type is "char"
-        self.set_input_type_as_char()
+        self.response_options = ResponseOption()
+        # default input type is "text"
+        self.set_input_type_as_text()
 
     def set_URI(self, URI):
         self.URI = URI
@@ -27,16 +31,20 @@ class Item(SchemaBase):
         self._SchemaBase__set_defaults(name)
         self.schema_file = name
         self.schema["@id"] = name
-        self.set_input_type_as_char()
+        self.set_input_type_as_text()
 
-    def set_question(self, question, lang="en"):
+    def set_filename(self, name, ext=".jsonld"):
+        self.schema_file = name + ext
+        self.schema["@id"] = name + ext
+
+    def set_question(self, question, lang=DEFAULT_LANG):
         self.schema["question"][lang] = question
 
     def set_input_type(self, input_type):
         self.schema["ui"]["inputType"] = input_type
 
-    def set_response_options(self, response_options):
-        self.schema["responseOptions"] = response_options
+    def set_response_options(self):
+        self.schema["responseOptions"] = self.response_options.options
 
     """
 
@@ -46,14 +54,16 @@ class Item(SchemaBase):
 
     def set_input_type_as_radio(self, response_options):
         self.set_input_type("radio")
-        self.set_response_options(response_options)
+        self.response_options = response_options
+        self.set_response_options()
 
     def set_input_type_as_select(self, response_options):
         self.set_input_type("select")
-        self.set_response_options(response_options)
+        self.response_options = response_options
+        self.set_response_options()
 
     def set_input_type_as_slider(self):
-        self.set_input_type_as_char()  # until the slide item of the ui is fixed
+        self.set_input_type_as_text()  # until the slide item of the ui is fixed
         # self.set_input_type("slider")
         # self.set_response_options({"valueType": "xsd:string"})
 
@@ -63,12 +73,13 @@ class Item(SchemaBase):
 
         self.set_input_type("selectLanguage")
 
-        response_options = {
-            "valueType": "xsd:string",
-            "multipleChoice": True,
-            "choices": URL + "master/resources/languages.json",
-        }
-        self.set_response_options(response_options)
+        self.response_options.set_type("str")
+        self.response_options.set_multiple_choice(True)
+        self.response_options["options"]["choices"] = (
+            URL + "master/resources/languages.json"
+        )
+
+        self.set_response_options()
 
     """
 
@@ -76,17 +87,13 @@ class Item(SchemaBase):
 
     """
 
-    def set_input_type_as_char(self):
-        self.set_input_type("text")
-        self.set_response_options({"valueType": "xsd:string"})
-
     def set_input_type_as_int(self):
         self.set_input_type("number")
-        self.set_response_options({"valueType": "xsd:integer"})
+        self.response_options.set_type("int")
 
     def set_input_type_as_float(self):
         self.set_input_type("float")
-        self.set_response_options({"valueType": "xsd:float"})
+        self.response_options.set_type("float")
 
     def set_input_type_as_time_range(self):
         self.set_input_type("timeRange")
@@ -102,9 +109,21 @@ class Item(SchemaBase):
 
     """
 
-    def set_input_type_as_multitext(self, max_length=300):
+    def set_input_type_as_text(self, length=300):
         self.set_input_type("text")
-        self.set_response_options({"valueType": "xsd:string", "maxLength": max_length})
+        self.response_options.set_type("str")
+        self.response_options.set_length(length)
+        self.response_options.options.pop("maxValue", None)
+        self.response_options.options.pop("minValue", None)
+        self.response_options.options.pop("multipleChoice", None)
+        self.response_options.options.pop("choices", None)
+        self.set_response_options()
+
+    def set_input_type_as_multitext(self, length=300):
+        self.set_input_type("multitext")
+        self.response_options.set_type("str")
+        self.response_options.set_length(length)
+        self.set_response_options()
 
     # TODO
     # email: EmailInput/EmailInput.vue
