@@ -28,7 +28,7 @@ class Activity(SchemaBase):
     # image
 
     def set_defaults(self, name):
-        self._ReproschemaSchema__set_defaults(name)  # this looks wrong
+        self._SchemaBase__set_defaults(name)
         self.set_ui_shuffle(False)
 
     def update_activity(self, item_info):

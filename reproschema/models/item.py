@@ -24,7 +24,7 @@ class Item(SchemaBase):
     # readonlyValue
 
     def set_defaults(self, name):
-        self._ReproschemaSchema__set_defaults(name)  # this looks wrong
+        self._SchemaBase__set_defaults(name)
         self.schema_file = name
         self.schema["@id"] = name
         self.set_input_type_as_char()
