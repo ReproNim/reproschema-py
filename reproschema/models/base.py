@@ -21,9 +21,9 @@ class SchemaBase:
             "version": "0.0.1",
         }
 
-    def set_filename(self, name):
-        self.schema_file = name + "_schema"
-        self.schema["@id"] = name + "_schema"
+    def set_filename(self, name, ext=".jsonld"):
+        self.schema_file = name + "_schema" + ext
+        self.schema["@id"] = name + "_schema" + ext
 
     def get_name(self):
         return self.schema_file.replace("_schema", "")
