@@ -12,7 +12,7 @@ class SchemaBase:
     def __init__(self, version):
 
         URL = "https://raw.githubusercontent.com/ReproNim/reproschema/"
-        VERSION = version or "1.0.0-rc2"
+        VERSION = version or "1.0.0-rc4"
 
         self.schema = {
             "@context": URL + VERSION + "/contexts/generic",
