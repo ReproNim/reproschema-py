@@ -156,3 +156,52 @@ class Item(SchemaBase):
             "responseOptions",
         ]
         self.sort_schema(schema_order)
+
+
+class ResponseOption:
+    """
+    class to deal with reproschema response options
+    """
+
+    def __init__(self):
+        self.options = {
+            "valueType": "",
+            "minValue": 0,
+            "maxValue": 0,
+            "choices": [],
+            "multipleChoice": False,
+        }
+
+        # "readonlyValue": False,
+        # "maxLength": 0,
+
+    def set_type(self, type):
+        if type == "int":
+            self.options["valueType"] = "xsd:integer"
+        elif type == "str":
+            self.options["valueType"] = "xsd:string"
+        elif type == "float":
+            self.options["valueType"] = "xsd:float"
+        elif type == "date":
+            self.options["valueType"] = "xsd:date"
+        elif type == "datetime":
+            self.options["valueType"] = "datetime"
+
+    def set_input_type_as_date(self):
+        self.set_input_type("date")
+        self.set_response_options({"valueType": "xsd:date"})
+
+    def set_min(self, value):
+        self.options["minValue"] = value
+
+    def set_max(self, value):
+        self.options["maxValue"] = value
+
+    def set_length(self, value):
+        self.options["maxLength"] = value
+
+    def set_multiple_choice(self, value):
+        self.options["multipleChoice"] = value
+
+    def add_choice(self, choice):
+        self.options["choices"].append(choice)
