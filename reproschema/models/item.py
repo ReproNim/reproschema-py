@@ -27,10 +27,9 @@ class Item(SchemaBase):
     # image
     # readonlyValue
 
-    def set_defaults(self, name):
+    def set_defaults(self, name="default"):
         self._SchemaBase__set_defaults(name)
-        self.schema_file = name
-        self.schema["@id"] = name
+        self.set_filename(name)
         self.set_input_type_as_text()
 
     def set_filename(self, name, ext=".jsonld"):
@@ -47,9 +46,7 @@ class Item(SchemaBase):
         self.schema["responseOptions"] = self.response_options.options
 
     """
-
     input types with different response choices
-
     """
 
     def set_input_type_as_radio(self, response_options):
@@ -82,18 +79,18 @@ class Item(SchemaBase):
         self.set_response_options()
 
     """
-
     input types with no response choice
-
     """
 
     def set_input_type_as_int(self):
         self.set_input_type("number")
         self.response_options.set_type("int")
+        self.response_options.options.pop("maxLength", None)
 
     def set_input_type_as_float(self):
         self.set_input_type("float")
         self.response_options.set_type("float")
+        self.response_options.options.pop("maxLength", None)
 
     def set_input_type_as_time_range(self):
         self.set_input_type("timeRange")
@@ -104,9 +101,7 @@ class Item(SchemaBase):
         self.set_response_options({"valueType": "xsd:date"})
 
     """
-
     input types with no response choice but with some parameters
-
     """
 
     def set_input_type_as_text(self, length=300):
@@ -160,6 +155,14 @@ class Item(SchemaBase):
 
         elif response_type == "language":
             self.set_input_type_as_language()
+
+    """
+    writing and sorting of dictionaries
+    """
+
+    def write(self, output_dir):
+        self.sort()
+        self._SchemaBase__write(output_dir)
 
     def sort(self):
         schema_order = [

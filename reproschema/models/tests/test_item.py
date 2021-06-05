@@ -23,11 +23,8 @@ if not os.path.exists(item_dir):
 
 def test_default():
 
-    item = Item("1.0.0-rc4")
-    item.set_defaults("default")
-    item.set_filename("default")
-
-    item.sort()
+    item = Item()
+    item.set_defaults()
     item.write(item_dir)
 
     item_content, expected = load_jsons(item)
@@ -39,10 +36,40 @@ def test_text():
 
     item = Item("1.0.0-rc4")
     item.set_defaults("text")
-    item.set_filename("text")
     item.set_input_type_as_text(100)
 
-    item.sort()
+    item.set_question("question for text item", "en")
+
+    item.write(item_dir)
+
+    item_content, expected = load_jsons(item)
+
+    assert item_content == expected
+
+
+def test_float():
+
+    item = Item("1.0.0-rc4")
+    item.set_defaults("float")
+    item.set_description("This is a float item.")
+    item.set_input_type_as_float()
+    item.set_question("This is an item where the user can input a float.", "en")
+
+    item.write(item_dir)
+
+    item_content, expected = load_jsons(item)
+
+    assert item_content == expected
+
+
+def test_integer():
+
+    item = Item()
+    item.set_defaults("integer")
+    item.set_description("This is a integer item.")
+    item.set_input_type_as_int()
+    item.set_question("This is an item where the user can input a integer.", "en")
+
     item.write(item_dir)
 
     item_content, expected = load_jsons(item)
@@ -54,7 +81,6 @@ def test_radio():
 
     item = Item("1.0.0-rc4")
     item.set_defaults("radio")
-    item.set_filename("radio")
 
     item.set_question("question for radio item", "en")
 
@@ -66,7 +92,6 @@ def test_radio():
 
     item.set_input_type_as_radio(response_options)
 
-    item.sort()
     item.write(item_dir)
 
     item_content, expected = load_jsons(item)

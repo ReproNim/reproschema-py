@@ -56,7 +56,7 @@ class SchemaBase:
         reordered_dict = {k: self.schema["ui"][k] for k in ui_order}
         self.schema["ui"] = reordered_dict
 
-    def write(self, output_dir):
+    def __write(self, output_dir):
         with open(os.path.join(output_dir, self.schema_file), "w") as ff:
             json.dump(self.schema, ff, sort_keys=False, indent=4)
 
