@@ -51,11 +51,13 @@ class Item(SchemaBase):
 
     def set_input_type_as_radio(self, response_options):
         self.set_input_type("radio")
+        response_options.set_type("int")
         self.response_options = response_options
         self.set_response_options()
 
     def set_input_type_as_select(self, response_options):
         self.set_input_type("select")
+        response_options.set_type("int")
         self.response_options = response_options
         self.set_response_options()
 
@@ -66,15 +68,16 @@ class Item(SchemaBase):
 
     def set_input_type_as_language(self):
 
-        URL = "https://raw.githubusercontent.com/ReproNim/reproschema/"
+        URL = "https://raw.githubusercontent.com/ReproNim/reproschema-library/"
 
         self.set_input_type("selectLanguage")
 
         self.response_options.set_type("str")
         self.response_options.set_multiple_choice(True)
-        self.response_options["options"]["choices"] = (
+        self.response_options.options["choices"] = (
             URL + "master/resources/languages.json"
         )
+        self.response_options.options.pop("maxLength", None)
 
         self.set_response_options()
 
