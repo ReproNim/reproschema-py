@@ -33,6 +33,7 @@ class Item(SchemaBase):
         self.set_input_type_as_text()
 
     def set_filename(self, name, ext=".jsonld"):
+        name = name.replace(" ", "_")
         self.schema_file = name + ext
         self.schema["@id"] = name + ext
 

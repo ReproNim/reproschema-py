@@ -11,9 +11,6 @@ if not os.path.exists(item_dir):
     os.makedirs(os.path.join(item_dir))
 
 # TODO: add test for
-#   select
-#   multiradio
-#   multiselect
 #   slider
 #   time range
 #   date
@@ -23,10 +20,9 @@ def test_default():
 
     item = Item()
     item.set_defaults()
+
     item.write(item_dir)
-
     item_content, expected = load_jsons(item)
-
     assert item_content == expected
 
 
@@ -39,9 +35,7 @@ def test_text():
     item.set_question("question for text item")
 
     item.write(item_dir)
-
     item_content, expected = load_jsons(item)
-
     assert item_content == expected
 
 
@@ -54,9 +48,7 @@ def test_float():
     item.set_question("This is an item where the user can input a float.")
 
     item.write(item_dir)
-
     item_content, expected = load_jsons(item)
-
     assert item_content == expected
 
 
@@ -69,9 +61,7 @@ def test_integer():
     item.set_question("This is an item where the user can input a integer.")
 
     item.write(item_dir)
-
     item_content, expected = load_jsons(item)
-
     assert item_content == expected
 
 
@@ -83,9 +73,7 @@ def test_language():
     item.set_question("This is an item where the user can select several language.")
 
     item.write(item_dir)
-
     item_content, expected = load_jsons(item)
-
     assert item_content == expected
 
 
@@ -104,9 +92,18 @@ def test_radio():
     item.set_input_type_as_radio(response_options)
 
     item.write(item_dir)
+    item_content, expected = load_jsons(item)
+    assert item_content == expected
+
+    item.set_filename("radio multiple")
+    item.set_description("radio multiple")
+    item.set_pref_label("radio multiple")
+    item.set_question("question for radio item with multiple responses")
+    response_options.set_multiple_choice(True)
+    item.set_input_type_as_radio(response_options)
+    item.write(item_dir)
 
     item_content, expected = load_jsons(item)
-
     assert item_content == expected
 
 
@@ -114,7 +111,6 @@ def test_select():
 
     item = Item()
     item.set_defaults("select")
-
     item.set_question("question for select item", "en")
 
     response_options = ResponseOption()
@@ -127,13 +123,23 @@ def test_select():
     item.set_input_type_as_select(response_options)
 
     item.write(item_dir)
+    item_content, expected = load_jsons(item)
+    assert item_content == expected
+
+    item.set_filename("select multiple")
+    item.set_description("select multiple")
+    item.set_pref_label("select multiple")
+    item.set_question("question for select item with multiple responses")
+    response_options.set_multiple_choice(True)
+    item.set_input_type_as_select(response_options)
+    item.write(item_dir)
 
     item_content, expected = load_jsons(item)
-
     assert item_content == expected
 
 
 def load_jsons(item):
+
     output_file = os.path.join(item_dir, item.get_filename())
     item_content = read_json(output_file)
 
