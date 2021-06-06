@@ -2,7 +2,9 @@
     "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
     "@type": "reproschema:Field",
     "@id": "select_multiple.jsonld",
-    "prefLabel": "select multiple",
+    "prefLabel": {
+        "en": "select multiple"
+    },
     "description": "select multiple",
     "schemaVersion": "1.0.0-rc4",
     "version": "0.0.1",

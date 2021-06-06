@@ -73,8 +73,8 @@ class SchemaBase:
         self.schema_file = name + "_schema" + ext
         self.schema["@id"] = name + "_schema" + ext
 
-    def set_pref_label(self, pref_label):
-        self.schema["prefLabel"] = pref_label
+    def set_pref_label(self, pref_label, lang=DEFAULT_LANG):
+        self.schema["prefLabel"] = {lang: pref_label}
 
     def set_description(self, description):
         self.schema["description"] = description

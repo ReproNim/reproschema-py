@@ -2,11 +2,15 @@
     "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
     "@type": "reproschema:Field",
     "@id": "participant_id.jsonld",
-    "prefLabel": "participant id",
+    "prefLabel": {
+        "en": "participant id"
+    },
     "description": "participant id",
     "schemaVersion": "1.0.0-rc4",
     "version": "0.0.1",
-    "question": {"en": "input the participant id number"},
+    "question": {
+        "en": "input the participant id number"
+    },
     "ui": {
         "inputType": "pid"
     },
