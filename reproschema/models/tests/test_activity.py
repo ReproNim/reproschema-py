@@ -16,6 +16,10 @@ reproschema_test_data = os.path.join(my_path, "..", "..", "tests", "data")
 
 def test_default():
 
+    """
+    FYI: The default activity does not conform to the schema
+    """
+
     activity = Activity()
     activity.set_defaults()
 
@@ -24,11 +28,10 @@ def test_default():
     assert activity_content == expected
 
 
-def test_activity_local():
+def test_activity():
 
     activity = Activity()
     activity.set_defaults("activity1")
-    activity.set_context("../../contexts/generic")
     activity.set_description("Activity example 1")
     activity.set_pref_label("Example 1")
     activity.set_preamble(
@@ -42,6 +45,7 @@ def test_activity_local():
 
     item_1 = Item()
     item_1.set_defaults("item1")
+    # probably want to have items/item_name be a default
     item_1.set_URI(os.path.join("items", item_1.get_filename()))
     item_1.skippable = False
     activity.append_item(item_1)

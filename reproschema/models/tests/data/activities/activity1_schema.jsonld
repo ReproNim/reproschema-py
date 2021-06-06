@@ -1,5 +1,5 @@
 {
-    "@context": "../../contexts/generic",
+    "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
     "@type": "reproschema:Activity",
     "@id": "activity1_schema.jsonld",
     "prefLabel": "Example 1",
