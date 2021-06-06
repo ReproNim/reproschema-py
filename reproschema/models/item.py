@@ -17,14 +17,14 @@ class Item(SchemaBase):
         self.schema["question"] = {}
         self.schema["responseOptions"] = {}
         self.response_options = ResponseOption()
+        self.visible = True
+        self.required = True
+        self.skippable = True
         # default input type is "text"
         self.set_input_type_as_text()
 
     def set_URI(self, URI):
         self.URI = URI
-
-    # TODO
-    # image
 
     def set_defaults(self, name="default"):
         self._SchemaBase__set_defaults(name)

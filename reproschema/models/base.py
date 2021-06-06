@@ -2,6 +2,8 @@ import json
 import os
 from collections import OrderedDict
 
+DEFAULT_LANG = "en"
+
 
 class SchemaBase:
     """
@@ -25,6 +27,15 @@ class SchemaBase:
 
     def set_context(self, context):
         self.schema["@context"] = context
+
+    def set_preamble(self, preamble="", lang=DEFAULT_LANG):
+        self.schema["preamble"] = {lang: preamble}
+
+    def set_citation(self, citation):
+        self.schema["citation"] = citation
+
+    def set_image(self, image):
+        self.schema["image"] = image
 
     def set_filename(self, name, ext=".jsonld"):
         self.schema_file = name + "_schema" + ext
