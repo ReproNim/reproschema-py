@@ -40,8 +40,19 @@ class Item(SchemaBase):
     def set_question(self, question, lang=DEFAULT_LANG):
         self.schema["question"][lang] = question
 
+    """
+    UI
+    """
+
     def set_input_type(self, input_type):
         self.schema["ui"]["inputType"] = input_type
+
+    def set_read_only_value(self, value):
+        self.schema["ui"]["readonlyValue"] = value
+
+    """
+    RESPONSE CHOICES
+    """
 
     def set_response_options(self):
         self.schema["responseOptions"] = self.response_options.options
@@ -54,19 +65,16 @@ class Item(SchemaBase):
         self.set_input_type("radio")
         response_options.set_type("int")
         self.response_options = response_options
-        self.set_response_options()
 
     def set_input_type_as_select(self, response_options):
         self.set_input_type("select")
         response_options.set_type("int")
         self.response_options = response_options
-        self.set_response_options()
 
     def set_input_type_as_slider(self, response_options):
-        response_options.set_type("int")
         self.set_input_type("slider")
+        response_options.set_type("int")
         self.response_options = response_options
-        self.set_response_options()
 
     def set_input_type_as_language(self):
 
@@ -79,9 +87,7 @@ class Item(SchemaBase):
         self.response_options.options["choices"] = (
             URL + "master/resources/languages.json"
         )
-        self.response_options.options.pop("maxLength", None)
-
-        self.set_response_options()
+        self.response_options.unset(["maxLength"])
 
     """
     input types with no response choice
@@ -90,12 +96,13 @@ class Item(SchemaBase):
     def set_input_type_as_int(self):
         self.set_input_type("number")
         self.response_options.set_type("int")
-        self.response_options.options.pop("maxLength", None)
+        self.response_options.unset(["maxLength"])
 
     def set_input_type_as_float(self):
         self.set_input_type("float")
         self.response_options.set_type("float")
         self.response_options.options.pop("maxLength", None)
+        self.response_options.unset(["maxLength"])
 
     def set_input_type_as_time_range(self):
         self.set_input_type("timeRange")
@@ -113,20 +120,14 @@ class Item(SchemaBase):
         self.set_input_type("text")
         self.response_options.set_type("str")
         self.response_options.set_length(length)
-        # TODO removing all these key pairs is horrible
-        # either change the way the default is initialised or create another
-        # method that handles the cleaning of unecessary keys
-        self.response_options.options.pop("maxValue", None)
-        self.response_options.options.pop("minValue", None)
-        self.response_options.options.pop("multipleChoice", None)
-        self.response_options.options.pop("choices", None)
-        self.set_response_options()
+        self.response_options.unset(
+            ["maxValue", "minValue", "multipleChoice", "choices"]
+        )
 
     def set_input_type_as_multitext(self, length=300):
         self.set_input_type("multitext")
         self.response_options.set_type("str")
         self.response_options.set_length(length)
-        self.set_response_options()
 
     # TODO
     # email: EmailInput/EmailInput.vue
@@ -165,11 +166,16 @@ class Item(SchemaBase):
             self.set_input_type_as_language()
 
     """
-    writing and sorting of dictionaries
+    writing, reading, sorting, unsetting
     """
+
+    def unset(self, keys):
+        for i in keys:
+            self.schema.pop(i, None)
 
     def write(self, output_dir):
         self.sort()
+        self.set_response_options()
         self._SchemaBase__write(output_dir)
 
     def sort(self):
@@ -201,6 +207,10 @@ class ResponseOption:
             "choices": [],
             "multipleChoice": False,
         }
+
+    def unset(self, keys):
+        for i in keys:
+            self.options.pop(i, None)
 
     def set_type(self, type):
         if type == "int":

@@ -10,6 +10,8 @@ item_dir = os.path.join(my_path, "items")
 if not os.path.exists(item_dir):
     os.makedirs(os.path.join(item_dir))
 
+reproschema_test_data = os.path.join(my_path, "..", "..", "tests", "data")
+
 # TODO: add test for
 #   slider
 #   time range
@@ -169,6 +171,33 @@ def test_slider():
 
     item.write(item_dir)
     item_content, expected = load_jsons(item)
+    assert item_content == expected
+
+
+def test_read_only():
+
+    item = Item()
+    item.set_defaults("activity1_total_score")
+    item.set_context("../../../contexts/generic")
+    item.set_filename("activity1_total_score", "")
+    item.set_pref_label("activity1_total_score")
+    item.set_description("Score item for Activity 1")
+    item.set_read_only_value(True)
+    item.set_input_type_as_int()
+    item.response_options.set_max(3)
+    item.response_options.set_min(0)
+    item.unset(["question"])
+
+    item.write(item_dir)
+
+    output_file = os.path.join(item_dir, item.get_filename())
+    item_content = read_json(output_file)
+
+    # test against one of the pre existing files
+    data_file = os.path.join(
+        reproschema_test_data, "activities", "items", "activity1_total_score"
+    )
+    expected = read_json(data_file)
     assert item_content == expected
 
 
