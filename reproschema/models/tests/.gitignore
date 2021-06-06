@@ -1,3 +1,4 @@
 items/*.jsonld
 activities/*.jsonld
 response_options/*.jsonld
+protocols/*.jsonld

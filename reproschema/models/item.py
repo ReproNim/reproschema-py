@@ -296,7 +296,8 @@ class ResponseOption(SchemaBase):
         self._SchemaBase__write(output_dir)
 
 
-# DUPLICATE from the base class: needs refactoring
+# DUPLICATE from the base class to be used for ResponseOptions sorting of the options
+# needs refactoring
 from collections import OrderedDict
 
 

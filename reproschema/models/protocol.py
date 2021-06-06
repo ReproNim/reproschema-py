@@ -1,5 +1,7 @@
 from .base import SchemaBase
 
+DEFAULT_LANG = "en"
+
 
 class Protocol(SchemaBase):
     """
@@ -20,14 +22,6 @@ class Protocol(SchemaBase):
     def set_landing_page(self, landing_page_url, lang="en"):
         self.schema["landingPage"] = {"@id": landing_page_url, "inLanguage": lang}
 
-    # TODO
-    # def add_landing_page(self, landing_page_url, lang="en"):
-    # preamble
-    # compute
-
-    def set_image(self, image_url):
-        self.schema["image"] = image_url
-
     def set_ui_allow(self):
         self.schema["ui"]["allow"] = [
             "reproschema:AutoAdvance",
@@ -37,9 +31,9 @@ class Protocol(SchemaBase):
     def set_ui_shuffle(self, shuffle=False):
         self.schema["ui"]["shuffle"] = shuffle
 
-    def set_defaults(self, name):
+    def set_defaults(self, name="default"):
         self._SchemaBase__set_defaults(name)
-        self.set_landing_page("../../README-en.md")
+        self.set_landing_page("README-en.md")
         self.set_ui_allow()
         self.set_ui_shuffle(False)
 
@@ -76,3 +70,7 @@ class Protocol(SchemaBase):
 
         ui_order = ["allow", "shuffle", "order", "addProperties"]
         self.sort_ui(ui_order)
+
+    def write(self, output_dir):
+        self.sort()
+        self._SchemaBase__write(output_dir)
