@@ -22,6 +22,8 @@ def test_default():
     item_content, expected = load_jsons(item)
     assert item_content == expected
 
+    clean_up(item)
+
 
 def test_text():
 
@@ -34,6 +36,8 @@ def test_text():
     item.write(item_dir)
     item_content, expected = load_jsons(item)
     assert item_content == expected
+
+    clean_up(item)
 
 
 def test_multitext():
@@ -48,6 +52,8 @@ def test_multitext():
     item_content, expected = load_jsons(item)
     assert item_content == expected
 
+    clean_up(item)
+
 
 def test_email():
 
@@ -60,6 +66,8 @@ def test_email():
     item.write(item_dir)
     item_content, expected = load_jsons(item)
     assert item_content == expected
+
+    clean_up(item)
 
 
 def test_participant_id():
@@ -74,6 +82,8 @@ def test_participant_id():
     item_content, expected = load_jsons(item)
     assert item_content == expected
 
+    clean_up(item)
+
 
 def test_date():
 
@@ -86,6 +96,8 @@ def test_date():
     item.write(item_dir)
     item_content, expected = load_jsons(item)
     assert item_content == expected
+
+    clean_up(item)
 
 
 def test_time_range():
@@ -100,6 +112,8 @@ def test_time_range():
     item_content, expected = load_jsons(item)
     assert item_content == expected
 
+    clean_up(item)
+
 
 def test_year():
 
@@ -112,6 +126,8 @@ def test_year():
     item.write(item_dir)
     item_content, expected = load_jsons(item)
     assert item_content == expected
+
+    clean_up(item)
 
 
 def test_float():
@@ -126,6 +142,8 @@ def test_float():
     item_content, expected = load_jsons(item)
     assert item_content == expected
 
+    clean_up(item)
+
 
 def test_integer():
 
@@ -139,6 +157,8 @@ def test_integer():
     item_content, expected = load_jsons(item)
     assert item_content == expected
 
+    clean_up(item)
+
 
 def test_language():
 
@@ -150,6 +170,8 @@ def test_language():
     item.write(item_dir)
     item_content, expected = load_jsons(item)
     assert item_content == expected
+
+    clean_up(item)
 
 
 def test_country():
@@ -163,6 +185,8 @@ def test_country():
     item_content, expected = load_jsons(item)
     assert item_content == expected
 
+    clean_up(item)
+
 
 def test_state():
 
@@ -174,6 +198,8 @@ def test_state():
     item.write(item_dir)
     item_content, expected = load_jsons(item)
     assert item_content == expected
+
+    clean_up(item)
 
 
 def test_radio():
@@ -194,6 +220,8 @@ def test_radio():
     item_content, expected = load_jsons(item)
     assert item_content == expected
 
+    clean_up(item)
+
     item.set_filename("radio multiple")
     item.set_description("radio multiple")
     item.set_pref_label("radio multiple")
@@ -204,6 +232,8 @@ def test_radio():
 
     item_content, expected = load_jsons(item)
     assert item_content == expected
+
+    clean_up(item)
 
 
 def test_select():
@@ -224,6 +254,8 @@ def test_select():
     item_content, expected = load_jsons(item)
     assert item_content == expected
 
+    clean_up(item)
+
     item.set_filename("select multiple")
     item.set_description("select multiple")
     item.set_pref_label("select multiple")
@@ -234,6 +266,8 @@ def test_select():
 
     item_content, expected = load_jsons(item)
     assert item_content == expected
+
+    clean_up(item)
 
 
 def test_slider():
@@ -255,6 +289,8 @@ def test_slider():
     item.write(item_dir)
     item_content, expected = load_jsons(item)
     assert item_content == expected
+
+    clean_up(item)
 
 
 def test_read_only():
@@ -283,6 +319,8 @@ def test_read_only():
     expected = read_json(data_file)
     assert item_content == expected
 
+    clean_up(item)
+
 
 def load_jsons(item):
 
@@ -299,3 +337,7 @@ def read_json(file):
 
     with open(file, "r") as ff:
         return json.load(ff)
+
+
+def clean_up(obj):
+    os.remove(os.path.join(item_dir, obj.get_filename()))

@@ -27,6 +27,8 @@ def test_default():
     activity_content, expected = load_jsons(activity)
     assert activity_content == expected
 
+    clean_up(activity)
+
 
 def test_activity():
 
@@ -71,6 +73,8 @@ def test_activity():
     activity_content, expected = load_jsons(activity)
     assert activity_content == expected
 
+    clean_up(activity)
+
 
 def load_jsons(obj):
 
@@ -87,3 +91,7 @@ def read_json(file):
 
     with open(file, "r") as ff:
         return json.load(ff)
+
+
+def clean_up(obj):
+    os.remove(os.path.join(activity_dir, obj.get_filename()))
