@@ -93,8 +93,38 @@ class SchemaBase:
     def get_basename(self):
         return Path(self.schema_file).stem
 
+    def get_pref_label(self):
+        return self.schema["prefLabel"]
+
     def get_URI(self):
         return self.URI
+
+    """
+    UI
+    """
+
+    def set_ui_default(self):
+        self.schema["ui"] = {
+            "shuffle": [],
+            "order": [],
+            "addProperties": [],
+            "allow": [],
+        }
+        self.set_ui_shuffle()
+        self.set_ui_allow()
+
+    def set_ui_shuffle(self, shuffle=False):
+        self.schema["ui"]["shuffle"] = shuffle
+
+    def set_ui_allow(self, auto_advance=True, allow_export=True, disable_back=False):
+        allow = []
+        if auto_advance:
+            allow.append("reproschema:AutoAdvance")
+        if allow_export:
+            allow.append("reproschema:AllowExport")
+        if disable_back:
+            allow.append("reproschema:DisableBack")
+        self.schema["ui"]["allow"] = allow
 
     """
     writing, reading, sorting, unsetting
@@ -105,7 +135,7 @@ class SchemaBase:
         reordered_dict = reorder_dict_skip_missing(self.schema, schema_order)
         self.schema = reordered_dict
 
-    def sort_ui(self, ui_order):
+    def sort_ui(self, ui_order=["shuffle", "order", "addProperties", "allow"]):
 
         reordered_dict = reorder_dict_skip_missing(self.schema["ui"], ui_order)
         self.schema["ui"] = reordered_dict

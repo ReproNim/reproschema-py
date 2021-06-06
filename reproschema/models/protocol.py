@@ -19,40 +19,41 @@ class Protocol(SchemaBase):
             "addProperties": [],
         }
 
-    def set_landing_page(self, landing_page_url, lang="en"):
-        self.schema["landingPage"] = {"@id": landing_page_url, "inLanguage": lang}
-
-    def set_ui_allow(self):
-        self.schema["ui"]["allow"] = [
-            "reproschema:AutoAdvance",
-            "reproschema:AllowExport",
-        ]
-
-    def set_ui_shuffle(self, shuffle=False):
-        self.schema["ui"]["shuffle"] = shuffle
-
     def set_defaults(self, name="default"):
         self._SchemaBase__set_defaults(name)
         self.set_landing_page("README-en.md")
-        self.set_ui_allow()
-        self.set_ui_shuffle(False)
+        self.set_preamble()
+        self.set_ui_default()
+
+    def set_landing_page(self, landing_page_uri, lang=DEFAULT_LANG):
+        self.schema["landingPage"] = {"@id": landing_page_uri, "inLanguage": lang}
 
     def append_activity(self, activity):
 
-        # TODO
-        # - remove the hard coding on visibility and valueRequired
-
-        # update the content of the protocol with this new activity
         append_to_protocol = {
-            "variableName": activity.get_name(),
+            "variableName": activity.get_basename().replace("_schema", ""),
             "isAbout": activity.get_URI(),
-            "prefLabel": {"en": activity.schema["prefLabel"]},
+            "prefLabel": activity.get_pref_label(),
             "isVis": True,
             "valueRequired": False,
         }
 
-        self.schema["ui"]["order"].append(activity.URI)
-        self.schema["ui"]["addProperties"].append(append_to_protocol)
+        property = {
+            "variableName": activity.get_basename().replace("_schema", ""),
+            "isAbout": activity.get_URI(),
+            "prefLabel": activity.get_pref_label(),
+            "isVis": activity.visible,
+            "requiredValue": activity.required,
+        }
+        if activity.skippable:
+            property["allow"] = ["reproschema:Skipped"]
+
+        self.schema["ui"]["order"].append(activity.get_URI())
+        self.schema["ui"]["addProperties"].append(property)
+
+    """
+    writing, reading, sorting, unsetting
+    """
 
     def sort(self):
         schema_order = [
@@ -64,12 +65,14 @@ class Protocol(SchemaBase):
             "schemaVersion",
             "version",
             "landingPage",
+            "preamble",
+            "citation",
+            "image",
+            "compute",
             "ui",
         ]
         self.sort_schema(schema_order)
-
-        ui_order = ["allow", "shuffle", "order", "addProperties"]
-        self.sort_ui(ui_order)
+        self.sort_ui()
 
     def write(self, output_dir):
         self.sort()

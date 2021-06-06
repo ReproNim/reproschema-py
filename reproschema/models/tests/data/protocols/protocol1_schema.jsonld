@@ -1,0 +1,43 @@
+{
+	"@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
+	"@type": "reproschema:Protocol",
+	"@id": "protocol1_schema.jsonld",
+	"prefLabel": {
+		"en": "Protocol1"
+	},
+	"description": "example Protocol",
+	"schemaVersion": "1.0.0-rc4",
+	"version": "0.0.1",
+	"landingPage": {
+		"@id": "http://example.com/sample-readme.md",
+		"inLanguage": "en"
+	},
+	"preamble": {
+		"en": ""
+	},
+	"ui": {
+		"addProperties": [
+			{
+				"isAbout": "../activities/activity1_schema.jsonld",
+				"variableName": "activity1",
+				"prefLabel": {
+					"en": "Screening"
+				},
+				"isVis": true,
+				"requiredValue": false,
+				"allow": [
+					"reproschema:Skipped"
+				]
+			}
+		],
+		"order": [
+			"../activities/activity1_schema.jsonld"
+		],
+		"shuffle": false,
+		"allow": [
+			"reproschema:AutoAdvance",
+			"reproschema:AllowExport",
+			"reproschema:DisableBack"
+		]
+	}
+}

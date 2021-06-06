@@ -12,6 +12,9 @@
         "@id": "README-en.md",
         "inLanguage": "en"
     },
+    "preamble": {
+        "en": ""
+    },
     "ui": {
         "allow": [
             "reproschema:AutoAdvance",

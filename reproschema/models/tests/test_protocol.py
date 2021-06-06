@@ -23,8 +23,33 @@ def test_default():
     protocol_content, expected = load_jsons(protocol)
     assert protocol_content == expected
 
+    clean_up(protocol)
 
-# def test_protocol():
+
+def test_protocol():
+
+    protocol = Protocol()
+    protocol.set_defaults("protocol1")
+    protocol.set_pref_label("Protocol1")
+    protocol.set_description("example Protocol")
+    protocol.set_landing_page("http://example.com/sample-readme.md")
+
+    auto_advance = True
+    allow_export = True
+    disable_back = True
+    protocol.set_ui_allow(auto_advance, allow_export, disable_back)
+
+    activity_1 = Activity()
+    activity_1.set_defaults("activity1")
+    activity_1.set_pref_label("Screening")
+    activity_1.set_URI(os.path.join("..", "activities", activity_1.get_filename()))
+    protocol.append_activity(activity_1)
+
+    protocol.write(protocol_dir)
+    protocol_content, expected = load_jsons(protocol)
+    assert protocol_content == expected
+
+    clean_up(protocol)
 
 
 def load_jsons(obj):
@@ -42,3 +67,7 @@ def read_json(file):
 
     with open(file, "r") as ff:
         return json.load(ff)
+
+
+def clean_up(obj):
+    os.remove(os.path.join(protocol_dir, obj.get_filename()))
