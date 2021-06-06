@@ -48,11 +48,13 @@ def test_activity():
     # probably want to have items/item_name be a default
     item_1.set_URI(os.path.join("items", item_1.get_filename()))
     item_1.skippable = False
+    item_1.required = True
     activity.append_item(item_1)
 
     item_2 = Item()
     item_2.set_defaults("item2")
     item_2.set_URI(os.path.join("items", item_2.get_filename()))
+    item_2.required = True
     activity.append_item(item_2)
 
     item_3 = Item()
@@ -60,6 +62,7 @@ def test_activity():
     item_3.set_filename("activity1_total_score", "")
     item_3.set_URI(os.path.join("items", item_3.get_filename()))
     item_3.skippable = False
+    item_3.required = True
     item_3.visible = False
     activity.append_item(item_3)
 

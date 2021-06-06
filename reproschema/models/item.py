@@ -10,6 +10,9 @@ class Item(SchemaBase):
     """
 
     schema_type = "reproschema:Field"
+    visible = True
+    required = False
+    skippable = True
 
     def __init__(self, version=None):
         super().__init__(version)
@@ -17,9 +20,6 @@ class Item(SchemaBase):
         self.schema["question"] = {}
         self.schema["responseOptions"] = {}
         self.response_options = ResponseOption()
-        self.visible = True
-        self.required = True
-        self.skippable = True
         # default input type is "text"
         self.set_input_type_as_text()
 
