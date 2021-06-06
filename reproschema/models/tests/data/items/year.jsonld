@@ -1,0 +1,18 @@
+{
+    "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
+    "@type": "reproschema:Field",
+    "@id": "year.jsonld",
+    "prefLabel": "year",
+    "description": "year",
+    "schemaVersion": "1.0.0-rc4",
+    "version": "0.0.1",
+    "question": {
+        "en": "input a year"
+    },
+    "ui": {
+        "inputType": "year"
+    },
+    "responseOptions": {
+        "valueType": "xsd:date"
+    }
+}

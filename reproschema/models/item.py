@@ -25,7 +25,6 @@ class Item(SchemaBase):
 
     # TODO
     # image
-    # readonlyValue
 
     def set_defaults(self, name="default"):
         self._SchemaBase__set_defaults(name)
@@ -106,14 +105,21 @@ class Item(SchemaBase):
 
     def set_input_type_as_time_range(self):
         self.set_input_type("timeRange")
-        self.set_response_options({"valueType": "datetime"})
+        self.response_options.options.pop("maxLength", None)
+        self.response_options.set_type("datetime")
 
     def set_input_type_as_date(self):
         self.set_input_type("date")
-        self.set_response_options({"valueType": "xsd:date"})
+        self.response_options.options.pop("maxLength", None)
+        self.response_options.set_type("date")
+
+    def set_input_type_as_year(self):
+        self.set_input_type("year")
+        self.response_options.options.pop("maxLength", None)
+        self.response_options.set_type("date")
 
     """
-    input types with no response choice but with some parameters
+    input types requiring user typed input
     """
 
     def set_input_type_as_text(self, length=300):
@@ -128,6 +134,14 @@ class Item(SchemaBase):
         self.set_input_type("multitext")
         self.response_options.set_type("str")
         self.response_options.set_length(length)
+
+    def set_input_type_as_email(self):
+        self.set_input_type("email")
+        self.response_options.options.pop("maxLength", None)
+
+    def set_input_type_as_id(self):
+        self.set_input_type("pid")
+        self.response_options.options.pop("maxLength", None)
 
     # TODO
     # email: EmailInput/EmailInput.vue
@@ -222,7 +236,7 @@ class ResponseOption:
         elif type == "date":
             self.options["valueType"] = "xsd:date"
         elif type == "datetime":
-            self.options["valueType"] = "datetime"
+            self.options["valueType"] = "xsd:datetime"
 
     def set_input_type_as_date(self):
         self.set_input_type("date")

@@ -1,0 +1,18 @@
+{
+    "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
+    "@type": "reproschema:Field",
+    "@id": "time_range.jsonld",
+    "prefLabel": "time range",
+    "description": "time range",
+    "schemaVersion": "1.0.0-rc4",
+    "version": "0.0.1",
+    "question": {
+        "en": "input a time range"
+    },
+    "ui": {
+        "inputType": "timeRange"
+    },
+    "responseOptions": {
+        "valueType": "xsd:datetime"
+    }
+}

@@ -54,6 +54,71 @@ def test_multitext():
     assert item_content == expected
 
 
+def test_email():
+
+    item = Item("1.0.0-rc4")
+    item.set_defaults("email")
+    item.set_input_type_as_email()
+
+    item.set_question("input email address")
+
+    item.write(item_dir)
+    item_content, expected = load_jsons(item)
+    assert item_content == expected
+
+
+def test_participant_id():
+
+    item = Item("1.0.0-rc4")
+    item.set_defaults("participant id")
+    item.set_input_type_as_id()
+
+    item.set_question("input the participant id number")
+
+    item.write(item_dir)
+    item_content, expected = load_jsons(item)
+    assert item_content == expected
+
+
+def test_date():
+
+    item = Item("1.0.0-rc4")
+    item.set_defaults("date")
+    item.set_input_type_as_date()
+
+    item.set_question("input a date")
+
+    item.write(item_dir)
+    item_content, expected = load_jsons(item)
+    assert item_content == expected
+
+
+def test_time_range():
+
+    item = Item("1.0.0-rc4")
+    item.set_defaults("time range")
+    item.set_input_type_as_time_range()
+
+    item.set_question("input a time range")
+
+    item.write(item_dir)
+    item_content, expected = load_jsons(item)
+    assert item_content == expected
+
+
+def test_year():
+
+    item = Item("1.0.0-rc4")
+    item.set_defaults("year")
+    item.set_input_type_as_year()
+
+    item.set_question("input a year")
+
+    item.write(item_dir)
+    item_content, expected = load_jsons(item)
+    assert item_content == expected
+
+
 def test_float():
 
     item = Item("1.0.0-rc4")
@@ -129,7 +194,6 @@ def test_select():
     item.set_question("question for select item")
 
     response_options = ResponseOption()
-    response_options.set_type("int")
     response_options.add_choice("Response option 1", 0)
     response_options.add_choice("Response option 2", 1)
     response_options.add_choice("Response option 3", 2)
