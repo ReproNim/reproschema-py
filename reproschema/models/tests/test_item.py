@@ -39,6 +39,19 @@ def test_text():
     assert item_content == expected
 
 
+def test_multitext():
+
+    item = Item("1.0.0-rc4")
+    item.set_defaults("multitext")
+    item.set_input_type_as_multitext(50)
+
+    item.set_question("This is an item where the user can input several text field.")
+
+    item.write(item_dir)
+    item_content, expected = load_jsons(item)
+    assert item_content == expected
+
+
 def test_float():
 
     item = Item("1.0.0-rc4")
@@ -134,6 +147,27 @@ def test_select():
     item.set_input_type_as_select(response_options)
     item.write(item_dir)
 
+    item_content, expected = load_jsons(item)
+    assert item_content == expected
+
+
+def test_slider():
+
+    item = Item()
+    item.set_defaults("slider")
+    item.set_question("question for slider item", "en")
+
+    response_options = ResponseOption()
+    response_options.add_choice({"name": {"en": "not at all"}, "value": 0})
+    response_options.add_choice({"name": {"en": "a bit"}, "value": 1})
+    response_options.add_choice({"name": {"en": "so so"}, "value": 2})
+    response_options.add_choice({"name": {"en": "a lot"}, "value": 3})
+    response_options.add_choice({"name": {"en": "very much"}, "value": 4})
+    response_options.set_max(4)
+
+    item.set_input_type_as_slider(response_options)
+
+    item.write(item_dir)
     item_content, expected = load_jsons(item)
     assert item_content == expected
 

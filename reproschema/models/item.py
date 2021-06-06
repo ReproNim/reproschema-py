@@ -62,10 +62,11 @@ class Item(SchemaBase):
         self.response_options = response_options
         self.set_response_options()
 
-    def set_input_type_as_slider(self):
-        self.set_input_type_as_text()  # until the slide item of the ui is fixed
-        # self.set_input_type("slider")
-        # self.set_response_options({"valueType": "xsd:string"})
+    def set_input_type_as_slider(self, response_options):
+        response_options.set_type("int")
+        self.set_input_type("slider")
+        self.response_options = response_options
+        self.set_response_options()
 
     def set_input_type_as_language(self):
 
@@ -112,6 +113,9 @@ class Item(SchemaBase):
         self.set_input_type("text")
         self.response_options.set_type("str")
         self.response_options.set_length(length)
+        # TODO removing all these key pairs is horrible
+        # either change the way the default is initialised or create another
+        # method that handles the cleaning of unecessary keys
         self.response_options.options.pop("maxValue", None)
         self.response_options.options.pop("minValue", None)
         self.response_options.options.pop("multipleChoice", None)
@@ -142,8 +146,8 @@ class Item(SchemaBase):
 
     def set_basic_response_type(self, response_type):
 
-        # default (also valid for "char" input type)
-        self.set_input_type_as_char()
+        # default (also valid for "text" input type)
+        self.set_input_type_as_text()
 
         if response_type == "int":
             self.set_input_type_as_int()
@@ -197,9 +201,6 @@ class ResponseOption:
             "choices": [],
             "multipleChoice": False,
         }
-
-        # "readonlyValue": False,
-        # "maxLength": 0,
 
     def set_type(self, type):
         if type == "int":
