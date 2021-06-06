@@ -222,10 +222,12 @@ class Item(SchemaBase):
         self.sort_schema(schema_order)
 
 
-class ResponseOption:
+class ResponseOption(SchemaBase):
     """
     class to deal with reproschema response options
     """
+
+    schema_type = "reproschema:ResponseOption"
 
     def __init__(self):
         self.options = {
@@ -236,7 +238,20 @@ class ResponseOption:
             "multipleChoice": False,
         }
 
+    def set_defaults(self, name="valueConstraints", version=None):
+        super().__init__(version)
+        self.options["@context"] = self.schema["@context"]
+        self.options["@type"] = self.schema_type
+        self.set_filename(name)
+
+    def set_filename(self, name, ext=".jsonld"):
+        name = name.replace(" ", "_")
+        self.schema_file = name + ext
+        self.options["@id"] = name + ext
+
     def unset(self, keys):
+        if type(keys) == str:
+            keys = [keys]
         for i in keys:
             self.options.pop(i, None)
 
@@ -260,3 +275,35 @@ class ResponseOption:
 
     def add_choice(self, choice, value, lang=DEFAULT_LANG):
         self.options["choices"].append({"name": {lang: choice}, "value": value})
+
+    def sort(self):
+        options_order = [
+            "@context",
+            "@type",
+            "@id",
+            "valueType",
+            "minValue",
+            "maxValue",
+            "multipleChoice",
+            "choices",
+        ]
+        reordered_dict = reorder_dict_skip_missing(self.options, options_order)
+        self.options = reordered_dict
+
+    def write(self, output_dir):
+        self.sort()
+        self.schema = self.options
+        self._SchemaBase__write(output_dir)
+
+
+# DUPLICATE from the base class: needs refactoring
+from collections import OrderedDict
+
+
+def reorder_dict_skip_missing(old_dict, key_list):
+    """
+    reorders dictionary according to ``key_list``
+    removing any key with no associated value
+    or that is not in the key list
+    """
+    return OrderedDict((k, old_dict[k]) for k in key_list if k in old_dict)

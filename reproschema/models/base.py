@@ -3,6 +3,13 @@ import os
 from collections import OrderedDict
 
 DEFAULT_LANG = "en"
+DEFAULT_VERSION = "1.0.0-rc4"
+
+
+def default_context(version):
+    URL = "https://raw.githubusercontent.com/ReproNim/reproschema/"
+    VERSION = version or DEFAULT_VERSION
+    return URL + VERSION + "/contexts/generic"
 
 
 class SchemaBase:
@@ -14,8 +21,7 @@ class SchemaBase:
 
     def __init__(self, version):
 
-        URL = "https://raw.githubusercontent.com/ReproNim/reproschema/"
-        VERSION = version or "1.0.0-rc4"
+        VERSION = version or DEFAULT_VERSION
 
         self.schema = {
             "@type": self.schema_type,
@@ -23,7 +29,13 @@ class SchemaBase:
             "version": "0.0.1",
         }
 
-        self.set_context(URL + VERSION + "/contexts/generic")
+        URL = self.get_default_context(version)
+        self.set_context(URL)
+
+    # This probably needs some cleaning but is at the moment necessary to pass
+    # the context to the ResponseOption class
+    def get_default_context(self, version):
+        return default_context(version)
 
     def __set_defaults(self, name):
         self.set_filename(name)
