@@ -98,8 +98,8 @@ def test_radio():
     item.set_question("question for radio item", "en")
 
     response_options = ResponseOption()
-    response_options.add_choice({"name": {"en": "Not at all"}, "value": 0})
-    response_options.add_choice({"name": {"en": "Several days"}, "value": 1})
+    response_options.add_choice("Not at all", 0, "en")
+    response_options.add_choice("Several days", 1, "en")
     response_options.set_max(1)
 
     item.set_input_type_as_radio(response_options)
@@ -124,13 +124,13 @@ def test_select():
 
     item = Item()
     item.set_defaults("select")
-    item.set_question("question for select item", "en")
+    item.set_question("question for select item")
 
     response_options = ResponseOption()
     response_options.set_type("int")
-    response_options.add_choice({"name": {"en": "Response option 1"}, "value": 0})
-    response_options.add_choice({"name": {"en": "Response option 2"}, "value": 1})
-    response_options.add_choice({"name": {"en": "Response option 3"}, "value": 2})
+    response_options.add_choice("Response option 1", 0)
+    response_options.add_choice("Response option 2", 1)
+    response_options.add_choice("Response option 3", 2)
     response_options.set_max(2)
 
     item.set_input_type_as_select(response_options)
@@ -158,11 +158,11 @@ def test_slider():
     item.set_question("question for slider item", "en")
 
     response_options = ResponseOption()
-    response_options.add_choice({"name": {"en": "not at all"}, "value": 0})
-    response_options.add_choice({"name": {"en": "a bit"}, "value": 1})
-    response_options.add_choice({"name": {"en": "so so"}, "value": 2})
-    response_options.add_choice({"name": {"en": "a lot"}, "value": 3})
-    response_options.add_choice({"name": {"en": "very much"}, "value": 4})
+    response_options.add_choice("not at all", 0)
+    response_options.add_choice("a bit", 1)
+    response_options.add_choice("so so", 2)
+    response_options.add_choice("a lot", 3)
+    response_options.add_choice("very much", 4)
     response_options.set_max(4)
 
     item.set_input_type_as_slider(response_options)

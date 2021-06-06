@@ -230,5 +230,5 @@ class ResponseOption:
     def set_multiple_choice(self, value):
         self.options["multipleChoice"] = value
 
-    def add_choice(self, choice):
-        self.options["choices"].append(choice)
+    def add_choice(self, choice, value, lang=DEFAULT_LANG):
+        self.options["choices"].append({"name": {lang: choice}, "value": value})
