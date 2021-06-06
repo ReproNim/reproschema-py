@@ -15,11 +15,15 @@ class SchemaBase:
         VERSION = version or "1.0.0-rc4"
 
         self.schema = {
-            "@context": URL + VERSION + "/contexts/generic",
             "@type": self.schema_type,
             "schemaVersion": VERSION,
             "version": "0.0.1",
         }
+
+        self.set_context(URL + VERSION + "/contexts/generic")
+
+    def set_context(self, context):
+        self.schema["@context"] = context
 
     def set_filename(self, name, ext=".jsonld"):
         self.schema_file = name + "_schema" + ext
