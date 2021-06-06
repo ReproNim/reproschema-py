@@ -1,5 +1,6 @@
 import json
 import os
+from collections import OrderedDict
 
 
 class SchemaBase:
@@ -52,12 +53,12 @@ class SchemaBase:
 
     def sort_schema(self, schema_order):
 
-        reordered_dict = {k: self.schema[k] for k in schema_order}
+        reordered_dict = reorder_dict_skip_missing(self.schema, schema_order)
         self.schema = reordered_dict
 
     def sort_ui(self, ui_order):
 
-        reordered_dict = {k: self.schema["ui"][k] for k in ui_order}
+        reordered_dict = reorder_dict_skip_missing(self.schema["ui"], ui_order)
         self.schema["ui"] = reordered_dict
 
     def __write(self, output_dir):
@@ -81,3 +82,7 @@ class SchemaBase:
         if "@type" not in data:
             raise ValueError("Missing @type key")
         return cls.from_data(data)
+
+
+def reorder_dict_skip_missing(old_dict, key_list):
+    return OrderedDict((k, old_dict[k]) for k in key_list if k in old_dict)
