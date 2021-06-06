@@ -87,9 +87,7 @@ class Item(SchemaBase):
 
         self.response_options.set_type("string")
         self.response_options.set_multiple_choice(True)
-        self.response_options.options["choices"] = (
-            URL + "master/resources/languages.json"
-        )
+        self.response_options.use_preset(URL + "master/resources/languages.json")
         self.response_options.unset(["maxLength"])
 
     def set_input_type_as_country(self):
@@ -99,7 +97,7 @@ class Item(SchemaBase):
         self.set_input_type("selectCountry")
 
         self.response_options.set_type("string")
-        self.response_options.options["choices"] = URL
+        self.response_options.use_preset(URL)
         self.response_options.set_length(50)
 
     def set_input_type_as_state(self):
@@ -109,7 +107,7 @@ class Item(SchemaBase):
         self.set_input_type("selectState")
 
         self.response_options.set_type("string")
-        self.response_options.options["choices"] = URL
+        self.response_options.use_preset(URL)
         self.response_options.unset(["maxLength"])
 
     """
@@ -259,6 +257,9 @@ class ResponseOption:
 
     def set_multiple_choice(self, value):
         self.options["multipleChoice"] = value
+
+    def use_preset(self, URI):
+        self.options["choices"] = URI
 
     def add_choice(self, choice, value, lang=DEFAULT_LANG):
         self.options["choices"].append({"name": {lang: choice}, "value": value})
