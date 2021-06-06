@@ -53,7 +53,8 @@ def test_activity():
 
     item_2 = Item()
     item_2.set_defaults("item2")
-    item_2.set_URI(os.path.join("items", item_2.get_filename()))
+    item_2.set_filename("item_two")
+    item_2.set_URI(os.path.join("..", "other_dir", item_2.get_filename()))
     item_2.required = True
     activity.append_item(item_2)
 

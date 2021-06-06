@@ -26,7 +26,7 @@ class Activity(SchemaBase):
     def append_item(self, item):
 
         property = {
-            "variableName": item.schema["prefLabel"].replace(" ", "_"),
+            "variableName": item.get_basename(),
             "isAbout": item.get_URI(),
             "isVis": item.visible,
             "requiredValue": item.required,

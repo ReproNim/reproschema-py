@@ -263,7 +263,7 @@ def test_read_only():
     item.set_defaults("activity1_total_score")
     item.set_context("../../../contexts/generic")
     item.set_filename("activity1_total_score", "")
-    item.set_pref_label("activity1_total_score")
+    item.schema["prefLabel"] = "activity1_total_score"
     item.set_description("Score item for Activity 1")
     item.set_read_only_value(True)
     item.set_input_type_as_int()

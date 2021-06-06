@@ -31,8 +31,8 @@
                 "isVis": true
             },
             {
-                "isAbout": "items/item2.jsonld",
-                "variableName": "item2",
+                "variableName": "item_two",
+                "isAbout": "../other_dir/item_two.jsonld",
                 "requiredValue": true,
                 "isVis": true,
                 "allow": [
@@ -48,7 +48,7 @@
         ],
         "order": [
             "items/item1.jsonld",
-            "items/item2.jsonld",
+            "../other_dir/item_two.jsonld",
             "items/activity1_total_score"
         ],
         "shuffle": false,

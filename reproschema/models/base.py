@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 from collections import OrderedDict
 
 DEFAULT_LANG = "en"
@@ -88,6 +89,9 @@ class SchemaBase:
 
     def get_filename(self):
         return self.schema_file
+
+    def get_basename(self):
+        return Path(self.schema_file).stem
 
     def get_URI(self):
         return self.URI
