@@ -62,17 +62,17 @@ class Item(SchemaBase):
 
     def set_input_type_as_radio(self, response_options):
         self.set_input_type("radio")
-        response_options.set_type("int")
+        response_options.set_type("integer")
         self.response_options = response_options
 
     def set_input_type_as_select(self, response_options):
         self.set_input_type("select")
-        response_options.set_type("int")
+        response_options.set_type("integer")
         self.response_options = response_options
 
     def set_input_type_as_slider(self, response_options):
         self.set_input_type("slider")
-        response_options.set_type("int")
+        response_options.set_type("integer")
         self.response_options = response_options
 
     def set_input_type_as_language(self):
@@ -81,7 +81,7 @@ class Item(SchemaBase):
 
         self.set_input_type("selectLanguage")
 
-        self.response_options.set_type("str")
+        self.response_options.set_type("string")
         self.response_options.set_multiple_choice(True)
         self.response_options.options["choices"] = (
             URL + "master/resources/languages.json"
@@ -94,23 +94,22 @@ class Item(SchemaBase):
 
     def set_input_type_as_int(self):
         self.set_input_type("number")
-        self.response_options.set_type("int")
+        self.response_options.set_type("integer")
         self.response_options.unset(["maxLength"])
 
     def set_input_type_as_float(self):
         self.set_input_type("float")
         self.response_options.set_type("float")
-        self.response_options.options.pop("maxLength", None)
         self.response_options.unset(["maxLength"])
 
     def set_input_type_as_time_range(self):
         self.set_input_type("timeRange")
-        self.response_options.options.pop("maxLength", None)
+        self.response_options.unset(["maxLength"])
         self.response_options.set_type("datetime")
 
     def set_input_type_as_date(self):
         self.set_input_type("date")
-        self.response_options.options.pop("maxLength", None)
+        self.response_options.unset(["maxLength"])
         self.response_options.set_type("date")
 
     def set_input_type_as_year(self):
@@ -124,7 +123,7 @@ class Item(SchemaBase):
 
     def set_input_type_as_text(self, length=300):
         self.set_input_type("text")
-        self.response_options.set_type("str")
+        self.response_options.set_type("string")
         self.response_options.set_length(length)
         self.response_options.unset(
             ["maxValue", "minValue", "multipleChoice", "choices"]
@@ -132,26 +131,24 @@ class Item(SchemaBase):
 
     def set_input_type_as_multitext(self, length=300):
         self.set_input_type("multitext")
-        self.response_options.set_type("str")
+        self.response_options.set_type("string")
         self.response_options.set_length(length)
 
     def set_input_type_as_email(self):
         self.set_input_type("email")
-        self.response_options.options.pop("maxLength", None)
+        self.response_options.unset(["maxLength"])
 
     def set_input_type_as_id(self):
         self.set_input_type("pid")
-        self.response_options.options.pop("maxLength", None)
+        self.response_options.unset(["maxLength"])
 
     # TODO
-    # email: EmailInput/EmailInput.vue
     # audioCheck: AudioCheck/AudioCheck.vue
     # audioRecord: WebAudioRecord/Audio.vue
     # audioPassageRecord: WebAudioRecord/Audio.vue
     # audioImageRecord: WebAudioRecord/Audio.vue
     # audioRecordNumberTask: WebAudioRecord/Audio.vue
     # audioAutoRecord: AudioCheckRecord/AudioCheckRecord.vue
-    # year: YearInput/YearInput.vue
     # selectCountry: SelectInput/SelectInput.vue
     # selectState: SelectInput/SelectInput.vue
     # documentUpload: DocumentUpload/DocumentUpload.vue
@@ -227,20 +224,7 @@ class ResponseOption:
             self.options.pop(i, None)
 
     def set_type(self, type):
-        if type == "int":
-            self.options["valueType"] = "xsd:integer"
-        elif type == "str":
-            self.options["valueType"] = "xsd:string"
-        elif type == "float":
-            self.options["valueType"] = "xsd:float"
-        elif type == "date":
-            self.options["valueType"] = "xsd:date"
-        elif type == "datetime":
-            self.options["valueType"] = "xsd:datetime"
-
-    def set_input_type_as_date(self):
-        self.set_input_type("date")
-        self.set_response_options({"valueType": "xsd:date"})
+        self.options["valueType"] = "xsd:" + type
 
     def set_min(self, value):
         self.options["minValue"] = value
