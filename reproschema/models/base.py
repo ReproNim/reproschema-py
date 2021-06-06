@@ -25,6 +25,26 @@ class SchemaBase:
 
         self.set_context(URL + VERSION + "/contexts/generic")
 
+    def __set_defaults(self, name):
+        self.set_filename(name)
+        self.set_directory(name)
+        self.set_pref_label(name.replace("_", " "))
+        self.set_description(name.replace("_", " "))
+
+    """
+        setters
+    """
+
+    def set_directory(self, output_directory):
+        self.dir = output_directory
+
+    def set_URI(self, URI):
+        self.URI = URI
+
+    """
+        schema related setters
+    """
+
     def set_context(self, context):
         self.schema["@context"] = context
 
@@ -41,26 +61,28 @@ class SchemaBase:
         self.schema_file = name + "_schema" + ext
         self.schema["@id"] = name + "_schema" + ext
 
-    def get_name(self):
-        return self.schema_file.replace("_schema", "")
-
-    def get_filename(self):
-        return self.schema_file
-
     def set_pref_label(self, pref_label):
         self.schema["prefLabel"] = pref_label
 
     def set_description(self, description):
         self.schema["description"] = description
 
-    def set_directory(self, output_directory):
-        self.dir = output_directory
+    """
+        getters
+    """
 
-    def __set_defaults(self, name):
-        self.set_filename(name)
-        self.set_directory(name)
-        self.set_pref_label(name.replace("_", " "))
-        self.set_description(name.replace("_", " "))
+    def get_name(self):
+        return self.schema_file.replace("_schema", "")
+
+    def get_filename(self):
+        return self.schema_file
+
+    def get_URI(self):
+        return self.URI
+
+    """
+    writing, reading, sorting, unsetting
+    """
 
     def sort_schema(self, schema_order):
 

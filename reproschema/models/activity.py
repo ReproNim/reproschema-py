@@ -13,12 +13,6 @@ class Activity(SchemaBase):
     def __init__(self, version=None):
         super().__init__(version)
 
-    def set_URI(self, URI):
-        self.URI = URI
-
-    def get_URI(self):
-        return self.URI
-
     def set_defaults(self, name="default"):
         self._SchemaBase__set_defaults(name)
         self.set_preamble()
@@ -33,14 +27,14 @@ class Activity(SchemaBase):
 
         property = {
             "variableName": item.schema["prefLabel"].replace(" ", "_"),
-            "isAbout": item.URI,
+            "isAbout": item.get_URI(),
             "isVis": item.visible,
             "requiredValue": item.required,
         }
         if item.skippable:
             property["allow"] = ["reproschema:Skipped"]
 
-        self.schema["ui"]["order"].append(item.URI)
+        self.schema["ui"]["order"].append(item.get_URI())
         self.schema["ui"]["addProperties"].append(property)
 
     """

@@ -23,9 +23,6 @@ class Item(SchemaBase):
         # default input type is "text"
         self.set_input_type_as_text()
 
-    def set_URI(self, URI):
-        self.URI = URI
-
     def set_defaults(self, name="default"):
         self._SchemaBase__set_defaults(name)
         self.set_filename(name)
