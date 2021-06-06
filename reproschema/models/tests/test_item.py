@@ -12,11 +12,6 @@ if not os.path.exists(item_dir):
 
 reproschema_test_data = os.path.join(my_path, "..", "..", "tests", "data")
 
-# TODO: add test for
-#   slider
-#   time range
-#   date
-
 
 def test_default():
 
@@ -151,6 +146,30 @@ def test_language():
     item.set_defaults("language")
     item.set_input_type_as_language()
     item.set_question("This is an item where the user can select several language.")
+
+    item.write(item_dir)
+    item_content, expected = load_jsons(item)
+    assert item_content == expected
+
+
+def test_country():
+
+    item = Item()
+    item.set_defaults("country")
+    item.set_input_type_as_country()
+    item.set_question("select a country")
+
+    item.write(item_dir)
+    item_content, expected = load_jsons(item)
+    assert item_content == expected
+
+
+def test_state():
+
+    item = Item()
+    item.set_defaults("state")
+    item.set_input_type_as_state()
+    item.set_question("select a USA state")
 
     item.write(item_dir)
     item_content, expected = load_jsons(item)

@@ -75,6 +75,10 @@ class Item(SchemaBase):
         response_options.set_type("integer")
         self.response_options = response_options
 
+    """
+    input types with preset response choices
+    """
+
     def set_input_type_as_language(self):
 
         URL = "https://raw.githubusercontent.com/ReproNim/reproschema-library/"
@@ -86,6 +90,26 @@ class Item(SchemaBase):
         self.response_options.options["choices"] = (
             URL + "master/resources/languages.json"
         )
+        self.response_options.unset(["maxLength"])
+
+    def set_input_type_as_country(self):
+
+        URL = "https://raw.githubusercontent.com/samayo/country-json/master/src/country-by-name.json"
+
+        self.set_input_type("selectCountry")
+
+        self.response_options.set_type("string")
+        self.response_options.options["choices"] = URL
+        self.response_options.set_length(50)
+
+    def set_input_type_as_state(self):
+
+        URL = "https://gist.githubusercontent.com/mshafrir/2646763/raw/8b0dbb93521f5d6889502305335104218454c2bf/states_hash.json"
+
+        self.set_input_type("selectState")
+
+        self.response_options.set_type("string")
+        self.response_options.options["choices"] = URL
         self.response_options.unset(["maxLength"])
 
     """
@@ -149,8 +173,6 @@ class Item(SchemaBase):
     # audioImageRecord: WebAudioRecord/Audio.vue
     # audioRecordNumberTask: WebAudioRecord/Audio.vue
     # audioAutoRecord: AudioCheckRecord/AudioCheckRecord.vue
-    # selectCountry: SelectInput/SelectInput.vue
-    # selectState: SelectInput/SelectInput.vue
     # documentUpload: DocumentUpload/DocumentUpload.vue
     # save: SaveData/SaveData.vue
     # static: Static/Static.vue
