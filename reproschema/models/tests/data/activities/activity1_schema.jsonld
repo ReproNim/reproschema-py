@@ -1,8 +1,10 @@
 {
-    "@context": "../../contexts/generic",
+    "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
     "@type": "reproschema:Activity",
-    "@id": "activity1.jsonld",
-    "prefLabel": "Example 1",
+    "@id": "activity1_schema.jsonld",
+    "prefLabel": {
+        "en": "Example 1"
+    },
     "description": "Activity example 1",
     "schemaVersion": "1.0.0-rc4",
     "version": "0.0.1",
@@ -12,8 +14,7 @@
         "contentUrl": "http://example.com/sample-image.png"
     },
     "preamble": {
-        "en": "Over the last 2 weeks, how often have you been bothered by any of the following problems?",
-        "es": "Durante las últimas 2 semanas, ¿con qué frecuencia le han molestado los siguintes problemas?"
+        "en": "Over the last 2 weeks, how often have you been bothered by any of the following problems?"
     },
     "compute": [
         {
@@ -21,29 +22,25 @@
             "jsExpression": "item1 + item2"
         }
     ],
-    "messages": [
-		{
-			"message": "Test message: Triggered when item1 value is greater than 1",
-			"jsExpression": "item1 > 1"
-		}
-	],
     "ui": {
         "addProperties": [
-            {   "isAbout": "items/item1.jsonld",
+            {
+                "isAbout": "items/item1.jsonld",
                 "variableName": "item1",
                 "requiredValue": true,
-                "isVis": true,
-                "randomMaxDelay": "PT2H",
-                "limit": "P2D",
-                "schedule": "R/2020-08-01T08:00:00Z/P1D"
+                "isVis": true
             },
-            {   "isAbout": "items/item2.jsonld",
-                "variableName": "item2",
+            {
+                "variableName": "item_two",
+                "isAbout": "../other_dir/item_two.jsonld",
                 "requiredValue": true,
                 "isVis": true,
-                "allow": ["reproschema:Skipped"]
+                "allow": [
+                    "reproschema:Skipped"
+                ]
             },
-            {   "isAbout": "items/activity1_total_score",
+            {
+                "isAbout": "items/activity1_total_score",
                 "variableName": "activity1_total_score",
                 "requiredValue": true,
                 "isVis": false
@@ -51,9 +48,13 @@
         ],
         "order": [
             "items/item1.jsonld",
-            "items/item2.jsonld",
+            "../other_dir/item_two.jsonld",
             "items/activity1_total_score"
         ],
-        "shuffle": false
+        "shuffle": false,
+        "allow": [
+            "reproschema:AutoAdvance",
+            "reproschema:AllowExport"
+        ]
     }
 }

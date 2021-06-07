@@ -1,5 +1,7 @@
 from .base import SchemaBase
 
+DEFAULT_LANG = "en"
+
 
 class Activity(SchemaBase):
     """
@@ -8,47 +10,41 @@ class Activity(SchemaBase):
 
     schema_type = "reproschema:Activity"
 
+    visible = True
+    required = False
+    skippable = True
+
     def __init__(self, version=None):
         super().__init__(version)
-        self.schema["ui"] = {"shuffle": [], "order": [], "addProperties": []}
 
-    def set_ui_shuffle(self, shuffle=False):
-        self.schema["ui"]["shuffle"] = shuffle
+    def set_defaults(self, name="default"):
+        self._SchemaBase__set_defaults(name)
+        self.set_preamble()
+        self.set_ui_default()
 
-    def set_URI(self, URI):
-        self.URI = URI
+    def set_compute(self, variable, expression):
+        self.schema["compute"] = [
+            {"variableName": variable, "jsExpression": expression}
+        ]
 
-    def get_URI(self):
-        return self.URI
+    def append_item(self, item):
+        # See comment and TODO of the append_activity Protocol class
 
-    # TODO
-    # preamble
-    # compute
-    # citation
-    # image
-
-    def set_defaults(self, name):
-        self._ReproschemaSchema__set_defaults(name)  # this looks wrong
-        self.set_ui_shuffle(False)
-
-    def update_activity(self, item_info):
-
-        # TODO
-        # - remove the hard coding on visibility and valueRequired
-
-        # update the content of the activity schema with new item
-
-        item_info["URI"] = "items/" + item_info["name"]
-
-        append_to_activity = {
-            "variableName": item_info["name"],
-            "isAbout": item_info["URI"],
-            "isVis": item_info["visibility"],
-            "valueRequired": False,
+        property = {
+            "variableName": item.get_basename(),
+            "isAbout": item.get_URI(),
+            "isVis": item.visible,
+            "requiredValue": item.required,
         }
+        if item.skippable:
+            property["allow"] = ["reproschema:Skipped"]
 
-        self.schema["ui"]["order"].append(item_info["URI"])
-        self.schema["ui"]["addProperties"].append(append_to_activity)
+        self.schema["ui"]["order"].append(item.get_URI())
+        self.schema["ui"]["addProperties"].append(property)
+
+    """
+    writing, reading, sorting, unsetting
+    """
 
     def sort(self):
         schema_order = [
@@ -59,9 +55,15 @@ class Activity(SchemaBase):
             "description",
             "schemaVersion",
             "version",
+            "preamble",
+            "citation",
+            "image",
+            "compute",
             "ui",
         ]
         self.sort_schema(schema_order)
+        self.sort_ui()
 
-        ui_order = ["shuffle", "order", "addProperties"]
-        self.sort_ui(ui_order)
+    def write(self, output_dir):
+        self.sort()
+        self._SchemaBase__write(output_dir)

@@ -75,7 +75,7 @@ def validate_data(data, shape_file_path):
     return conforms, v_text
 
 
-def to_newformat(path, format):
+def to_newformat(path, format, prefixfile=None, contextfile=None):
     """Convert a JSONLD document to n-triples format
 
     Since PyLD requires an http url, a local server is started to serve the
@@ -87,6 +87,11 @@ def to_newformat(path, format):
         A local path or remote url to convert to n-triples
     format: str of enum
         Returned format jsonld, n-triples, turtle
+    prefixfile: str
+        Prefixes to use when converting to turtle (ignored otherwise)
+    contextfile: str
+        Context to use for compaction when returning jsonld. If not provided,
+        a jsonld graph is returned.
 
     Returns
     -------
@@ -99,6 +104,10 @@ def to_newformat(path, format):
         raise ValueError(f"{format} not in {supported_formats}")
     data = load_file(path)
     if format == "jsonld":
+        if contextfile is not None:
+            with open(contextfile) as fp:
+                context = json.load(fp)
+            data = jsonld.compact(data, context)
         return json.dumps(data, indent=2)
     kwargs = {"algorithm": "URDNA2015", "format": "application/n-quads"}
     nt = jsonld.normalize(data, kwargs)
@@ -112,5 +121,10 @@ def to_newformat(path, format):
     g.bind("nidm", "http://purl.org/nidash/nidm#")
     g.bind("skos", "http://www.w3.org/2004/02/skos/core#")
     g.bind("prov", "http://www.w3.org/ns/prov#")
+    if prefixfile is not None:
+        with open(prefixfile) as fp:
+            prefixes = json.load(fp)
+        for key, value in prefixes.items():
+            g.bind(key, value)
     g.parse(data=nt, format="nt")
     return g.serialize(format=format).decode()
