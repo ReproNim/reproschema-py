@@ -5,16 +5,28 @@ from ..activity import Activity
 
 my_path = os.path.dirname(os.path.abspath(__file__))
 
+# Left here in case Remi and python path or import can't be friends once again.
 # sys.path.insert(0, my_path + "/../")
 
+# TODO
+# refactor across the different test modules
 protocol_dir = os.path.join(my_path, "protocols")
 if not os.path.exists(protocol_dir):
     os.makedirs(os.path.join(protocol_dir))
 
+"""
+Only for the few cases when we want to check against some of the files in
+reproschema/tests/data
+"""
 reproschema_test_data = os.path.join(my_path, "..", "..", "tests", "data")
 
 
 def test_default():
+
+    """
+    FYI: The default protocol does not conform to the schema
+    so  `reproschema validate` will complain if you run it in this
+    """
 
     protocol = Protocol()
     protocol.set_defaults()
@@ -50,6 +62,11 @@ def test_protocol():
     assert protocol_content == expected
 
     clean_up(protocol)
+
+
+"""
+HELPER FUNCTIONS
+"""
 
 
 def load_jsons(obj):

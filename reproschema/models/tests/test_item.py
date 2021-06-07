@@ -4,12 +4,19 @@ from ..item import Item, ResponseOption
 
 my_path = os.path.dirname(os.path.abspath(__file__))
 
+# Left here in case Remi and python path or import can't be friends once again.
 # sys.path.insert(0, my_path + "/../")
 
+# TODO
+# refactor across the different test modules
 item_dir = os.path.join(my_path, "items")
 if not os.path.exists(item_dir):
     os.makedirs(os.path.join(item_dir))
 
+"""
+Only for the few cases when we want to check against some of the files in
+reproschema/tests/data
+"""
 reproschema_test_data = os.path.join(my_path, "..", "..", "tests", "data")
 
 
@@ -25,11 +32,18 @@ def test_default():
     clean_up(item)
 
 
+"""
+text items
+"""
+
+
 def test_text():
+
+    text_length = 100
 
     item = Item("1.0.0-rc4")
     item.set_defaults("text")
-    item.set_input_type_as_text(100)
+    item.set_input_type_as_text(text_length)
 
     item.set_question("question for text item")
 
@@ -42,9 +56,11 @@ def test_text():
 
 def test_multitext():
 
+    text_length = 50
+
     item = Item("1.0.0-rc4")
     item.set_defaults("multitext")
-    item.set_input_type_as_multitext(50)
+    item.set_input_type_as_multitext(text_length)
 
     item.set_question("This is an item where the user can input several text field.")
 
@@ -53,6 +69,11 @@ def test_multitext():
     assert item_content == expected
 
     clean_up(item)
+
+
+"""
+items with a specific "type"
+"""
 
 
 def test_email():
@@ -130,34 +151,9 @@ def test_year():
     clean_up(item)
 
 
-def test_float():
-
-    item = Item("1.0.0-rc4")
-    item.set_defaults("float")
-    item.set_description("This is a float item.")
-    item.set_input_type_as_float()
-    item.set_question("This is an item where the user can input a float.")
-
-    item.write(item_dir)
-    item_content, expected = load_jsons(item)
-    assert item_content == expected
-
-    clean_up(item)
-
-
-def test_integer():
-
-    item = Item()
-    item.set_defaults("integer")
-    item.set_description("This is a integer item.")
-    item.set_input_type_as_int()
-    item.set_question("This is an item where the user can input a integer.")
-
-    item.write(item_dir)
-    item_content, expected = load_jsons(item)
-    assert item_content == expected
-
-    clean_up(item)
+"""
+Items that refer to a preset list of responses choices
+"""
 
 
 def test_language():
@@ -202,6 +198,49 @@ def test_state():
     clean_up(item)
 
 
+"""
+NUMERICAL ITEMS
+"""
+
+
+def test_float():
+
+    item = Item("1.0.0-rc4")
+    item.set_defaults("float")
+    item.set_description("This is a float item.")
+    item.set_input_type_as_float()
+    item.set_question("This is an item where the user can input a float.")
+
+    item.write(item_dir)
+    item_content, expected = load_jsons(item)
+    assert item_content == expected
+
+    clean_up(item)
+
+
+def test_integer():
+
+    item = Item()
+    item.set_defaults("integer")
+    item.set_description("This is a integer item.")
+    item.set_input_type_as_int()
+    item.set_question("This is an item where the user can input a integer.")
+
+    item.write(item_dir)
+    item_content, expected = load_jsons(item)
+    assert item_content == expected
+
+    clean_up(item)
+
+
+"""
+SELECTION ITEMS: radio and select
+tested both with:
+- only one response allowed
+- multiple responses allowed
+"""
+
+
 def test_radio():
 
     item = Item("1.0.0-rc4")
@@ -212,6 +251,9 @@ def test_radio():
     response_options = ResponseOption()
     response_options.add_choice("Not at all", 0, "en")
     response_options.add_choice("Several days", 1, "en")
+    # TODO
+    # set_min and set_max cold probably be combined into a single method that gets
+    # those values from the content of the choice key
     response_options.set_max(1)
 
     item.set_input_type_as_radio(response_options)
@@ -293,6 +335,14 @@ def test_slider():
     clean_up(item)
 
 
+"""
+Just to check that item with read only values
+
+Tries to recreate the item from
+reproschema/tests/data/activities/items/activity1_total_score
+"""
+
+
 def test_read_only():
 
     item = Item()
@@ -320,6 +370,11 @@ def test_read_only():
     assert item_content == expected
 
     clean_up(item)
+
+
+"""
+HELPER FUNCTIONS
+"""
 
 
 def load_jsons(item):

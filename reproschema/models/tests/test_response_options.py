@@ -4,12 +4,19 @@ from ..item import ResponseOption
 
 my_path = os.path.dirname(os.path.abspath(__file__))
 
+# Left here in case Remi and python path or import can't be friends once again.
 # sys.path.insert(0, my_path + "/../")
 
+# TODO
+# refactor across the different test modules
 response_options_dir = os.path.join(my_path, "response_options")
 if not os.path.exists(response_options_dir):
     os.makedirs(os.path.join(response_options_dir))
 
+"""
+Only for the few cases when we want to check against some of the files in
+reproschema/tests/data
+"""
 reproschema_test_data = os.path.join(my_path, "..", "..", "tests", "data")
 
 
@@ -39,6 +46,11 @@ def test_example():
     response_options.write(response_options_dir)
     content, expected = load_jsons(response_options)
     assert content == expected
+
+
+"""
+HELPER FUNCTIONS
+"""
 
 
 def load_jsons(obj):
