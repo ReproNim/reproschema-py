@@ -28,6 +28,7 @@ class Activity(SchemaBase):
         ]
 
     def append_item(self, item):
+        # See comment and TODO of the append_activity Protocol class
 
         property = {
             "variableName": item.get_basename(),

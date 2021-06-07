@@ -18,8 +18,15 @@ class Item(SchemaBase):
         super().__init__(version)
         self.schema["ui"] = {"inputType": []}
         self.schema["question"] = {}
+        """
+        The responseOptions dictionnary is kept empty until the file has to be written
+        then it gets its content wit the method `set_response_options`
+        from the `options` dictionnary of an instance of the ResponseOptions class that is kept in
+        ``self.response_options``
+        """
         self.schema["responseOptions"] = {}
         self.response_options = ResponseOption()
+
         # default input type is "text"
         self.set_input_type_as_text()
 
@@ -29,48 +36,95 @@ class Item(SchemaBase):
         self.set_input_type_as_text()
 
     def set_filename(self, name, ext=".jsonld"):
+        """
+        Note there is no _schema suffix for items names
+        """
         name = name.replace(" ", "_")
         self.schema_file = name + ext
         self.schema["@id"] = name + ext
 
     def set_question(self, question, lang=DEFAULT_LANG):
+        # TODO add test to check adding several questions to an item
         self.schema["question"][lang] = question
 
     """
-    UI
+    CREATE DIFFERENT ITEMS
     """
+    # TODO: items not yet covered
+    # audioCheck: AudioCheck/AudioCheck.vue
+    # audioRecord: WebAudioRecord/Audio.vue
+    # audioPassageRecord: WebAudioRecord/Audio.vue
+    # audioImageRecord: WebAudioRecord/Audio.vue
+    # audioRecordNumberTask: WebAudioRecord/Audio.vue
+    # audioAutoRecord: AudioCheckRecord/AudioCheckRecord.vue
+    # documentUpload: DocumentUpload/DocumentUpload.vue
+    # save: SaveData/SaveData.vue
+    # static: Static/Static.vue
+    # StaticReadOnly: Static/Static.vue
 
-    def set_input_type(self, input_type):
-        self.schema["ui"]["inputType"] = input_type
+    def set_basic_response_type(self, response_type):
+        """
+        Handles the dispatching to other methods for specific item creations
+        Does not cover all items types (maybe it should as this would help
+        from an API point of view to pass everything through this function)
+        The default is "text" input type
+        """
+        self.set_input_type_as_text()
 
-    def set_read_only_value(self, value):
-        self.schema["ui"]["readonlyValue"] = value
+        if response_type == "int":
+            self.set_input_type_as_int()
 
-    """
-    RESPONSE CHOICES
-    """
+        elif response_type == "float":
+            self.set_input_type_as_float()
 
-    def set_response_options(self):
-        self.schema["responseOptions"] = self.response_options.options
+        elif response_type == "date":
+            self.set_input_type_as_date()
+
+        elif response_type == "time range":
+            self.set_input_type_as_time_range()
+
+        elif response_type == "language":
+            self.set_input_type_as_language()
 
     """
     input types with different response choices
+
+    For many items it is necessary to call
+
+        self.response_options.unset
+
+    To remove unecessary or unwanted keys from the response_options
+    dictionary.
+    Many of those are put there by the constructor of that set
+    the default input type as ``self.set_input_type_as_text()``
+    so it might be better to maybe have a more minimalistic constructor.
+
     """
 
-    def set_input_type_as_radio(self, response_options):
-        self.set_input_type("radio")
-        response_options.set_type("integer")
-        self.response_options = response_options
+    def set_input_type_as_int(self):
+        self.set_input_type("number")
+        self.response_options.set_type("integer")
+        self.response_options.unset(["maxLength"])
 
-    def set_input_type_as_select(self, response_options):
-        self.set_input_type("select")
-        response_options.set_type("integer")
-        self.response_options = response_options
+    def set_input_type_as_float(self):
+        self.set_input_type("float")
+        self.response_options.set_type("float")
+        self.response_options.unset(["maxLength"])
 
-    def set_input_type_as_slider(self, response_options):
-        self.set_input_type("slider")
-        response_options.set_type("integer")
-        self.response_options = response_options
+    def set_input_type_as_date(self):
+        self.set_input_type("date")
+        self.response_options.unset(["maxLength"])
+        self.response_options.set_type("date")
+
+    def set_input_type_as_time_range(self):
+        self.set_input_type("timeRange")
+        self.response_options.unset(["maxLength"])
+        self.response_options.set_type("datetime")
+
+    def set_input_type_as_year(self):
+        self.set_input_type("year")
+        self.response_options.unset(["maxLength"])
+        self.response_options.set_type("date")
 
     """
     input types with preset response choices
@@ -108,35 +162,6 @@ class Item(SchemaBase):
         self.response_options.unset(["maxLength"])
 
     """
-    input types with no response choice
-    """
-
-    def set_input_type_as_int(self):
-        self.set_input_type("number")
-        self.response_options.set_type("integer")
-        self.response_options.unset(["maxLength"])
-
-    def set_input_type_as_float(self):
-        self.set_input_type("float")
-        self.response_options.set_type("float")
-        self.response_options.unset(["maxLength"])
-
-    def set_input_type_as_time_range(self):
-        self.set_input_type("timeRange")
-        self.response_options.unset(["maxLength"])
-        self.response_options.set_type("datetime")
-
-    def set_input_type_as_date(self):
-        self.set_input_type("date")
-        self.response_options.unset(["maxLength"])
-        self.response_options.set_type("date")
-
-    def set_input_type_as_year(self):
-        self.set_input_type("year")
-        self.response_options.options.pop("maxLength", None)
-        self.response_options.set_type("date")
-
-    """
     input types requiring user typed input
     """
 
@@ -158,46 +183,68 @@ class Item(SchemaBase):
         self.response_options.unset(["maxLength"])
 
     def set_input_type_as_id(self):
+        """
+        for participant id items
+        """
         self.set_input_type("pid")
         self.response_options.unset(["maxLength"])
 
-    # TODO
-    # audioCheck: AudioCheck/AudioCheck.vue
-    # audioRecord: WebAudioRecord/Audio.vue
-    # audioPassageRecord: WebAudioRecord/Audio.vue
-    # audioImageRecord: WebAudioRecord/Audio.vue
-    # audioRecordNumberTask: WebAudioRecord/Audio.vue
-    # audioAutoRecord: AudioCheckRecord/AudioCheckRecord.vue
-    # documentUpload: DocumentUpload/DocumentUpload.vue
-    # save: SaveData/SaveData.vue
-    # static: Static/Static.vue
-    # StaticReadOnly: Static/Static.vue
+    """
+    input types with 'different response choices'
 
-    def set_basic_response_type(self, response_type):
+    Those methods require an instance of ResponseOptions as input and
+    it will replace the one initialized in the construction.
 
-        # default (also valid for "text" input type)
-        self.set_input_type_as_text()
+    Most likely a bad idea and a confusing API from the user perpective:
+    probably better to set the input type and then let the user construct
+    the response choices via calls to the methods of
 
-        if response_type == "int":
-            self.set_input_type_as_int()
+        self.response_options
+    """
 
-        elif response_type == "float":
-            self.set_input_type_as_float()
+    def set_input_type_as_radio(self, response_options):
+        self.set_input_type("radio")
+        response_options.set_type("integer")
+        self.response_options = response_options
 
-        elif response_type == "date":
-            self.set_input_type_as_date()
+    def set_input_type_as_select(self, response_options):
+        self.set_input_type("select")
+        response_options.set_type("integer")
+        self.response_options = response_options
 
-        elif response_type == "time range":
-            self.set_input_type_as_time_range()
+    def set_input_type_as_slider(self, response_options):
+        self.set_input_type("slider")
+        response_options.set_type("integer")
+        self.response_options = response_options
 
-        elif response_type == "language":
-            self.set_input_type_as_language()
+    """
+    UI
+    """
+    # are input_type and read_only specific properties to items
+    # or should they be brought up into the base class?
+    # or be made part of an UI class?
+
+    def set_input_type(self, input_type):
+        self.schema["ui"]["inputType"] = input_type
+
+    def set_read_only_value(self, value):
+        self.schema["ui"]["readonlyValue"] = value
 
     """
     writing, reading, sorting, unsetting
     """
 
+    def set_response_options(self):
+        """
+        Passes the content of the response options to the schema of the item.
+        To be done before writing the item
+        """
+        self.schema["responseOptions"] = self.response_options.options
+
     def unset(self, keys):
+        """
+        Mostly used to remove some empty keys from the schema. Rarely used.
+        """
         for i in keys:
             self.schema.pop(i, None)
 
@@ -226,6 +273,13 @@ class ResponseOption(SchemaBase):
     """
     class to deal with reproschema response options
     """
+
+    # TODO
+    # the dictionnary that keeps track of the content of the response options should
+    # be called "schema" and not "options" so as to be able to make proper use of the
+    # methods of the parent class and avoid copying content between
+    #
+    # self.options and self.schema
 
     schema_type = "reproschema:ResponseOption"
 
@@ -258,6 +312,9 @@ class ResponseOption(SchemaBase):
     def set_type(self, type):
         self.options["valueType"] = "xsd:" + type
 
+    # TODO a nice thing to do would be to read the min and max value
+    # from the rest of the content of self.options
+    # could avoid having the user to input those
     def set_min(self, value):
         self.options["minValue"] = value
 
@@ -271,6 +328,10 @@ class ResponseOption(SchemaBase):
         self.options["multipleChoice"] = value
 
     def use_preset(self, URI):
+        """
+        In case the list response options are read from another file
+        like for languages, country, state...
+        """
         self.options["choices"] = URI
 
     def add_choice(self, choice, value, lang=DEFAULT_LANG):
@@ -298,7 +359,8 @@ class ResponseOption(SchemaBase):
 
 # TODO
 # DUPLICATE from the base class to be used for ResponseOptions sorting of the options
-# needs refactoring
+# needs refactoring that will be made easier if the name the ResponseOptions dictionary is
+# schema and note options
 from collections import OrderedDict
 
 

@@ -32,6 +32,9 @@ def test_default():
     clean_up(item)
 
 
+# TODO
+# many items types (audio ones for examples) are not yet tested because the code cannot yet generate them.
+
 """
 text items
 """

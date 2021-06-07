@@ -11,17 +11,16 @@ class Protocol(SchemaBase):
     schema_type = "reproschema:Protocol"
 
     def __init__(self, version=None):
+        """
+        Rely on the parent class for construction of the instance
+        """
         super().__init__(version)
-        self.schema["ui"] = {
-            "allow": [],
-            "shuffle": [],
-            "order": [],
-            "addProperties": [],
-        }
 
     def set_defaults(self, name="default"):
         self._SchemaBase__set_defaults(name)
         self.set_landing_page("README-en.md")
+        # does it make sense to give a preamble by default to protocols since
+        # they already have a landing page?
         self.set_preamble()
         self.set_ui_default()
 
@@ -29,16 +28,26 @@ class Protocol(SchemaBase):
         self.schema["landingPage"] = {"@id": landing_page_uri, "inLanguage": lang}
 
     def append_activity(self, activity):
+        """
+        We get from an activity instance the info we need to update the protocol scheme.
 
-        append_to_protocol = {
-            "variableName": activity.get_basename().replace("_schema", ""),
-            "isAbout": activity.get_URI(),
-            "prefLabel": activity.get_pref_label(),
-            "isVis": True,
-            "valueRequired": False,
-        }
+        This appends the activity after all the other ones.
+
+        So this means the order of the activities will be dependent
+        on the order in which they are "read".
+
+        This implementation assumes that the activities are read
+        from a list and added one after the other.
+        """
+        # TODO
+        # - find a way to reorder, remove or add an activity
+        # at any point in the protocol
+        # - this method is nearly identical to the append_item method of Activity
+        # and should probably be refactored into a single method of the parent class
+        # and ideally into a method of a yet to be created UI class
 
         property = {
+            # variable name is name of activity without prefix
             "variableName": activity.get_basename().replace("_schema", ""),
             "isAbout": activity.get_URI(),
             "prefLabel": activity.get_pref_label(),
