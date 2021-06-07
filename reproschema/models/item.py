@@ -335,6 +335,14 @@ class ResponseOption(SchemaBase):
         self.options["choices"] = URI
 
     def add_choice(self, choice, value, lang=DEFAULT_LANG):
+        """
+        Add a response option
+        """
+        # TODO currently a certain response option can only be appended,
+        # not removed, no edited
+        # Also the current implementation with languages makes it hard for example
+        # to query what is the value or question associated with a certain language
+        # The nested structure should probably be flattened.
         self.options["choices"].append({"name": {lang: choice}, "value": value})
 
     def sort(self):
