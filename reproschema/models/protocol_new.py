@@ -1,22 +1,32 @@
-from .base import SchemaBase
+import attr
+# from .base import SchemaBase
 
 
+@attr.s()
 class Protocol(SchemaBase):
     """
     class to deal with reproschema protocols
     """
 
     schema_type = "reproschema:Protocol"
+    # schema_type = attr.ib(default=None, kw_only=True)
 
-    def __init__(self, version=None):
-        super().__init__(version)
-        self.schema["ui"] = {
-            "allow": [],
-            "shuffle": [],
-            "order": [],
-            "addProperties": [],
-            "overrideProperties": [],
-        }
+    # ui = attr.ib(default={
+    #         "allow": attr.ib(default=attr.Factory(list)),
+    #         "shuffle": attr.ib(default=False),
+    #         "order": attr.ib(default=attr.Factory(list)),
+    #         "addProperties": attr.ib(default=attr.Factory(list)),
+    #         "overrideProperties": attr.ib(default=attr.Factory(list)),
+    # })
+    # def __init__(self, version=None):
+    #     super().__init__(version)
+    #     self.schema["ui"] = {
+    #         "allow": [],
+    #         "shuffle": [],
+    #         "order": [],
+    #         "addProperties": [],
+    #         "overrideProperties": [],
+    #     }
 
     def set_landing_page(self, landing_page_url, lang="en"):
         self.schema["landingPage"] = {"@id": landing_page_url, "@language": lang}
@@ -35,8 +45,8 @@ class Protocol(SchemaBase):
             "reproschema:AllowExport",
         ]
 
-    def set_ui_shuffle(self, shuffle=False):
-        self.schema["ui"]["shuffle"] = shuffle
+    # def set_ui_shuffle(self, shuffle=False):
+    #     self.schema["ui"]["shuffle"] = shuffle
 
     def set_defaults(self, name):
         self._ReproschemaSchema__set_defaults(name)  # this looks wrong
@@ -56,6 +66,7 @@ class Protocol(SchemaBase):
             "prefLabel": {"en": activity.schema["prefLabel"]},
             "isVis": True,
             "valueRequired": False,
+            # schedule, randomMaxDelay, limit
         }
 
         self.schema["ui"]["order"].append(activity.URI)
@@ -77,3 +88,11 @@ class Protocol(SchemaBase):
 
         ui_order = ["allow", "shuffle", "order", "addProperties", "overrideProperties"]
         self.sort_ui(ui_order)
+
+# pp = Protocol(prefLabel="ann", description='trial')
+# print('------------')
+# print(12, pp.__dict__.keys())
+# props = pp.__dict__.copy()
+# del props['schema']
+# print(13, props)
+# print(pp.write('./', 'tt_schema'))

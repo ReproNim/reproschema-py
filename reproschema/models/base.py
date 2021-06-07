@@ -3,9 +3,6 @@ import os
 
 
 class SchemaBase:
-    """
-    class to deal with reproschema schemas
-    """
 
     schema_type = None
 
@@ -56,7 +53,8 @@ class SchemaBase:
         reordered_dict = {k: self.schema["ui"][k] for k in ui_order}
         self.schema["ui"] = reordered_dict
 
-    def write(self, output_dir):
+    def write(self, output_dir, file_name):
+        self.set_filename(file_name)
         with open(os.path.join(output_dir, self.schema_file), "w") as ff:
             json.dump(self.schema, ff, sort_keys=False, indent=4)
 
@@ -77,3 +75,8 @@ class SchemaBase:
         if "@type" not in data:
             raise ValueError("Missing @type key")
         return cls.from_data(data)
+
+
+# aa = SchemaBase(version="0.0.1")
+# aa.x = 'abc'
+# print(aa.__dict__)
