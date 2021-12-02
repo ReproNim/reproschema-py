@@ -71,6 +71,9 @@ class Item(SchemaBase):
         """
         self.set_input_type_as_text()
 
+        if response_type == "textarea":
+            self.set_input_type_as_text_area()
+
         if response_type == "int":
             self.set_input_type_as_int()
 
@@ -102,29 +105,29 @@ class Item(SchemaBase):
     """
 
     def set_input_type_as_int(self):
-        self.set_input_type("number")
-        self.response_options.set_type("integer")
-        self.response_options.unset(["maxLength"])
+        self._set_numeric_input_type("number", "integer")
 
     def set_input_type_as_float(self):
-        self.set_input_type("float")
-        self.response_options.set_type("float")
+        self._set_numeric_input_type("float", "float")
+
+    def _set_numeric_input_type(self, arg0, arg1):
+        self.set_input_type(arg0)
+        self.response_options.set_type(arg1)
         self.response_options.unset(["maxLength"])
 
     def set_input_type_as_date(self):
-        self.set_input_type("date")
-        self.response_options.unset(["maxLength"])
-        self.response_options.set_type("date")
+        self._set_time_input_type("date", "date")
 
     def set_input_type_as_time_range(self):
-        self.set_input_type("timeRange")
-        self.response_options.unset(["maxLength"])
-        self.response_options.set_type("datetime")
+        self._set_time_input_type("timeRange", "datetime")
 
     def set_input_type_as_year(self):
-        self.set_input_type("year")
+        self._set_time_input_type("year", "date")
+
+    def _set_time_input_type(self, arg0, arg1):
+        self.set_input_type(arg0)
         self.response_options.unset(["maxLength"])
-        self.response_options.set_type("date")
+        self.response_options.set_type(arg1)
 
     """
     input types with preset response choices
@@ -132,50 +135,63 @@ class Item(SchemaBase):
 
     def set_input_type_as_language(self):
 
-        URL = "https://raw.githubusercontent.com/ReproNim/reproschema-library/"
+        URL = self._set_input_type_using_preset(
+            "https://raw.githubusercontent.com/ReproNim/reproschema-library/",
+            "selectLanguage",
+        )
 
-        self.set_input_type("selectLanguage")
-
-        self.response_options.set_type("string")
         self.response_options.set_multiple_choice(True)
         self.response_options.use_preset(URL + "master/resources/languages.json")
         self.response_options.unset(["maxLength"])
 
     def set_input_type_as_country(self):
 
-        URL = "https://raw.githubusercontent.com/samayo/country-json/master/src/country-by-name.json"
+        URL = self._set_input_type_using_preset(
+            "https://raw.githubusercontent.com/samayo/country-json/master/src/country-by-name.json",
+            "selectCountry",
+        )
 
-        self.set_input_type("selectCountry")
-
-        self.response_options.set_type("string")
         self.response_options.use_preset(URL)
         self.response_options.set_length(50)
 
     def set_input_type_as_state(self):
 
-        URL = "https://gist.githubusercontent.com/mshafrir/2646763/raw/8b0dbb93521f5d6889502305335104218454c2bf/states_hash.json"
+        URL = self._set_input_type_using_preset(
+            "https://gist.githubusercontent.com/mshafrir/2646763/raw/8b0dbb93521f5d6889502305335104218454c2bf/states_hash.json",
+            "selectState",
+        )
 
-        self.set_input_type("selectState")
-
-        self.response_options.set_type("string")
         self.response_options.use_preset(URL)
         self.response_options.unset(["maxLength"])
+
+    def _set_input_type_using_preset(self, arg0, arg1):
+        result = arg0
+        self.set_input_type(arg1)
+        self.response_options.set_type("string")
+        return result
 
     """
     input types requiring user typed input
     """
 
     def set_input_type_as_text(self, length=300):
-        self.set_input_type("text")
-        self.response_options.set_type("string")
-        self.response_options.set_length(length)
+        self._set_text_input_type("text", length)
+        self.response_options.unset(
+            ["maxValue", "minValue", "multipleChoice", "choices"]
+        )
+
+    def set_input_type_as_text_area(self, length=300):
+        self._set_text_input_type("textarea", length)
         self.response_options.unset(
             ["maxValue", "minValue", "multipleChoice", "choices"]
         )
 
     def set_input_type_as_multitext(self, length=300):
-        self.set_input_type("multitext")
-        self.response_options.set_type("string")
+        self._set_text_input_type("multitext", length)
+
+    def _set_text_input_type(self, arg0, length):
+        self.set_input_type(arg0)
+        self.response_options.set_type('string')
         self.response_options.set_length(length)
 
     def set_input_type_as_email(self):
@@ -203,18 +219,17 @@ class Item(SchemaBase):
     """
 
     def set_input_type_as_radio(self, response_options):
-        self.set_input_type("radio")
-        response_options.set_type("integer")
-        self.response_options = response_options
+        self._set_multiplce_choice_item("radio", response_options)
 
     def set_input_type_as_select(self, response_options):
-        self.set_input_type("select")
-        response_options.set_type("integer")
-        self.response_options = response_options
+        self._set_multiplce_choice_item("select", response_options)
 
     def set_input_type_as_slider(self, response_options):
-        self.set_input_type("slider")
-        response_options.set_type("integer")
+        self._set_multiplce_choice_item("slider", response_options)
+
+    def _set_multiplce_choice_item(self, arg0, response_options):
+        self.set_input_type(arg0)
+        response_options.set_type('integer')
         self.response_options = response_options
 
     """
