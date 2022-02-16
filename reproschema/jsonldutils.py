@@ -127,4 +127,4 @@ def to_newformat(path, format, prefixfile=None, contextfile=None):
         for key, value in prefixes.items():
             g.bind(key, value)
     g.parse(data=nt, format="nt")
-    return g.serialize(format=format).decode()
+    return g.serialize(format=format)
