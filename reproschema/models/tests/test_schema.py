@@ -8,9 +8,9 @@ def test_constructors():
     version = "1.0.0-rc2"
     proto = Protocol(version=version)
     assert proto.schema["schemaVersion"] == version
-    act = Activity(version)
+    act = Activity(version=version)
     assert act.schema["schemaVersion"] == version
-    item = Item(version)
+    item = Item(version=version)
     assert item.schema["schemaVersion"] == version
 
 

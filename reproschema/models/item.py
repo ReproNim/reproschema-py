@@ -1,21 +1,18 @@
 from .base import SchemaBase
 
-
 DEFAULT_LANG = "en"
-
 
 class Item(SchemaBase):
     """
     class to deal with reproschema items
     """
 
-    schema_type = "reproschema:Field"
     visible = True
     required = False
     skippable = True
 
     def __init__(self, version=None):
-        super().__init__(version)
+        super().__init__(version=version, schema_type="reproschema:Field")
         self.schema["ui"] = {"inputType": []}
         self.schema["question"] = {}
         """
@@ -281,8 +278,6 @@ class ResponseOption(SchemaBase):
     #
     # self.options and self.schema
 
-    schema_type = "reproschema:ResponseOption"
-
     def __init__(self):
         self.options = {
             "valueType": "",
@@ -293,7 +288,7 @@ class ResponseOption(SchemaBase):
         }
 
     def set_defaults(self, name="valueConstraints", version=None):
-        super().__init__(version)
+        super().__init__(version=version, schema_type="reproschema:ResponseOption")
         self.options["@context"] = self.schema["@context"]
         self.options["@type"] = self.schema_type
         self.set_filename(name)
@@ -310,7 +305,7 @@ class ResponseOption(SchemaBase):
             self.options.pop(i, None)
 
     def set_type(self, type):
-        self.options["valueType"] = "xsd:" + type
+        self.options["valueType"] = f"xsd:{type}"
 
     # TODO a nice thing to do would be to read the min and max value
     # from the rest of the content of self.options

@@ -8,13 +8,12 @@ class Protocol(SchemaBase):
     class to deal with reproschema protocols
     """
 
-    schema_type = "reproschema:Protocol"
 
     def __init__(self, version=None):
         """
         Rely on the parent class for construction of the instance
         """
-        super().__init__(version)
+        super().__init__(version=version, schema_type="reproschema:Protocol")
 
     def set_defaults(self, name="default"):
         self._SchemaBase__set_defaults(name)

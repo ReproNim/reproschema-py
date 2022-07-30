@@ -5,8 +5,6 @@ from ..activity import Activity
 
 my_path = os.path.dirname(os.path.abspath(__file__))
 
-# Left here in case Remi and python path or import can't be friends once again.
-# sys.path.insert(0, my_path + "/../")
 
 # TODO
 # refactor across the different test modules

@@ -3,6 +3,10 @@ import os
 from pathlib import Path
 from collections import OrderedDict
 
+from attrs import define, field
+
+import attrs
+
 """
 For any key that can be 'translated' we set english as the default language
 in case the user does not provide it.
@@ -23,6 +27,7 @@ def default_context(version):
     return URL + VERSION + "/contexts/generic"
 
 
+@define
 class SchemaBase:
     """
     base class to deal with reproschema schemas
@@ -43,25 +48,20 @@ class SchemaBase:
 
     """
 
-    # TODO might be more convenient to have some of the properties not centrlized in a single dictionnary
-    #
-    # Could be more practical to only create part or all of the dictionnary when write is called
-    #
+    version = field(
+        kw_only=True,
+        default=DEFAULT_VERSION,
+        converter=attrs.converters.default_if_none(default=DEFAULT_VERSION),
+    )
+    schema_type = field(kw_only=True, default=None)
 
-    schema_type = None
-
-    def __init__(self, version):
-
-        # TODO the version handling could probably be refactored
-        VERSION = version or DEFAULT_VERSION
-
+    def __attrs_post_init__(self):
         self.schema = {
             "@type": self.schema_type,
-            "schemaVersion": VERSION,
+            "schemaVersion": self.version,
             "version": "0.0.1",
         }
-
-        URL = self.get_default_context(version)
+        URL = self.get_default_context(self.version)
         self.set_context(URL)
 
     # This probably needs some cleaning but is at the moment necessary to pass
@@ -125,8 +125,8 @@ class SchemaBase:
         For item files their name won't have the schema prefix.
         """
         # TODO figure out if the latter is a desirable behavior
-        self.schema_file = name + "_schema" + ext
-        self.schema["@id"] = name + "_schema" + ext
+        self.schema_file = f"{name}_schema{ext}"
+        self.schema["@id"] = f"{name}_schema{ext}"
 
     def set_pref_label(self, pref_label, lang=DEFAULT_LANG):
         self.schema["prefLabel"] = {lang: pref_label}
@@ -238,11 +238,11 @@ class SchemaBase:
 
     @classmethod
     def from_data(cls, data):
-        if cls.schema_type is None:
-            raise ValueError("SchemaBase cannot be used to instantiate class")
-        if cls.schema_type != data["@type"]:
-            raise ValueError(f"Mismatch in type {data['@type']} != {cls.schema_type}")
         klass = cls()
+        if klass.schema_type is None:
+            raise ValueError("SchemaBase cannot be used to instantiate class")
+        if klass.schema_type != data["@type"]:
+            raise ValueError(f"Mismatch in type {data['@type']} != {klass.schema_type}")
         klass.schema = data
         return klass
 

@@ -2,20 +2,17 @@ from .base import SchemaBase
 
 DEFAULT_LANG = "en"
 
-
 class Activity(SchemaBase):
     """
     class to deal with reproschema activities
     """
-
-    schema_type = "reproschema:Activity"
 
     visible = True
     required = False
     skippable = True
 
     def __init__(self, version=None):
-        super().__init__(version)
+        super().__init__(version=version, schema_type="reproschema:Activity")
 
     def set_defaults(self, name="default"):
         self._SchemaBase__set_defaults(name)
@@ -30,17 +27,17 @@ class Activity(SchemaBase):
     def append_item(self, item):
         # See comment and TODO of the append_activity Protocol class
 
-        property = {
+        item_property = {
             "variableName": item.get_basename(),
             "isAbout": item.get_URI(),
             "isVis": item.visible,
             "requiredValue": item.required,
         }
         if item.skippable:
-            property["allow"] = ["reproschema:Skipped"]
+            item_property["allow"] = ["reproschema:Skipped"]
 
         self.schema["ui"]["order"].append(item.get_URI())
-        self.schema["ui"]["addProperties"].append(property)
+        self.schema["ui"]["addProperties"].append(item_property)
 
     """
     writing, reading, sorting, unsetting
