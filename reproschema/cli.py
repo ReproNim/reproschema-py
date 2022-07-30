@@ -13,7 +13,6 @@ def print_version(ctx, param, value):
     click.echo(__version__)
     ctx.exit()
 
-
 # group to provide commands
 @click.group()
 @click.option(

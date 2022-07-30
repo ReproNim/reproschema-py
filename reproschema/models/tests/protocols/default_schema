@@ -1,0 +1,21 @@
+{
+    "@context": "https://raw.githubusercontent.com/ReproNim/reproschema//contexts/generic",
+    "@type": "None",
+    "@id": "default_schema",
+    "landingPage": {
+        "@id": "README-en.md",
+        "@language": "en"
+    },
+    "preamble": {
+        "en": ""
+    },
+    "ui": {
+        "shuffle": false,
+        "order": [],
+        "addProperties": [],
+        "allow": [
+            "reproschema:AutoAdvance",
+            "reproschema:AllowExport"
+        ]
+    }
+}

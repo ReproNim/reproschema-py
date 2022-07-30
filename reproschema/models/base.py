@@ -231,7 +231,9 @@ class SchemaBase:
         """
         Reused by the write method of the children classes
         """
-        with open(os.path.join(output_dir, self.schema_file), "w") as ff:
+        if isinstance(output_dir, str):
+            output_dir = Path(output_dir)
+        with open(output_dir.joinpath(self.schema_file), "w") as ff:
             json.dump(self.schema, ff, sort_keys=False, indent=4)
 
     @classmethod

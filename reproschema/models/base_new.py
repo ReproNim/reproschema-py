@@ -18,6 +18,8 @@ from attrs.validators import instance_of, optional
 @define
 class SchemaBase:
 
+    DEFAULT_LANG = "en"
+
     prefLabel: Optional[str] = field(
         default=None, kw_only=True, validator=optional(instance_of(str))
     )
@@ -31,18 +33,37 @@ class SchemaBase:
         default="0.0.1", kw_only=True, validator=instance_of(str)
     )
     schema_type = field(default=None, kw_only=True)
-    schema = field(default={
-        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema//contexts/generic",
-        "@type": 'None',
-    })
+    schema = field(
+        default={
+            "@context": "https://raw.githubusercontent.com/ReproNim/reproschema//contexts/generic",
+            "@type": "None",
+        }
+    )
+    schema_file = field(default=None)
+    directory = field(default=None)
+
+    def set_directory(self, output_directory):
+        """
+        Where the file will be written by the ``write`` method
+        """
+        self.directory = output_directory
+
     # order = attr.ib(validator=attr.validators.deep_iterable(
     #     member_validator = attr.validators.instance_of(str),
     #     iterable_validator = attr.validators.instance_of(list)
     # ))
 
-    # def set_filename(self, name):
-    #     self.schema_file = name + "_schema"
-    #     self.schema["@id"] = name + "_schema"
+    def set_filename(self, name, ext=".jsonld"):
+        """
+        By default all files are given:
+          - the ``.jsold`` extension
+          - have ``_schema`` suffix appended to them
+
+        For item files their name won't have the schema prefix.
+        """
+        # TODO figure out if the latter is a desirable behavior
+        self.schema_file = name + "_schema" + ext
+        self.schema["@id"] = name + "_schema" + ext
 
     def get_name(self):
         return self.schema_file.replace("_schema", "")
@@ -53,8 +74,42 @@ class SchemaBase:
     def __set_defaults(self, name):
         self.set_filename(name)
         self.set_directory(name)
-        self.set_pref_label(name.replace("_", " "))
-        self.set_description(name.replace("_", " "))  # description isn't mandatory, no?
+        self.prefLabel = name.replace("_", " ")
+        self.description = name.replace("_", " ")
+
+    def set_ui_default(self):
+        self.schema["ui"] = {
+            "shuffle": [],
+            "order": [],
+            "addProperties": [],
+            "allow": [],
+        }
+        self.set_ui_shuffle()
+        self.set_ui_allow()
+
+    def set_ui_shuffle(self, shuffle=False):
+        self.schema["ui"]["shuffle"] = shuffle
+
+    def set_ui_allow(self, auto_advance=True, allow_export=True, disable_back=False):
+        # TODO
+        # Could be more convenient to have one method for each property
+        #
+        # Also currently the way this is handled makes it hard to update a single value:
+        # all 3 have to be reset everytime!!!
+        #
+        # Could be useful to have a UI class with dictionnary content that is only
+        #  generated when the file is written
+        allow = []
+        if auto_advance:
+            allow.append("reproschema:AutoAdvance")
+        if allow_export:
+            allow.append("reproschema:AllowExport")
+        if disable_back:
+            allow.append("reproschema:DisableBack")
+        self.schema["ui"]["allow"] = allow        
+
+    def set_preamble(self, preamble="", lang=DEFAULT_LANG):
+        self.schema["preamble"] = {lang: preamble}
 
     def sort_schema(self, schema_order):
 
@@ -65,6 +120,15 @@ class SchemaBase:
 
         reordered_dict = {k: self.schema["ui"][k] for k in ui_order}
         self.schema["ui"] = reordered_dict
+
+    def __write(self, output_dir):
+        """
+        Reused by the write method of the children classes
+        """
+        if isinstance(output_dir, str):
+            output_dir = Path(output_dir)
+        with open(output_dir.joinpath(self.schema_file), "w") as ff:
+            json.dump(self.schema, ff, sort_keys=False, indent=4)        
 
     # def write(self, output_dir, filename):
     #     # self.schema_file = filename + "_schema"
@@ -92,12 +156,3 @@ class SchemaBase:
         if "@type" not in data:
             raise ValueError("Missing @type key")
         return cls.from_data(data)
-
-
-# aa = SchemaBase(prefLabel="ann", description='trial')
-# print('------------')
-# print(12, aa.__dict__.keys())
-# props = aa.__dict__.copy()
-# # del props['schema']
-# # print(13, props)
-# print(aa.write('./', 'tt_schema'))

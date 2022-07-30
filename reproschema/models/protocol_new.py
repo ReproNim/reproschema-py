@@ -51,11 +51,13 @@ class Protocol(SchemaBase):
     # def set_ui_shuffle(self, shuffle=False):
     #     self.schema["ui"]["shuffle"] = shuffle
 
-    def set_defaults(self, name):
-        self._ReproschemaSchema__set_defaults(name)  # this looks wrong
-        self.set_landing_page("../../README-en.md")
-        self.set_ui_allow()
-        self.set_ui_shuffle(False)
+    def set_defaults(self, name="default"):
+        self._SchemaBase__set_defaults(name)
+        self.set_landing_page("README-en.md")
+        # does it make sense to give a preamble by default to protocols since
+        # they already have a landing page?
+        self.set_preamble()
+        self.set_ui_default()
 
     def append_activity(self, activity):
 
@@ -92,10 +94,6 @@ class Protocol(SchemaBase):
         ui_order = ["allow", "shuffle", "order", "addProperties", "overrideProperties"]
         self.sort_ui(ui_order)
 
-# pp = Protocol(prefLabel="ann", description='trial')
-# print('------------')
-# print(12, pp.__dict__.keys())
-# props = pp.__dict__.copy()
-# del props['schema']
-# print(13, props)
-# print(pp.write('./', 'tt_schema'))
+    def write(self, output_dir):
+        # self.sort()
+        self._SchemaBase__write(output_dir)
