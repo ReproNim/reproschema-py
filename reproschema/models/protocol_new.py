@@ -1,14 +1,17 @@
 import attr
-# from .base import SchemaBase
+from .base_new import SchemaBase
 
 
-@attr.s()
+from attrs import define, field
+
+@define
 class Protocol(SchemaBase):
     """
     class to deal with reproschema protocols
     """
+    def __attrs_post_init__(self):
+        self.schema_type ="reproschema:Protocol"
 
-    schema_type = "reproschema:Protocol"
     # schema_type = attr.ib(default=None, kw_only=True)
 
     # ui = attr.ib(default={

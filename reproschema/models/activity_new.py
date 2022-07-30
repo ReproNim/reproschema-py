@@ -1,18 +1,20 @@
-# from reproschema.models.base_new import SchemaBase
-import base_new
+# from reproschema.models import base_new
+from . import base_new
 import attr
 
-@attr.s(frozen=True)
+from attrs import define, field
+
+@define
 class Activity(base_new.SchemaBase):
     """
     class to deal with reproschema activities
     """
+    def __attrs_post_init__(self):
+        self.schema_type ="reproschema:Activity"
 
-    schema_type = "reproschema:Activity"
-
-    def __init__(self, version=None):
-        super().__init__(version)
-        self.schema["ui"] = {"shuffle": [], "order": [], "addProperties": []}
+    # def __init__(self, prefLabel="", version=None):
+    #     super().__init__(prefLabel, version)
+    #     self.schema["ui"] = {"shuffle": [], "order": [], "addProperties": []}
 
     def set_ui_shuffle(self, shuffle=False):
         self.schema["ui"]["shuffle"] = shuffle
@@ -68,7 +70,3 @@ class Activity(base_new.SchemaBase):
         ui_order = ["shuffle", "order", "addProperties"]
         self.sort_ui(ui_order)
 
-
-aa = Activity(prefLabel="ann", description='trial')
-print('------------')
-print(12, aa.__dict__.keys())

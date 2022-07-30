@@ -1,6 +1,9 @@
 import json
-import os
-import attr
+
+from typing import Optional
+
+from attrs import define, field
+from attrs.validators import instance_of, optional
 
 # SchemaBase = attr.make_class("SchemaBase",
 #                              {"prefLabel": attr.ib(kw_only=True, validator=attr.validators.instance_of(str)),
@@ -11,17 +14,27 @@ import attr
 #                               "schema_type": attr.ib(default=None, kw_only=True)
 #                               })
 
-@attr.s(frozen=True)
+
+@define
 class SchemaBase:
-    prefLabel = attr.ib(kw_only=True, validator=attr.validators.instance_of(str))
-    description = attr.ib(default=None, validator=attr.validators.optional(attr.validators.instance_of(str)))
-    schemaVersion = attr.ib(default="1.0.0-rc4", validator=attr.validators.instance_of(str))
-    version = attr.ib(default="0.0.1", validator=attr.validators.instance_of(str))
-    # schema_type = attr.ib(default=None, kw_only=True)
-    # schema = attr.ib(default={
-    #     "@context": "https://raw.githubusercontent.com/ReproNim/reproschema//contexts/generic",
-    #     "@type": 'None',
-    # })
+
+    prefLabel: Optional[str] = field(
+        default=None, kw_only=True, validator=optional(instance_of(str))
+    )
+    description: Optional[str] = field(
+        default=None, kw_only=True, validator=optional(instance_of(str))
+    )
+    schemaVersion: Optional[str] = field(
+        default="1.0.0-rc4", kw_only=True, validator=instance_of(str)
+    )
+    version: Optional[str] = field(
+        default="0.0.1", kw_only=True, validator=instance_of(str)
+    )
+    schema_type = field(default=None, kw_only=True)
+    schema = field(default={
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema//contexts/generic",
+        "@type": 'None',
+    })
     # order = attr.ib(validator=attr.validators.deep_iterable(
     #     member_validator = attr.validators.instance_of(str),
     #     iterable_validator = attr.validators.instance_of(list)
@@ -63,14 +76,14 @@ class SchemaBase:
     #         json.dump(props, ff, sort_keys=True, indent=4)
 
     @classmethod
-    # def from_data(cls, data):
-    #     if cls.schema_type is None:
-    #         raise ValueError("SchemaBase cannot be used to instantiate class")
-    #     if cls.schema_type != data["@type"]:
-    #         raise ValueError(f"Mismatch in type {data['@type']} != {cls.schema_type}")
-    #     klass = cls()
-    #     klass.schema = data
-    #     return klass
+    def from_data(cls, data, schema_type=None):
+        klass = cls(schema_type=schema_type)
+        if klass.schema_type is None:
+            raise ValueError("SchemaBase cannot be used to instantiate class")
+        if klass.schema_type != data["@type"]:
+            raise ValueError(f"Mismatch in type {data['@type']} != {klass.schema_type}")
+        klass.schema = data
+        return klass
 
     @classmethod
     def from_file(cls, filepath):
