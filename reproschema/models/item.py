@@ -33,6 +33,7 @@ class Item(SchemaBase):
         visible: bool = True,
         required: bool = False,
         skippable: bool = True,
+        read_only: bool = False,
     ):
         super().__init__(
             at_id=name,
@@ -49,6 +50,7 @@ class Item(SchemaBase):
         self.required = required
         self.skippable = skippable
         self.question = question
+        self.read_only = (read_only,)
 
         """
         The responseOptions dictionary is kept empty until the file has to be written
@@ -82,122 +84,127 @@ class Item(SchemaBase):
     # StaticReadOnly: Static/Static.vue
 
     def set_input_type(self):
-        if not self.input_type:
+
+        SUPPORTED_TYPES = (
+            "text",
+            "multitext",
+            "int",
+            "float",
+            "date",
+            "time",
+            "time_range",
+            "language",
+            "country",
+            "state",
+            "email",
+            "id",
+        )
+
+        if not self.input_type or self.input_type in ["select", "radio", "slider"]:
             return
+
+        if self.input_type in SUPPORTED_TYPES:
+            self.response_options.unset(
+                ["maxLength", "choices", "maxValue", "multipleChoice", "minValue"]
+            )
+
         if self.input_type == "text":
-            self.set_input_type_as_text()
-        if self.input_type == "multitext":
-            self.set_input_type_as_multitext()
+            self.schema["ui"]["inputType"] = "text"
+            self.response_options.set_type("string")
+            self.response_options.set_length(300)
+
+        elif self.input_type == "multitext":
+            self.schema["ui"]["inputType"] = "multitext"
+            self.response_options.set_length(300)
+            self.response_options.set_type("string")
+
         elif self.input_type == "int":
             self.set_input_type_numeric("number", "integer")
+
         elif self.input_type == "float":
             self.set_input_type_numeric("float", "float")
+
         elif self.input_type == "year":
             self.schema["ui"]["inputType"] = "year"
             self.response_options.set_type("date")
             self.response_options.unset(
                 ["maxLength", "choices", "maxValue", "multipleChoice", "minValue"]
             )
+
         elif self.input_type == "date":
             self.schema["ui"]["inputType"] = "date"
             self.response_options.set_type("date")
-            self.response_options.unset(
-                ["maxLength", "choices", "maxValue", "multipleChoice", "minValue"]
-            )
+
         elif self.input_type == "time_range":
             self.schema["ui"]["inputType"] = "timeRange"
             self.response_options.set_type("datetime")
-            self.response_options.unset(
-                ["maxLength", "choices", "maxValue", "multipleChoice", "minValue"]
-            )
+
         elif self.input_type == "language":
             self.set_input_type_as_language()
+
         elif self.input_type == "country":
             self.set_input_type_as_country()
+
         elif self.input_type == "state":
             self.set_input_type_as_state()
+
         elif self.input_type == "email":
             self.schema["ui"]["inputType"] = "email"
             self.response_options.set_type("string")
-            self.response_options.unset(
-                ["maxLength", "choices", "maxValue", "multipleChoice", "minValue"]
-            )
+
         elif self.input_type == "id":
             self.schema["ui"]["inputType"] = "pid"
             self.response_options.set_type("string")
-            self.response_options.unset(
-                ["maxLength", "choices", "maxValue", "multipleChoice", "minValue"]
+
+        else:
+
+            raise ValueError(
+                f"""
+            Input_type {self.input_type} not supported.
+            Supported input_types are: {SUPPORTED_TYPES}
+            """
             )
+
+        # to remove empty options keys
+        # self.response_options.sort()
 
     def set_input_type_numeric(self, arg0, arg1):
         self.schema["ui"]["inputType"] = arg0
         self.response_options.set_type(arg1)
-        self.response_options.unset(
-            ["maxLength", "choices", "maxValue", "multipleChoice", "minValue"]
-        )
 
     """
     input types with preset response choices
     """
 
     def set_input_type_as_language(self):
-
         URL = self.set_input_from_preset(
             "https://raw.githubusercontent.com/ReproNim/reproschema-library/",
             "selectLanguage",
         )
-
         self.response_options.set_multiple_choice(True)
         self.response_options.use_preset(f"{URL}master/resources/languages.json")
 
     def set_input_type_as_country(self):
-
         URL = self.set_input_from_preset(
             "https://raw.githubusercontent.com/samayo/country-json/master/src/country-by-name.json",
             "selectCountry",
         )
-
         self.response_options.use_preset(URL)
         self.response_options.set_length(50)
 
     def set_input_type_as_state(self):
-
         URL = self.set_input_from_preset(
             "https://gist.githubusercontent.com/mshafrir/2646763/raw/8b0dbb93521f5d6889502305335104218454c2bf/states_hash.json",
             "selectState",
         )
-
         self.response_options.use_preset(URL)
 
     def set_input_from_preset(self, arg0, arg1):
         result = arg0
         self.schema["ui"]["inputType"] = arg1
         self.response_options.set_type("string")
-        self.response_options.unset(
-            ["maxLength", "choices", "maxValue", "multipleChoice", "minValue"]
-        )
+
         return result
-
-    """
-    input types requiring user typed input
-    """
-
-    def set_input_type_as_text(self, length=300):
-        self.set_input_type_generic_text("text", length)
-        self.response_options.unset(
-            ["maxValue", "minValue", "multipleChoice", "choices"]
-        )
-
-    def set_input_type_as_multitext(self, length=300):
-        self.set_input_type_generic_text("multitext", length)
-        self.response_options.unset(
-            ["maxValue", "minValue", "multipleChoice", "choices"]
-        )
-
-    def set_input_type_generic_text(self, arg0, length):
-        self.schema["ui"]["inputType"] = arg0
-        self.response_options.set_type("string")
-        self.response_options.set_length(length)
 
     """
     input types with 'different response choices'
@@ -219,6 +226,7 @@ class Item(SchemaBase):
         self.set_input_type_rasesli("select", response_options)
 
     def set_input_type_as_slider(self, response_options: ResponseOption):
+        response_options.set_multiple_choice(False)
         self.set_input_type_rasesli("slider", response_options)
 
     def set_input_type_rasesli(self, arg0, response_options: ResponseOption):
@@ -229,15 +237,10 @@ class Item(SchemaBase):
     """
     UI
     """
-    # are input_type and read_only specific properties to items
-    # or should they be brought up into the base class?
-    # or be made part of an UI class?
 
-    # def set_input_type(self, input_type):
-    #     self.schema["ui"]["inputType"] = input_type
-
-    def set_read_only_value(self, value):
-        self.schema["ui"]["readonlyValue"] = value
+    def set_read_only(self, value: bool = False):
+        self.read_only = value
+        self.schema["ui"]["readonlyValue"] = self.read_only
 
     """
     writing, reading, sorting, unsetting

@@ -72,10 +72,7 @@ def test_radio():
     response_options = ResponseOption()
     response_options.add_choice("Not at all", 0, "en")
     response_options.add_choice("Several days", 1, "en")
-    # TODO
-    # set_min and set_max cold probably be combined into a single method that gets
-    # those values from the content of the choice key
-    response_options.set_max(1)
+    response_options.set_multiple_choice(False)
 
     item.set_input_type_as_radio(response_options)
 
@@ -107,7 +104,7 @@ def test_select():
     response_options.add_choice("Response option 1", 0)
     response_options.add_choice("Response option 2", 1)
     response_options.add_choice("Response option 3", 2)
-    response_options.set_max(2)
+    response_options.set_multiple_choice(False)
 
     item.set_input_type_as_select(response_options)
 
@@ -141,7 +138,6 @@ def test_slider():
     response_options.add_choice("so so", 2)
     response_options.add_choice("a lot", 3)
     response_options.add_choice("very much", 4)
-    response_options.set_max(4)
 
     item.set_input_type_as_slider(response_options)
 
@@ -170,7 +166,7 @@ def test_read_only():
     item.set_filename("activity1_total_score")
     item.schema["prefLabel"] = "activity1_total_score"
     item.set_description("Score item for Activity 1")
-    item.set_read_only_value(True)
+    item.set_read_only(True)
     item.response_options.set_max(3)
     item.response_options.set_min(0)
     item.unset(["question"])

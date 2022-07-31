@@ -1,10 +1,5 @@
 {
     "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
     "@id": "valueConstraints.jsonld",
-    "@type": "reproschema:ResponseOption",
-    "valueType": "",
-    "minValue": 0,
-    "maxValue": 0,
-    "choices": [],
-    "multipleChoice": false
+    "@type": "reproschema:ResponseOption"
 }

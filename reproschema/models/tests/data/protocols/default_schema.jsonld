@@ -20,8 +20,6 @@
             "reproschema:AutoAdvance",
             "reproschema:AllowExport"
         ],
-        "shuffle": false,
-        "order": [],
-        "addProperties": []
+        "shuffle": false
     }
 }

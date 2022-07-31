@@ -27,7 +27,6 @@ def test_example():
     for i in range(1, 5):
         response_options.add_choice("", i)
     response_options.add_choice("Completely", 6)
-    response_options.set_max(6)
 
     response_options.write(response_options_dir)
     content, expected = load_jsons(response_options_dir, response_options)

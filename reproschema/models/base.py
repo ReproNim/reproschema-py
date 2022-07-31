@@ -274,4 +274,8 @@ class SchemaBase:
         removing any key with no associated value
         or that is not in the key list
         """
-        return OrderedDict((k, old_dict[k]) for k in key_list if k in old_dict)
+        return OrderedDict(
+            (k, old_dict[k])
+            for k in key_list
+            if (k in old_dict and old_dict[k] not in ["", [], None])
+        )

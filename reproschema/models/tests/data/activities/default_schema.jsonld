@@ -13,8 +13,6 @@
     },
     "ui": {
         "shuffle": false,
-        "order": [],
-        "addProperties": [],
         "allow": [
             "reproschema:AutoAdvance",
             "reproschema:AllowExport"

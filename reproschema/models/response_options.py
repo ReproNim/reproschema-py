@@ -25,7 +25,9 @@ class ResponseOption(SchemaBase):
     #
     # self.options and self.schema
 
-    def __init__(self, name="valueConstraints", schemaVersion=None):
+    def __init__(
+        self, name="valueConstraints", multiple_choice=None, schemaVersion=None
+    ):
         super().__init__(
             at_id=name,
             schema_order=options_order,
@@ -34,13 +36,8 @@ class ResponseOption(SchemaBase):
             ext=".jsonld",
             suffix="",
         )
-        self.options = {
-            "valueType": "",
-            "minValue": 0,
-            "maxValue": 0,
-            "choices": [],
-            "multipleChoice": False,
-        }
+        self.options = {"choices": []}
+        self.set_multiple_choice(multiple_choice)
 
     def set_defaults(self):
         self.options["@context"] = self.schema["@context"]
@@ -57,23 +54,33 @@ class ResponseOption(SchemaBase):
         for i in keys:
             self.options.pop(i, None)
 
-    def set_type(self, type):
-        self.options["valueType"] = f"xsd:{type}"
+    def set_type(self, value: str = None):
+        if value is not None:
+            self.options["valueType"] = f"xsd:{value}"
 
-    # TODO a nice thing to do would be to read the min and max value
-    # from the rest of the content of self.options
-    # could avoid having the user to input those
-    def set_min(self, value):
-        self.options["minValue"] = value
+    def values_all_options(self):
+        return [i["value"] for i in self.options["choices"] if "value" in i]
 
-    def set_max(self, value):
-        self.options["maxValue"] = value
+    def set_min(self, value: int = None):
+        if value is not None:
+            self.options["minValue"] = value
+        elif len(self.options["choices"]) > 1:
+            self.options["minValue"] = min(self.values_all_options())
 
-    def set_length(self, value):
-        self.options["maxLength"] = value
+    def set_max(self, value: int = None):
+        if value is not None:
+            self.options["maxValue"] = value
+        elif len(self.options["choices"]) > 1:
+            self.options["maxValue"] = max(self.values_all_options())
 
-    def set_multiple_choice(self, value):
-        self.options["multipleChoice"] = value
+    def set_length(self, value: int = None):
+        if value is not None:
+            self.options["maxLength"] = value
+
+    def set_multiple_choice(self, value: bool = None):
+        if value is not None:
+            self.multiple_choice = value
+            self.options["multipleChoice"] = value
 
     def use_preset(self, URI):
         """
@@ -84,6 +91,8 @@ class ResponseOption(SchemaBase):
 
     def add_choice(self, choice, value, lang=DEFAULT_LANG):
         self.options["choices"].append({"name": {lang: choice}, "value": value})
+        self.set_max()
+        self.set_min()
 
     def sort(self):
         reordered_dict = self.reorder_dict_skip_missing(self.options, self.schema_order)
