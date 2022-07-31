@@ -1,21 +1,22 @@
 {
     "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
     "@type": "reproschema:Field",
-    "@id": "text.jsonld",
+    "@id": "country",
     "prefLabel": {
-        "en": "text"
+        "en": "country"
     },
-    "description": "text",
+    "description": "country",
     "schemaVersion": "1.0.0-rc4",
     "version": "0.0.1",
     "ui": {
-        "inputType": "text"
+        "inputType": "selectCountry"
     },
     "question": {
-        "en": "question for text item"
+        "en": "select a country"
     },
     "responseOptions": {
         "valueType": "xsd:string",
-        "maxLength": 300
+        "maxLength": 50,
+        "choices": "https://raw.githubusercontent.com/samayo/country-json/master/src/country-by-name.json"
     }
 }

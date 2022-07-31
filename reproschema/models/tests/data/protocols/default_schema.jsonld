@@ -13,7 +13,7 @@
         "inLanguage": "en"
     },
     "preamble": {
-        "en": ""
+        "en": "default"
     },
     "ui": {
         "allow": [

@@ -1,19 +1,17 @@
 {
     "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
     "@type": "reproschema:Field",
-    "@id": "text.jsonld",
+    "@id": "default",
     "prefLabel": {
-        "en": "text"
+        "en": "default"
     },
-    "description": "text",
+    "description": "default",
     "schemaVersion": "1.0.0-rc4",
     "version": "0.0.1",
     "ui": {
         "inputType": "text"
     },
-    "question": {
-        "en": "question for text item"
-    },
+    "question": {},
     "responseOptions": {
         "valueType": "xsd:string",
         "maxLength": 300

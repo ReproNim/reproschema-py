@@ -1,0 +1,22 @@
+{
+    "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
+    "@type": "reproschema:Field",
+    "@id": "language",
+    "prefLabel": {
+        "en": "language"
+    },
+    "description": "language",
+    "schemaVersion": "1.0.0-rc4",
+    "version": "0.0.1",
+    "ui": {
+        "inputType": "selectLanguage"
+    },
+    "question": {
+        "en": "This is an item where the user can select several language."
+    },
+    "responseOptions": {
+        "valueType": "xsd:string",
+        "multipleChoice": true,
+        "choices": "https://raw.githubusercontent.com/ReproNim/reproschema-library/master/resources/languages.json"
+    }
+}

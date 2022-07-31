@@ -1,21 +1,20 @@
 {
     "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
     "@type": "reproschema:Field",
-    "@id": "text.jsonld",
+    "@id": "integer",
     "prefLabel": {
-        "en": "text"
+        "en": "integer"
     },
-    "description": "text",
+    "description": "This is a integer item.",
     "schemaVersion": "1.0.0-rc4",
     "version": "0.0.1",
     "ui": {
-        "inputType": "text"
+        "inputType": "number"
     },
     "question": {
-        "en": "question for text item"
+        "en": "This is an item where the user can input a integer."
     },
     "responseOptions": {
-        "valueType": "xsd:string",
-        "maxLength": 300
+        "valueType": "xsd:integer"
     }
 }

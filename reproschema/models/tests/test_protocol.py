@@ -1,22 +1,14 @@
-import os, sys, json
+import os
+from pathlib import Path
 
-from ..protocol import Protocol
-from ..activity import Activity
+from reproschema.models.activity import Activity
+from reproschema.models.protocol import Protocol
 
-my_path = os.path.dirname(os.path.abspath(__file__))
+my_path = Path(__file__).resolve().parent
 
+from utils import load_jsons, clean_up, output_dir
 
-# TODO
-# refactor across the different test modules
-protocol_dir = os.path.join(my_path, "protocols")
-if not os.path.exists(protocol_dir):
-    os.makedirs(os.path.join(protocol_dir))
-
-"""
-Only for the few cases when we want to check against some of the files in
-reproschema/tests/data
-"""
-reproschema_test_data = os.path.join(my_path, "..", "..", "tests", "data")
+protocol_dir = output_dir("protocols")
 
 
 def test_default():
@@ -26,21 +18,21 @@ def test_default():
     so  `reproschema validate` will complain if you run it in this
     """
 
-    protocol = Protocol()
+    protocol = Protocol(name="default")
     protocol.set_defaults()
-
     protocol.write(protocol_dir)
-    protocol_content, expected = load_jsons(protocol)
+
+    protocol_content, expected = load_jsons(protocol_dir, protocol)
     assert protocol_content == expected
 
-    clean_up(protocol)
+    clean_up(protocol_dir, protocol)
 
 
 def test_protocol():
 
-    protocol = Protocol()
-    protocol.set_defaults("protocol1")
-    protocol.set_pref_label("Protocol1")
+    protocol = Protocol(name="protocol1")
+    protocol.set_defaults()
+    protocol.set_pref_label(pref_label="Protocol1", lang="en")
     protocol.set_description("example Protocol")
     protocol.set_landing_page("http://example.com/sample-readme.md")
 
@@ -52,37 +44,12 @@ def test_protocol():
     activity_1 = Activity()
     activity_1.set_defaults("activity1")
     activity_1.set_pref_label("Screening")
-    activity_1.set_URI(os.path.join("..", "activities", activity_1.get_filename()))
+    activity_1.URI = os.path.join("..", "activities", activity_1.at_id)
     protocol.append_activity(activity_1)
 
     protocol.write(protocol_dir)
-    protocol_content, expected = load_jsons(protocol)
+
+    protocol_content, expected = load_jsons(protocol_dir, protocol)
     assert protocol_content == expected
 
-    clean_up(protocol)
-
-
-"""
-HELPER FUNCTIONS
-"""
-
-
-def load_jsons(obj):
-
-    output_file = os.path.join(protocol_dir, obj.get_filename())
-    content = read_json(output_file)
-
-    data_file = os.path.join(my_path, "data", "protocols", obj.get_filename())
-    expected = read_json(data_file)
-
-    return content, expected
-
-
-def read_json(file):
-
-    with open(file, "r") as ff:
-        return json.load(ff)
-
-
-def clean_up(obj):
-    os.remove(os.path.join(protocol_dir, obj.get_filename()))
+    clean_up(protocol_dir, protocol)

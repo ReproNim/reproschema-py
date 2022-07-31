@@ -1,6 +1,24 @@
+from .activity import Activity
 from .base import SchemaBase
 
+
 DEFAULT_LANG = "en"
+
+schema_order = [
+    "@context",
+    "@type",
+    "@id",
+    "prefLabel",
+    "description",
+    "schemaVersion",
+    "version",
+    "landingPage",
+    "preamble",
+    "citation",
+    "image",
+    "compute",
+    "ui",
+]
 
 
 class Protocol(SchemaBase):
@@ -8,25 +26,41 @@ class Protocol(SchemaBase):
     class to deal with reproschema protocols
     """
 
-
-    def __init__(self, version=None):
+    def __init__(
+        self,
+        name="protocol",
+        schemaVersion=None,
+        prefLabel="protocol",
+        suffix="_schema",
+        ext=".jsonld",
+        lang=DEFAULT_LANG,
+    ):
         """
         Rely on the parent class for construction of the instance
         """
-        super().__init__(version=version, schema_type="reproschema:Protocol")
+        super().__init__(
+            at_id=name,
+            schemaVersion=schemaVersion,
+            type="reproschema:Protocol",
+            prefLabel={lang: prefLabel},
+            schema_order=schema_order,
+            suffix=suffix,
+            ext=ext,
+            lang=lang,
+        )
 
-    def set_defaults(self, name="default"):
-        self._SchemaBase__set_defaults(name)
+    def set_defaults(self, name=None):
+        if not name:
+            name = self.at_id
+        super().set_defaults(name)
         self.set_landing_page("README-en.md")
-        # does it make sense to give a preamble by default to protocols since
-        # they already have a landing page?
-        self.set_preamble()
+        self.set_preamble(name)
         self.set_ui_default()
 
-    def set_landing_page(self, landing_page_uri, lang=DEFAULT_LANG):
+    def set_landing_page(self, landing_page_uri: str, lang=DEFAULT_LANG):
         self.schema["landingPage"] = {"@id": landing_page_uri, "inLanguage": lang}
 
-    def append_activity(self, activity):
+    def append_activity(self, activity: Activity):
         """
         We get from an activity instance the info we need to update the protocol scheme.
 
@@ -41,46 +75,20 @@ class Protocol(SchemaBase):
         # TODO
         # - find a way to reorder, remove or add an activity
         # at any point in the protocol
-        # - this method is nearly identical to the append_item method of Activity
-        # and should probably be refactored into a single method of the parent class
-        # and ideally into a method of a yet to be created UI class
 
-        property = {
+        activity_property = {
             # variable name is name of activity without prefix
             "variableName": activity.get_basename().replace("_schema", ""),
-            "isAbout": activity.get_URI(),
-            "prefLabel": activity.get_pref_label(),
+            "isAbout": activity.URI,
+            "prefLabel": activity.prefLabel,
             "isVis": activity.visible,
             "requiredValue": activity.required,
         }
-        if activity.skippable:
-            property["allow"] = ["reproschema:Skipped"]
-
-        self.schema["ui"]["order"].append(activity.get_URI())
-        self.schema["ui"]["addProperties"].append(property)
+        self.append_to_ui(activity, activity_property)
 
     """
     writing, reading, sorting, unsetting
     """
-
-    def sort(self):
-        schema_order = [
-            "@context",
-            "@type",
-            "@id",
-            "prefLabel",
-            "description",
-            "schemaVersion",
-            "version",
-            "landingPage",
-            "preamble",
-            "citation",
-            "image",
-            "compute",
-            "ui",
-        ]
-        self.sort_schema(schema_order)
-        self.sort_ui()
 
     def write(self, output_dir):
         self.sort()

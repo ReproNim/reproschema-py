@@ -1,5 +1,8 @@
 import json
-from . import Protocol, Activity, Item
+
+from . import Activity
+from . import Item
+from . import Protocol
 
 
 def load_schema(filepath):

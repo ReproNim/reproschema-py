@@ -1,4 +1,6 @@
-from .. import Protocol, Activity, Item
+from reproschema.models import Activity
+from reproschema.models import Item
+from reproschema.models import Protocol
 
 
 def test_constructors():
@@ -6,11 +8,11 @@ def test_constructors():
     Activity()
     Item()
     version = "1.0.0-rc2"
-    proto = Protocol(version=version)
+    proto = Protocol(schemaVersion=version)
     assert proto.schema["schemaVersion"] == version
-    act = Activity(version=version)
+    act = Activity(schemaVersion=version)
     assert act.schema["schemaVersion"] == version
-    item = Item(version=version)
+    item = Item(schemaVersion=version)
     assert item.schema["schemaVersion"] == version
 
 

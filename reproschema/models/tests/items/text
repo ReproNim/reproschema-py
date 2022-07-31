@@ -1,7 +1,7 @@
 {
     "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
     "@type": "reproschema:Field",
-    "@id": "text.jsonld",
+    "@id": "text",
     "prefLabel": {
         "en": "text"
     },
@@ -16,6 +16,6 @@
     },
     "responseOptions": {
         "valueType": "xsd:string",
-        "maxLength": 300
+        "maxLength": 100
     }
 }

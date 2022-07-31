@@ -11,7 +11,7 @@
     "ui": {
         "inputType": "text"
     },
-    "question": {},
+    "question": {"en": ""},
     "responseOptions": {
         "valueType": "xsd:string",
         "maxLength": 300
