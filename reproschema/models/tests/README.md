@@ -35,14 +35,3 @@ pip install -e .
 ```
 
 More [here](../../README.md)
-
-## TODO
-
-- a lot of repeats in the test code base can be refactored
-  - especially for `test_items.py` a lot of those tests can be parametrized
-    (since apparently pytest allows this).
-  - the "clean up" after each passed test could be handle by a pytest fixture
-  - the helper functions are also nearly identical in all 3 test modules and
-    should be refactored
-  - some of the methods of the base class should probably be test on their own
-    rather than having tests for the sub classes that also "test" them.
