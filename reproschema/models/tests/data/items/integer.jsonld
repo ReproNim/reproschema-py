@@ -5,11 +5,11 @@
     "prefLabel": {
         "en": "integer"
     },
-    "description": "This is a integer item.",
+    "description": "integer",
     "schemaVersion": "1.0.0-rc4",
     "version": "0.0.1",
     "question": {
-        "en": "This is an item where the user can input a integer."
+        "en": "item to input a integer"
     },
     "ui": {
         "inputType": "number"

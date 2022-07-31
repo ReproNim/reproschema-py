@@ -190,6 +190,9 @@ class Item(SchemaBase):
 
     def set_input_type_as_multitext(self, length=300):
         self.set_input_type_generic_text("multitext", length)
+        self.response_options.unset(
+            ["maxValue", "minValue", "multipleChoice", "choices"]
+        )
 
     def set_input_type_generic_text(self, arg0, length):
         self.schema["ui"]["inputType"] = arg0
