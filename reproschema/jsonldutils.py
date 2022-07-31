@@ -1,8 +1,12 @@
-from pyld import jsonld
-from pyshacl import validate as shacl_validate
 import json
 import os
-from .utils import start_server, stop_server, lgr
+
+from pyld import jsonld
+from pyshacl import validate as shacl_validate
+
+from .utils import lgr
+from .utils import start_server
+from .utils import stop_server
 
 
 def load_file(path_or_url, started=False, http_kwargs={}):

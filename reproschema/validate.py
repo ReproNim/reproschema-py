@@ -1,6 +1,10 @@
 import os
-from .utils import start_server, stop_server, lgr
-from .jsonldutils import load_file, validate_data
+
+from .jsonldutils import load_file
+from .jsonldutils import validate_data
+from .utils import lgr
+from .utils import start_server
+from .utils import stop_server
 
 
 def validate_dir(directory, shape_file, started=False, http_kwargs={}):

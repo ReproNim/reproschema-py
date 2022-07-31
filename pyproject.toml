@@ -1,4 +1,3 @@
 [tool.pytest.ini_options]
 minversion = "4.4.0"
 addopts = "-ra -vv"
-

@@ -1,6 +1,9 @@
 import os
-from ..validate import validate_dir, validate
+
 import pytest
+
+from ..validate import validate
+from ..validate import validate_dir
 
 
 def test_validate():
