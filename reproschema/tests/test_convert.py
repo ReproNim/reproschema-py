@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from ..jsonldutils import to_newformat
+from reproschema.jsonldutils import to_newformat
 
 
 @pytest.fixture

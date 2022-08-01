@@ -2,8 +2,8 @@ import os
 
 import pytest
 
-from ..validate import validate
-from ..validate import validate_dir
+from reproschema.validate import validate
+from reproschema.validate import validate_dir
 
 
 def test_validate():
