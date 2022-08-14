@@ -15,9 +15,10 @@ item_dir = output_dir("items")
 
 def test_default():
 
-    item = Item(name="default")
+    item = Item(name="default", output_dir=item_dir)
+    print(item.question)
 
-    item.write(item_dir)
+    item.write()
     item_content, expected = load_jsons(item_dir, item)
     assert item_content == expected
 
@@ -43,9 +44,11 @@ def test_default():
 )
 def test_items(name, question, input_type):
 
-    item = Item(name=name, question=question, input_type=input_type)
+    item = Item(
+        name=name, question=question, input_type=input_type, output_dir=item_dir
+    )
 
-    item.write(item_dir)
+    item.write()
     item_content, expected = load_jsons(item_dir, item)
     assert item_content == expected
 
@@ -67,28 +70,27 @@ tested both with:
 
 def test_radio():
 
-    item = Item(name="radio", question="question for radio item")
-
-    response_options = ResponseOption()
+    response_options = ResponseOption(multiple_choice=False)
     response_options.add_choice("Not at all", 0, "en")
     response_options.add_choice("Several days", 1, "en")
-    response_options.set_multiple_choice(False)
 
+    item = Item(name="radio", question="question for radio item", output_dir=item_dir)
     item.set_input_type_as_radio(response_options)
 
-    item.write(item_dir)
+    item.write()
     item_content, expected = load_jsons(item_dir, item)
     assert item_content == expected
 
     clean_up(item_dir, item)
 
     item.set_filename("radio multiple")
-    item.set_description("radio multiple")
+    item.description = "radio multiple"
+    item.update()
     item.set_pref_label("radio multiple")
     item.set_question("question for radio item with multiple responses")
     response_options.set_multiple_choice(True)
     item.set_input_type_as_radio(response_options)
-    item.write(item_dir)
+    item.write()
 
     item_content, expected = load_jsons(item_dir, item)
     assert item_content == expected
@@ -98,29 +100,28 @@ def test_radio():
 
 def test_select():
 
-    item = Item(name="select", question="question for select item")
-
-    response_options = ResponseOption()
+    response_options = ResponseOption(multiple_choice=False)
     response_options.add_choice("Response option 1", 0)
     response_options.add_choice("Response option 2", 1)
     response_options.add_choice("Response option 3", 2)
-    response_options.set_multiple_choice(False)
 
+    item = Item(name="select", question="question for select item", output_dir=item_dir)
     item.set_input_type_as_select(response_options)
 
-    item.write(item_dir)
+    item.write()
     item_content, expected = load_jsons(item_dir, item)
     assert item_content == expected
 
     clean_up(item_dir, item)
 
     item.set_filename("select multiple")
-    item.set_description("select multiple")
+    item.description = "select multiple"
+    item.update()
     item.set_pref_label("select multiple")
     item.set_question("question for select item with multiple responses")
     response_options.set_multiple_choice(True)
     item.set_input_type_as_select(response_options)
-    item.write(item_dir)
+    item.write()
 
     item_content, expected = load_jsons(item_dir, item)
     assert item_content == expected
@@ -130,8 +131,6 @@ def test_select():
 
 def test_slider():
 
-    item = Item(name="slider", question="question for slider item")
-
     response_options = ResponseOption()
     response_options.add_choice("not at all", 0)
     response_options.add_choice("a bit", 1)
@@ -139,9 +138,10 @@ def test_slider():
     response_options.add_choice("a lot", 3)
     response_options.add_choice("very much", 4)
 
+    item = Item(name="slider", question="question for slider item", output_dir=item_dir)
     item.set_input_type_as_slider(response_options)
 
-    item.write(item_dir)
+    item.write()
     item_content, expected = load_jsons(item_dir, item)
     assert item_content == expected
 
@@ -160,18 +160,23 @@ reproschema_test_data = my_path.joinpath(my_path, "..", "..", "tests", "data")
 
 def test_read_only():
 
-    item = Item(name="activity1_total_score", ext="", input_type="int")
+    item = Item(
+        name="activity1_total_score",
+        ext="",
+        input_type="int",
+        read_only=True,
+        output_dir=item_dir,
+    )
     item.at_context = "../../../contexts/generic"
+    item.description = "Score item for Activity 1"
     item.update()
     item.set_filename("activity1_total_score")
-    item.schema["prefLabel"] = "activity1_total_score"
-    item.set_description("Score item for Activity 1")
-    item.set_read_only(True)
+    item.set_pref_label("activity1_total_score")
     item.response_options.set_max(3)
     item.response_options.set_min(0)
     item.unset(["question"])
 
-    item.write(item_dir)
+    item.write()
 
     output_file = os.path.join(item_dir, item.at_id)
     item_content = read_json(output_file)

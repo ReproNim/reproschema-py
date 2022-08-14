@@ -8,9 +8,6 @@
     "description": "default",
     "schemaVersion": "1.0.0-rc4",
     "version": "0.0.1",
-    "preamble": {
-        "en": "default"
-    },
     "ui": {
         "shuffle": false,
         "allow": [

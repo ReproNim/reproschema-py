@@ -12,9 +12,6 @@
 		"@id": "http://example.com/sample-readme.md",
 		"inLanguage": "en"
 	},
-	"preamble": {
-		"en": "protocol1"
-	},
 	"ui": {
 		"addProperties": [
 			{

@@ -1,24 +1,11 @@
+from pathlib import Path
+from typing import Dict
+from typing import Optional
+from typing import Union
+
 from .activity import Activity
+from .base import DEFAULT_LANG
 from .base import SchemaBase
-
-
-DEFAULT_LANG = "en"
-
-schema_order = [
-    "@context",
-    "@type",
-    "@id",
-    "prefLabel",
-    "description",
-    "schemaVersion",
-    "version",
-    "landingPage",
-    "preamble",
-    "citation",
-    "image",
-    "compute",
-    "ui",
-]
 
 
 class Protocol(SchemaBase):
@@ -28,68 +15,51 @@ class Protocol(SchemaBase):
 
     def __init__(
         self,
-        name="protocol",
-        schemaVersion=None,
-        prefLabel="protocol",
-        suffix="_schema",
-        ext=".jsonld",
-        lang=DEFAULT_LANG,
+        name: Optional[str] = "protocol",
+        schemaVersion: Optional[str] = None,
+        prefLabel: Optional[Union[str, Dict[str, str]]] = "protocol",
+        description: Optional[str] = "",
+        landingPage: Optional[dict] = None,
+        citation: Optional[str] = None,
+        suffix: Optional[str] = "_schema",
+        ext: Optional[str] = ".jsonld",
+        output_dir: Optional[Union[str, Path]] = Path.cwd(),
+        lang: Optional[str] = DEFAULT_LANG(),
     ):
-        """
-        Rely on the parent class for construction of the instance
-        """
+
+        schema_order = [
+            "@context",
+            "@type",
+            "@id",
+            "schemaVersion",
+            "version",
+            "prefLabel",
+            "description",
+            "landingPage",
+            "citation",
+            "image",
+            "compute",
+            "ui",
+        ]
+
         super().__init__(
             at_id=name,
+            at_type="reproschema:Protocol",
             schemaVersion=schemaVersion,
-            type="reproschema:Protocol",
             prefLabel={lang: prefLabel},
+            description=description,
+            landingPage=landingPage,
+            citation=citation,
             schema_order=schema_order,
             suffix=suffix,
             ext=ext,
+            output_dir=output_dir,
             lang=lang,
         )
-
-    def set_defaults(self, name=None):
-        if not name:
-            name = self.at_id
-        super().set_defaults(name)
-        self.set_landing_page("README-en.md")
-        self.set_preamble(name)
-        self.set_ui_default()
-
-    def set_landing_page(self, landing_page_uri: str, lang=DEFAULT_LANG):
-        self.schema["landingPage"] = {"@id": landing_page_uri, "inLanguage": lang}
+        self.ui.shuffle = False
+        self.update()
 
     def append_activity(self, activity: Activity):
-        """
-        We get from an activity instance the info we need to update the protocol scheme.
-
-        This appends the activity after all the other ones.
-
-        So this means the order of the activities will be dependent
-        on the order in which they are "read".
-
-        This implementation assumes that the activities are read
-        from a list and added one after the other.
-        """
-        # TODO
-        # - find a way to reorder, remove or add an activity
-        # at any point in the protocol
-
-        activity_property = {
-            # variable name is name of activity without prefix
-            "variableName": activity.get_basename().replace("_schema", ""),
-            "isAbout": activity.URI,
-            "prefLabel": activity.prefLabel,
-            "isVis": activity.visible,
-            "requiredValue": activity.required,
-        }
-        self.append_to_ui(activity, activity_property)
-
-    """
-    writing, reading, sorting, unsetting
-    """
-
-    def write(self, output_dir):
-        self.sort()
-        self._SchemaBase__write(output_dir)
+        self.ui.append(
+            obj=activity, variableName=activity.get_basename().replace("_schema", "")
+        )

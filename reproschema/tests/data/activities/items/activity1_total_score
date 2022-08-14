@@ -2,7 +2,9 @@
     "@context": "../../../contexts/generic",
     "@type": "reproschema:Field",
     "@id": "activity1_total_score",
-    "prefLabel": "activity1_total_score",
+    "prefLabel": {
+        "en": "activity1_total_score"
+    },
     "description": "Score item for Activity 1",
     "schemaVersion": "1.0.0-rc4",
     "version": "0.0.1",

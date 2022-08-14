@@ -18,9 +18,8 @@ def test_default():
     so  `reproschema validate` will complain if you run it in this
     """
 
-    protocol = Protocol(name="default")
-    protocol.set_defaults()
-    protocol.write(protocol_dir)
+    protocol = Protocol(name="default", output_dir=protocol_dir)
+    protocol.write()
 
     protocol_content, expected = load_jsons(protocol_dir, protocol)
     assert protocol_content == expected
@@ -30,24 +29,30 @@ def test_default():
 
 def test_protocol():
 
-    protocol = Protocol(name="protocol1")
-    protocol.set_defaults()
-    protocol.set_pref_label(pref_label="Protocol1", lang="en")
-    protocol.set_description("example Protocol")
-    protocol.set_landing_page("http://example.com/sample-readme.md")
+    protocol = Protocol(
+        name="protocol1",
+        prefLabel="Protocol1",
+        lang="en",
+        description="example Protocol",
+        output_dir=protocol_dir,
+    )
+    protocol.set_preamble(preamble="protocol1", lang="en")
+    protocol.set_landing_page(page="http://example.com/sample-readme.md")
+    protocol.ui.AutoAdvance = True
+    protocol.ui.AllowExport = True
+    protocol.ui.DisableBack = True
+    protocol.update()
 
-    auto_advance = True
-    allow_export = True
-    disable_back = True
-    protocol.set_ui_allow(auto_advance, allow_export, disable_back)
+    activity_1 = Activity(
+        name="activity1",
+        prefLabel="Screening",
+        lang="en",
+        output_dir=os.path.join("..", "activities"),
+    )
 
-    activity_1 = Activity()
-    activity_1.set_defaults("activity1")
-    activity_1.set_pref_label("Screening")
-    activity_1.URI = os.path.join("..", "activities", activity_1.at_id)
     protocol.append_activity(activity_1)
 
-    protocol.write(protocol_dir)
+    protocol.write()
 
     protocol_content, expected = load_jsons(protocol_dir, protocol)
     assert protocol_content == expected

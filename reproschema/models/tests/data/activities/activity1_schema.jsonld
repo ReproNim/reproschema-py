@@ -8,13 +8,13 @@
     "description": "Activity example 1",
     "schemaVersion": "1.0.0-rc4",
     "version": "0.0.1",
+    "preamble": {
+        "en": "Over the last 2 weeks, how often have you been bothered by any of the following problems?"
+    },
     "citation": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1495268/",
     "image": {
         "@type": "AudioObject",
         "contentUrl": "http://example.com/sample-image.png"
-    },
-    "preamble": {
-        "en": "Over the last 2 weeks, how often have you been bothered by any of the following problems?"
     },
     "compute": [
         {
@@ -23,35 +23,44 @@
         }
     ],
     "ui": {
-        "addProperties": [
-            {
-                "isAbout": "items/item1.jsonld",
-                "variableName": "item1",
-                "requiredValue": true,
-                "isVis": true
-            },
-            {
-                "variableName": "item_two",
-                "isAbout": "../other_dir/item_two.jsonld",
-                "requiredValue": true,
-                "isVis": true,
-                "allow": [
-                    "reproschema:Skipped"
-                ]
-            },
-            {
-                "isAbout": "items/activity1_total_score",
-                "variableName": "activity1_total_score",
-                "requiredValue": true,
-                "isVis": false
-            }
-        ],
+        "shuffle": false,
         "order": [
             "items/item1.jsonld",
             "../other_dir/item_two.jsonld",
             "items/activity1_total_score"
         ],
-        "shuffle": false,
+        "addProperties": [
+            {
+                "variableName": "item1",
+                "isAbout": "items/item1.jsonld",
+                "prefLabel": {
+                    "en": "item1"
+                },
+                "isVis": true,
+                "requiredValue": true
+            },
+            {
+                "variableName": "item_two",
+                "isAbout": "../other_dir/item_two.jsonld",
+                "prefLabel": {
+                    "en": "item2"
+                },
+                "isVis": true,
+                "requiredValue": true,
+                "allow": [
+                    "reproschema:Skipped"
+                ]
+            },
+            {
+                "variableName": "activity1_total_score",
+                "isAbout": "items/activity1_total_score",
+                "prefLabel": {
+                    "en": "activity1 total score"
+                },
+                "isVis": false,
+                "requiredValue": true
+            }
+        ],
         "allow": [
             "reproschema:AutoAdvance",
             "reproschema:AllowExport"
