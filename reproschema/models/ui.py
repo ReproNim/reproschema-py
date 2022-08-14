@@ -137,9 +137,11 @@ class UI:
             "isAbout": obj.URI,
             "prefLabel": obj.prefLabel,
             "isVis": obj.visible,
-            "requiredValue": obj.required,
         }
-        if obj.skippable:
+        if obj.required is not None:
+            obj_properties["requiredValue"] = obj.required
+
+        if obj.skippable is True:
             obj_properties["allow"] = ["reproschema:Skipped"]
 
         self.order.append(obj.URI)

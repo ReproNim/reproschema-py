@@ -94,6 +94,7 @@ class SchemaBase:
         converter=default_if_none(default={}),  # type: ignore
         validator=optional(instance_of(dict)),
     )
+    # TODO description is language specific
     description: str = field(
         factory=(str),
         converter=default_if_none(default=""),  # type: ignore
@@ -170,7 +171,6 @@ class SchemaBase:
     )
     required: Optional[bool] = field(
         factory=(bool),
-        converter=default_if_none(default=False),  # type: ignore
         validator=optional(instance_of(bool)),
     )
     skippable: Optional[bool] = field(
