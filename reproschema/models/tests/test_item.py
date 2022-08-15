@@ -9,7 +9,8 @@ from utils import read_json
 
 from reproschema.models.base import AdditionalNoteObj
 from reproschema.models.item import Item
-from reproschema.models.item import ResponseOption
+from reproschema.models.response_options import ResponseOption
+from reproschema.models.response_options import unitOption
 
 item_dir = output_dir("items")
 
@@ -171,13 +172,26 @@ def test_item1():
             column="notes", source="redcap", value="some extra note"
         ).schema
     ]
-    print(additionalNotes)
     additionalNotes.append(
         AdditionalNoteObj(
             column="notes",
             source="redcap",
             value={"@id": "http://example.com/iri-example"},
         ).schema
+    )
+
+    response_options = ResponseOption(multipleChoice=False)
+    response_options.add_choice(name={"en": "Not at all", "es": "Para nada"}, value=0)
+    response_options.add_choice(
+        name={"en": "Several days", "es": "Varios días"}, value="a"
+    )
+    response_options.add_choice(
+        name={"en": "More than half the days", "es": "Más de la mitad de los días"},
+        value={"@id": "http://example.com/choice3"},
+    )
+    response_options.add_choice(
+        name={"en": "Nearly everyday", "es": "Casi todos los días"},
+        value={"@value": "choice-with-lang", "@language": "en"},
     )
 
     item = Item(
@@ -199,21 +213,42 @@ def test_item1():
     )
     item.at_context = "../../../contexts/generic"
     item.set_question(question="Poco interés o placer en hacer cosas", lang="es")
-
-    response_options = ResponseOption(multipleChoice=False)
-    response_options.add_choice(name={"en": "Not at all", "es": "Para nada"}, value=0)
-    response_options.add_choice(
-        name={"en": "Several days", "es": "Varios días"}, value="a"
-    )
-    response_options.add_choice(
-        name={"en": "More than half the days", "es": "Más de la mitad de los días"},
-        value={"@id": "http://example.com/choice3"},
-    )
-    response_options.add_choice(
-        name={"en": "Nearly everyday", "es": "Casi todos los días"},
-        value={"@value": "choice-with-lang", "@language": "en"},
-    )
     item.set_input_type(response_options=response_options)
+
+    item.write()
+
+    item_content, expected = load_jsons(item_dir, item)
+    assert item_content == expected
+
+    clean_up(item_dir, item)
+
+
+def test_item2():
+
+    item = Item(
+        name="item2",
+        input_type="float",
+        description="Q2 of example 1",
+        question="Current temperature.",
+        video={
+            "@type": "VideoObject",
+            "contentUrl": "http://media.freesound.org/data/0/previews/719__elmomo__12oclock_girona_preview.mp4",
+        },
+        read_only=None,
+        output_dir=item_dir,
+    )
+    item.at_context = "../../../contexts/generic"
+    item.set_question(question="Fiebre actual.", lang="es")
+
+    unitOption_0 = unitOption(value="°F", prefLabel="Fahrenheit")
+    unitOption_0.set_pref_label(pref_label="Fahrenheit", lang="es")
+
+    unitOption_1 = unitOption(value="°C", prefLabel="Celsius")
+    unitOption_1.set_pref_label(pref_label="Celsius", lang="es")
+
+    item.response_options.unitOptions = [unitOption_0.schema]
+    item.response_options.unitOptions.append(unitOption_1.schema)
+    item.set_response_options()
 
     item.write()
 

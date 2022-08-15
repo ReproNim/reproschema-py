@@ -156,8 +156,6 @@ class SchemaBase(SchemaUtils):
     Protocol, Activity, Field
     """
     # associatedMedia
-    #  video
-    #  audio
     prefLabel: Optional[dict] = field(
         factory=(dict),
         converter=default_if_none(default={}),  # type: ignore
@@ -228,7 +226,6 @@ class SchemaBase(SchemaUtils):
     """
     Field only
     """
-    # TODO additionalNotesObj
     inputType: Optional[str] = field(
         factory=(str),
         converter=default_if_none(default=""),  # type: ignore

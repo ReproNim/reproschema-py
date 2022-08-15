@@ -16,8 +16,47 @@ from attrs.validators import optional
 
 from .base import DEFAULT_LANG
 from .base import DEFAULT_VERSION
-from .utils import reorder_dict_skip_missing
 from .utils import SchemaUtils
+
+
+@define(kw_only=True)
+class unitOption(SchemaUtils):
+
+    value: Any = field(default=None)
+    prefLabel: Optional[Union[str, Dict[str, str]]] = field(
+        factory=(dict),
+        converter=default_if_none(default={}),  # type: ignore
+        validator=optional(instance_of((dict, str))),
+    )
+    lang: Optional[str] = field(
+        default=None,
+        converter=default_if_none(default=DEFAULT_LANG()),  # type: ignore
+        validator=optional(instance_of(str)),
+    )
+
+    def __attrs_post_init__(self) -> None:
+
+        if self.schema_order in [None, []]:
+            self.schema_order = [
+                "prefLabel",
+                "value",
+            ]
+        if isinstance(self.prefLabel, str):
+            self.prefLabel = {self.lang: self.prefLabel}
+
+        self.update()
+        self.sort_schema()
+
+    def set_pref_label(
+        self, pref_label: Optional[str] = None, lang: Optional[str] = None
+    ) -> None:
+        if pref_label is None:
+            return
+        if lang is None:
+            lang = self.lang
+
+        self.prefLabel[lang] = pref_label
+        self.update()
 
 
 @define(kw_only=True)
@@ -131,10 +170,10 @@ class ResponseOption(SchemaUtils):
         validator=optional(instance_of(int)),
     )
 
-    unitOptions: Optional[int] = field(
+    unitOptions: Optional[list] = field(
         default=None,
-        converter=default_if_none(default=""),  # type: ignore
-        validator=optional(instance_of(str)),
+        converter=default_if_none(default=[]),  # type: ignore
+        validator=optional(instance_of(list)),
     )
 
     unitCode: Optional[str] = field(
