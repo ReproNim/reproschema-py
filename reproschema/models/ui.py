@@ -102,7 +102,7 @@ class UI(SchemaUtils):
     def __attrs_post_init__(self) -> None:
 
         if self.schema_order in [None, []]:
-            self.schema_order = ["shuffle", "order", "addProperties", "allow"]
+            self.schema_order = ["shuffle", "order", "addProperties", "allow", "limit"]
             if self.at_type == "reproschema:Field":
                 self.schema_order = ["inputType", "readonlyValue"]
 
@@ -121,6 +121,7 @@ class UI(SchemaUtils):
             isVis=obj.visible,
             requiredValue=obj.required,
             skippable=obj.skippable,
+            limit=obj.limit,
         )
         this_property.update()
         this_property.sort_schema()

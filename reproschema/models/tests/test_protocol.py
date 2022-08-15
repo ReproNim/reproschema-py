@@ -81,6 +81,7 @@ def test_protocol_1():
     activity_1 = Activity(
         name="activity1",
         prefLabel="Screening",
+        limit="P1W/2020-08-01T13:00:00Z",
         lang="en",
         suffix="",
         output_dir=os.path.join("..", "activities"),

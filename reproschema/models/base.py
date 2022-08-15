@@ -105,6 +105,8 @@ class SchemaBase(SchemaUtils):
     Protocol, Activity, Field
     """
     # associatedMedia
+    #  video
+    #  audio
     prefLabel: dict = field(
         factory=(dict),
         converter=default_if_none(default={}),  # type: ignore
@@ -144,7 +146,7 @@ class SchemaBase(SchemaUtils):
     """
     # cronTable
     # messages
-    citation: str = field(
+    citation: Optional[str] = field(
         factory=(str),
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(instance_of(str)),
@@ -203,6 +205,11 @@ class SchemaBase(SchemaUtils):
         factory=(bool),
         converter=default_if_none(default=True),  # type: ignore
         validator=optional(instance_of(bool)),
+    )
+    limit: Optional[str] = field(
+        factory=(str),
+        converter=default_if_none(default=""),  # type: ignore
+        validator=optional(instance_of(str)),
     )
 
     """
