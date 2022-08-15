@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -41,6 +42,32 @@ def COMMON_SCHEMA_ORDER() -> list:
         "video",
         "ui",
     ]
+
+
+@define(kw_only=True)
+class AdditionalNoteObj(SchemaUtils):
+    column: Optional[str] = field(
+        factory=(str),
+        converter=default_if_none(default=""),  # type: ignore
+        validator=optional(instance_of(str)),
+    )
+    source: Optional[str] = field(
+        factory=(str),
+        converter=default_if_none(default=""),  # type: ignore
+        validator=optional(instance_of(str)),
+    )
+    value: Any = field(default=None)
+
+    def __attrs_post_init__(self) -> None:
+
+        if self.schema_order in [None, []]:
+            self.schema_order = [
+                "column",
+                "source",
+                "value",
+            ]
+
+        self.update().sort_schema()
 
 
 @define(kw_only=True)
@@ -216,6 +243,11 @@ class SchemaBase(SchemaUtils):
         converter=default_if_none(default={}),  # type: ignore
         validator=optional(instance_of(dict)),
     )
+    additionalNotesObj: Optional[list] = field(
+        factory=(list),
+        converter=default_if_none(default=[]),  # type: ignore
+        validator=optional(instance_of(list)),
+    )
 
     """
     UI related
@@ -318,6 +350,7 @@ class SchemaBase(SchemaUtils):
             "compute",
             "question",
             "messages",
+            "additionalNotesObj",
         ]
         for key in keys_to_update:
             self.schema[key] = self.__getattribute__(key)

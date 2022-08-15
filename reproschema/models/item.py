@@ -1,5 +1,7 @@
 from pathlib import Path
+from typing import Any
 from typing import Dict
+from typing import List
 from typing import Optional
 from typing import Union
 
@@ -27,6 +29,7 @@ class Item(SchemaBase):
         audio: Optional[Union[str, Dict[str, str]]] = None,
         video: Optional[Union[str, Dict[str, str]]] = None,
         preamble: Optional[str] = None,
+        additionalNotesObj: List[Dict[str, Any]] = None,
         visible: Optional[bool] = True,
         required: Optional[bool] = False,
         skippable: Optional[bool] = True,
@@ -43,6 +46,7 @@ class Item(SchemaBase):
         schema_order = COMMON_SCHEMA_ORDER() + [
             "question",
             "responseOptions",
+            "additionalNotesObj",
         ]
 
         super().__init__(
@@ -57,6 +61,7 @@ class Item(SchemaBase):
             image=image,
             audio=audio,
             video=video,
+            additionalNotesObj=additionalNotesObj,
             schema_order=schema_order,
             visible=visible,
             required=required,

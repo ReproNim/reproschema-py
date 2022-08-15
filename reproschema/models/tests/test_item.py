@@ -1,5 +1,4 @@
 import os
-from asyncio import QueueEmpty
 from pathlib import Path
 
 import pytest
@@ -8,6 +7,7 @@ from utils import load_jsons
 from utils import output_dir
 from utils import read_json
 
+from reproschema.models.base import AdditionalNoteObj
 from reproschema.models.item import Item
 from reproschema.models.item import ResponseOption
 
@@ -166,6 +166,20 @@ def test_slider():
 
 def test_item1():
 
+    additionalNotes = [
+        AdditionalNoteObj(
+            column="notes", source="redcap", value="some extra note"
+        ).schema
+    ]
+    print(additionalNotes)
+    additionalNotes.append(
+        AdditionalNoteObj(
+            column="notes",
+            source="redcap",
+            value={"@id": "http://example.com/iri-example"},
+        ).schema
+    )
+
     item = Item(
         name="item1",
         input_type="radio",
@@ -179,6 +193,7 @@ def test_item1():
             "@type": "AudioObject",
             "contentUrl": "http://media.freesound.org/sample-file.mp4",
         },
+        additionalNotesObj=additionalNotes,
         read_only=None,
         output_dir=item_dir,
     )
