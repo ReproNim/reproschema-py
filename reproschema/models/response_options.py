@@ -17,10 +17,11 @@ from attrs.validators import optional
 from .base import DEFAULT_LANG
 from .base import DEFAULT_VERSION
 from .utils import reorder_dict_skip_missing
+from .utils import SchemaUtils
 
 
 @define(kw_only=True)
-class Choice:
+class Choice(SchemaUtils):
 
     name: Optional[Union[str, Dict[str, str]]] = field(
         default=None,
@@ -37,56 +38,29 @@ class Choice:
         converter=default_if_none(default=DEFAULT_LANG()),  # type: ignore
         validator=optional(instance_of(str)),
     )
-    schema_order: Optional[list] = field(
-        default=None,
-        converter=default_if_none(
-            default=[
+
+    def __attrs_post_init__(self) -> None:
+
+        if self.schema_order in [None, []]:
+            self.schema_order = [
                 "name",
                 "value",
                 "image",
             ]
-        ),  # type: ignore
-        validator=optional(instance_of(list)),
-    )
-
-    #: contains the content that is read from or dumped in JSON
-    schema: Optional[dict] = field(
-        factory=(dict),
-        converter=default_if_none(default={}),  # type: ignore
-        validator=optional(instance_of(dict)),
-    )
-
-    def __attrs_post_init__(self) -> None:
 
         if isinstance(self.name, str):
             self.name = {self.lang: self.name}
 
         self.update()
-        self.sort()
+        self.sort_schema()
         self.drop_empty_values_from_schema()
 
     def update(self) -> None:
-        """Updates the schema content based on the attributes."""
-
-        for key in self.schema_order:
-            self.schema[key] = self.__getattribute__(key)
-
-    def sort(self) -> None:
-
-        reordered_dict = reorder_dict_skip_missing(self.schema, self.schema_order)
-
-        self.schema = reordered_dict
-
-    def drop_empty_values_from_schema(self) -> None:
-        tmp = dict(self.schema)
-        for key in tmp:
-            if self.schema[key] in [{}, [], ""]:
-                self.schema.pop(key)
-        self.schema = dict(self.schema)
+        super().update()
 
 
 @define(kw_only=True)
-class ResponseOption:
+class ResponseOption(SchemaUtils):
 
     SUPPORTED_VALUE_TYPES = (
         "",
@@ -191,26 +165,7 @@ class ResponseOption:
         converter=default_if_none(default=DEFAULT_LANG()),  # type: ignore
         validator=optional(instance_of(str)),
     )
-    schema_order: Optional[list] = field(
-        default=None,
-        converter=default_if_none(
-            default=[
-                "@type",
-                "@context",
-                "@id",
-                "valueType",
-                "choices",
-                "multipleChoice",
-                "minValue",
-                "maxValue",
-                "unitOptions",
-                "unitCode",
-                "datumType",
-                "maxLength",
-            ]
-        ),  # type: ignore
-        validator=optional(instance_of(list)),
-    )
+
     output_dir: Optional[Union[str, Path]] = field(
         default=None,
         converter=default_if_none(default=Path.cwd()),  # type: ignore
@@ -232,12 +187,23 @@ class ResponseOption:
         validator=optional(instance_of((str, Path))),
     )
 
-    #: contains the content that is read from or dumped in JSON
-    schema: Optional[dict] = field(
-        factory=(dict),
-        converter=default_if_none(default={}),  # type: ignore
-        validator=optional(instance_of(dict)),
-    )
+    def __attrs_post_init__(self) -> None:
+
+        if self.schema_order in [None, []]:
+            self.schema_order = [
+                "@type",
+                "@context",
+                "@id",
+                "valueType",
+                "choices",
+                "multipleChoice",
+                "minValue",
+                "maxValue",
+                "unitOptions",
+                "unitCode",
+                "datumType",
+                "maxLength",
+            ]
 
     def set_defaults(self) -> None:
         self.schema["@type"] = self.at_type
@@ -284,10 +250,7 @@ class ResponseOption:
         self.schema["@type"] = self.at_type
         self.schema["@context"] = self.at_context
 
-        for key in self.schema_order:
-            if key.startswith("@"):
-                continue
-            self.schema[key] = self.__getattribute__(key)
+        super().update()
 
     def set_filename(self, name: str = None) -> None:
         if name is None:
@@ -306,23 +269,10 @@ class ResponseOption:
     def get_basename(self) -> str:
         return Path(self.at_id).stem
 
-    def sort(self) -> None:
-        self.sort_schema()
-
-    def sort_schema(self) -> None:
-        reordered_dict = reorder_dict_skip_missing(self.schema, self.schema_order)
-        self.schema = reordered_dict
-
-    def drop_empty_values_from_schema(self) -> None:
-        tmp = dict(self.schema)
-        for key in tmp:
-            if self.schema[key] in [{}, [], "", None]:
-                self.schema.pop(key)
-
     def write(self, output_dir: Optional[Union[str, Path]] = None) -> None:
 
         self.update()
-        self.sort()
+        self.sort_schema()
         self.drop_empty_values_from_schema()
 
         if output_dir is None:

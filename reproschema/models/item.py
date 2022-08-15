@@ -105,7 +105,7 @@ class Item(SchemaBase):
     # static: Static/Static.vue
     # StaticReadOnly: Static/Static.vue
 
-    def set_input_type(self) -> None:
+    def set_input_type(self, response_options: ResponseOption = None) -> None:
 
         SUPPORTED_TYPES = (
             "text",
@@ -147,9 +147,6 @@ class Item(SchemaBase):
         ]:
             self.response_options.set_valueType("string")
 
-        if not self.inputType or self.inputType in ["select", "radio", "slider"]:
-            return
-
         if self.inputType in ["text", "multitext"]:
             self.response_options.maxLength = 300
             self.response_options.update()
@@ -177,29 +174,12 @@ class Item(SchemaBase):
             URL = "https://gist.githubusercontent.com/mshafrir/2646763/raw/8b0dbb93521f5d6889502305335104218454c2bf/states_hash.json"
             self.response_options.choices = URL
 
-    """
-    input types with 'different response choices'
-
-    Those methods require an instance of ResponseOptions as input and
-    it will replace the one initialized in the construction.
-    """
-
-    def set_input_type_as_radio(self, response_options: ResponseOption) -> None:
-        self.set_input_type_rasesli("radio", response_options)
-
-    def set_input_type_as_select(self, response_options: ResponseOption) -> None:
-        self.set_input_type_rasesli("select", response_options)
-
-    def set_input_type_as_slider(self, response_options: ResponseOption) -> None:
-        response_options.multipleChoice = False
-        self.set_input_type_rasesli("slider", response_options)
-
-    def set_input_type_rasesli(
-        self, arg0: str, response_options: ResponseOption
-    ) -> None:
-        self.ui.inputType = arg0
-        response_options.set_valueType("integer")
-        self.response_options = response_options
+        elif self.inputType in ["radio", "select", "slider"]:
+            if response_options is not None:
+                if self.inputType in ["slider"]:
+                    response_options.multipleChoice = False
+                self.response_options = response_options
+                self.response_options.set_valueType("integer")
 
     """
     writing, reading, sorting, unsetting
@@ -211,7 +191,7 @@ class Item(SchemaBase):
         Also removes some "unnecessary" fields.
         """
         self.response_options.update()
-        self.response_options.sort()
+        self.response_options.sort_schema()
         self.response_options.drop_empty_values_from_schema()
         self.response_options.schema.pop("@id")
         self.response_options.schema.pop("@type")

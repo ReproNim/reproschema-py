@@ -1,4 +1,3 @@
-import re
 from typing import Any
 from typing import Dict
 from typing import List
@@ -12,16 +11,13 @@ from attrs.validators import in_
 from attrs.validators import instance_of
 from attrs.validators import optional
 
-from .utils import reorder_dict_skip_missing
-
-# from .protocol import Protocol
-# from .activity import Activity
+from .utils import SchemaUtils
 
 
 @define(
     kw_only=True,
 )
-class UI:
+class UI(SchemaUtils):
 
     #: this is more to help set up things on the UI side than purely schema related
     SUPPORTED_INPUT_TYPES = (
@@ -103,34 +99,12 @@ class UI:
         validator=optional(instance_of(list)),
     )
 
-    schema_order: Optional[List[str]] = field(
-        validator=optional(instance_of(list)),
-    )
-
-    @schema_order.default
-    def _default_schema_order(self) -> list:
-        default = ["shuffle", "order", "addProperties", "allow"]
-        if self.at_type == "reproschema:Field":
-            default = ["inputType", "readonlyValue"]
-        return default
-
-    schema: Optional[Dict[str, Any]] = field(
-        validator=optional(instance_of(dict)),
-    )
-
-    @schema.default
-    def _default_schema(self) -> dict:
-        default = {
-            "shuffle": [],
-            "order": [],
-            "addProperties": [],
-            "allow": [],
-        }
-        if self.at_type == "reproschema:Field":
-            default = {"inputType": [], "readonlyValue": []}
-        return default
-
     def __attrs_post_init__(self) -> None:
+
+        if self.schema_order in [None, []]:
+            self.schema_order = ["shuffle", "order", "addProperties", "allow"]
+            if self.at_type == "reproschema:Field":
+                self.schema_order = ["inputType", "readonlyValue"]
 
         if self.at_type == "reproschema:ResponseOption":
             self.AllowExport = False
@@ -140,7 +114,7 @@ class UI:
 
     def append(self, obj, variableName: Optional[str] = None) -> None:
 
-        this_property = AddtionalPropertity(
+        this_property = AdditionalProperty(
             variableName=variableName,
             isAbout=obj.URI,
             prefLabel=obj.prefLabel,
@@ -149,7 +123,7 @@ class UI:
             skippable=obj.skippable,
         )
         this_property.update()
-        this_property.sort()
+        this_property.sort_schema()
         this_property.drop_empty_values_from_schema()
 
         self.order.append(obj.URI)
@@ -180,20 +154,13 @@ class UI:
 
         self.schema["inputType"] = self.inputType
 
-        self.sort()
-
-    def sort(self) -> Dict[str, Any]:
-        if self.schema is None:
-            return
-        reordered_dict = reorder_dict_skip_missing(self.schema, self.schema_order)
-        self.schema = reordered_dict
-        return reordered_dict
+        self.sort_schema()
 
 
 @define(
     kw_only=True,
 )
-class AddtionalPropertity:
+class AdditionalProperty(SchemaUtils):
 
     variableName: Optional[str] = field(
         default=None,
@@ -244,10 +211,16 @@ class AddtionalPropertity:
         validator=optional(instance_of(str)),
     )
 
-    schema_order: Optional[List[str]] = field(
-        default=None,
-        converter=default_if_none(
-            default=[
+    skippable: Optional[bool] = field(
+        factory=(bool),
+        converter=default_if_none(default=True),  # type: ignore
+        validator=optional(instance_of(bool)),
+    )
+
+    def __attrs_post_init__(self) -> None:
+
+        if self.schema_order in [None, []]:
+            self.schema_order = [
                 "variableName",
                 "isAbout",
                 "prefLabel",
@@ -259,37 +232,8 @@ class AddtionalPropertity:
                 "randomMaxDelay",
                 "schedule",
             ]
-        ),  # type: ignore
-        validator=optional(instance_of(list)),
-    )
-
-    skippable: Optional[bool] = field(
-        factory=(bool),
-        converter=default_if_none(default=True),  # type: ignore
-        validator=optional(instance_of(bool)),
-    )
-
-    schema: Optional[Dict[str, Any]] = field(
-        factory=(dict),
-        validator=optional(instance_of(dict)),
-    )
 
     def update(self) -> None:
-        """Updates the schema content based on the attributes."""
         if self.skippable is True:
             self.allow = ["reproschema:Skipped"]
-        for key in self.schema_order:
-            self.schema[key] = self.__getattribute__(key)
-
-    def drop_empty_values_from_schema(self) -> None:
-        tmp = dict(self.schema)
-        for key in tmp:
-            if self.schema[key] in [{}, [], "", None]:
-                self.schema.pop(key)
-
-    def sort(self) -> Dict[str, Any]:
-        if self.schema is None:
-            return
-        reordered_dict = reorder_dict_skip_missing(self.schema, self.schema_order)
-        self.schema = reordered_dict
-        return reordered_dict
+        super().update()

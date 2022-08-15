@@ -74,8 +74,13 @@ def test_radio():
     response_options.add_choice(name="Not at all", value=0)
     response_options.add_choice(name="Several days", value=1)
 
-    item = Item(name="radio", question="question for radio item", output_dir=item_dir)
-    item.set_input_type_as_radio(response_options)
+    item = Item(
+        name="radio",
+        input_type="radio",
+        question="question for radio item",
+        output_dir=item_dir,
+    )
+    item.set_input_type(response_options=response_options)
 
     item.write()
     item_content, expected = load_jsons(item_dir, item)
@@ -89,7 +94,7 @@ def test_radio():
     item.set_pref_label("radio multiple")
     item.set_question("question for radio item with multiple responses")
     response_options.multipleChoice = True
-    item.set_input_type_as_radio(response_options)
+    item.set_input_type(response_options=response_options)
     item.write()
 
     item_content, expected = load_jsons(item_dir, item)
@@ -105,8 +110,13 @@ def test_select():
     response_options.add_choice(name="Response option 2", value=1)
     response_options.add_choice(name="Response option 3", value=2)
 
-    item = Item(name="select", question="question for select item", output_dir=item_dir)
-    item.set_input_type_as_select(response_options)
+    item = Item(
+        name="select",
+        input_type="select",
+        question="question for select item",
+        output_dir=item_dir,
+    )
+    item.set_input_type(response_options=response_options)
 
     item.write()
     item_content, expected = load_jsons(item_dir, item)
@@ -120,7 +130,7 @@ def test_select():
     item.set_pref_label("select multiple")
     item.set_question("question for select item with multiple responses")
     response_options.multipleChoice = True
-    item.set_input_type_as_select(response_options)
+    item.set_input_type(response_options=response_options)
     item.write()
 
     item_content, expected = load_jsons(item_dir, item)
@@ -138,8 +148,13 @@ def test_slider():
     response_options.add_choice(name="a lot", value=3)
     response_options.add_choice(name="very much", value=4)
 
-    item = Item(name="slider", question="question for slider item", output_dir=item_dir)
-    item.set_input_type_as_slider(response_options)
+    item = Item(
+        name="slider",
+        input_type="slider",
+        question="question for slider item",
+        output_dir=item_dir,
+    )
+    item.set_input_type(response_options)
 
     item.write()
     item_content, expected = load_jsons(item_dir, item)

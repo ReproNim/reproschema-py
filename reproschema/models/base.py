@@ -15,6 +15,7 @@ from attrs.validators import optional
 
 from .ui import UI
 from .utils import reorder_dict_skip_missing
+from .utils import SchemaUtils
 
 
 def DEFAULT_LANG() -> str:
@@ -42,7 +43,7 @@ def COMMON_SCHEMA_ORDER() -> list:
 
 
 @define(kw_only=True)
-class SchemaBase:
+class SchemaBase(SchemaUtils):
 
     """
     Schema based attributes: REQUIRED
@@ -215,11 +216,6 @@ class SchemaBase:
         converter=default_if_none(default=DEFAULT_LANG()),  # type: ignore
         validator=optional(instance_of(str)),
     )
-    schema_order: Optional[list] = field(
-        factory=(list),
-        converter=default_if_none(default=[]),  # type: ignore
-        validator=optional(instance_of(list)),
-    )
     output_dir: Optional[Union[str, Path]] = field(
         default=None,
         converter=default_if_none(default=Path.cwd()),  # type: ignore
@@ -239,13 +235,6 @@ class SchemaBase:
         default=None,
         converter=default_if_none(default=Path("")),  # type: ignore
         validator=optional(instance_of((str, Path))),
-    )
-
-    #: contains the content that is read from or dumped in JSON
-    schema: Optional[dict] = field(
-        factory=(dict),
-        converter=default_if_none(default={}),  # type: ignore
-        validator=optional(instance_of(dict)),
     )
 
     def __attrs_post_init__(self) -> None:
@@ -384,18 +373,11 @@ class SchemaBase:
         self.sort_schema()
         self.update_ui()
 
-    def sort_schema(self) -> None:
-        reordered_dict = reorder_dict_skip_missing(self.schema, self.schema_order)
-        self.schema = reordered_dict
-
     def write(self, output_dir: Optional[Union[str, Path]] = None) -> None:
 
         self.sort()
 
-        tmp = dict(self.schema)
-        for key in tmp:
-            if self.schema[key] in [{}, [], ""]:
-                self.schema.pop(key)
+        self.drop_empty_values_from_schema()
 
         if output_dir is None:
             output_dir = self.output_dir
