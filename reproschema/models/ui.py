@@ -102,7 +102,15 @@ class UI(SchemaUtils):
     def __attrs_post_init__(self) -> None:
 
         if self.schema_order in [None, []]:
-            self.schema_order = ["shuffle", "order", "addProperties", "allow", "limit"]
+            self.schema_order = [
+                "shuffle",
+                "order",
+                "addProperties",
+                "allow",
+                "limit",
+                "randomMaxDelay",
+                "schedule",
+            ]
             if self.at_type == "reproschema:Field":
                 self.schema_order = ["inputType", "readonlyValue"]
 
@@ -122,6 +130,8 @@ class UI(SchemaUtils):
             requiredValue=obj.required,
             skippable=obj.skippable,
             limit=obj.limit,
+            randomMaxDelay=obj.randomMaxDelay,
+            schedule=obj.schedule,
         )
         this_property.update()
         this_property.sort_schema()

@@ -82,6 +82,8 @@ def test_protocol_1():
         name="activity1",
         prefLabel="Screening",
         limit="P1W/2020-08-01T13:00:00Z",
+        randomMaxDelay="PT12H",
+        schedule="R5/2008-01-01T13:00:00Z/P1Y2M10DT2H30M",
         lang="en",
         suffix="",
         output_dir=os.path.join("..", "activities"),

@@ -104,7 +104,15 @@ def test_activity_1():
 
     activity.set_compute(variable="activity1_total_score", expression="item1 + item2")
 
-    item_1 = Item(name="item1", skippable=False, required=True, output_dir="items")
+    item_1 = Item(
+        name="item1",
+        skippable=False,
+        required=True,
+        output_dir="items",
+        limit="P2D",
+        randomMaxDelay="PT2H",
+        schedule="R/2020-08-01T08:00:00Z/P1D",
+    )
     item_1.prefLabel = {}
     activity.update()
 

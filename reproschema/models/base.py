@@ -211,6 +211,16 @@ class SchemaBase(SchemaUtils):
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(instance_of(str)),
     )
+    randomMaxDelay: Optional[str] = field(
+        factory=(str),
+        converter=default_if_none(default=""),  # type: ignore
+        validator=optional(instance_of(str)),
+    )
+    schedule: Optional[str] = field(
+        factory=(str),
+        converter=default_if_none(default=""),  # type: ignore
+        validator=optional(instance_of(str)),
+    )
 
     """
     Non schema based attributes: OPTIONAL
