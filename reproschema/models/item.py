@@ -208,7 +208,7 @@ class Item(SchemaBase):
     def set_response_options(self) -> None:
         """
         Passes the content of the response options to the schema of the item.
-        To be done before writing the item
+        Also removes some "unnecessary" fields.
         """
         self.response_options.update()
         self.response_options.sort()

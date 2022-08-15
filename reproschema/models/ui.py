@@ -11,6 +11,8 @@ from attrs.validators import in_
 from attrs.validators import instance_of
 from attrs.validators import optional
 
+from .utils import reorder_dict_skip_missing
+
 
 @define(
     kw_only=True,
@@ -179,21 +181,6 @@ class UI:
     def sort(self) -> Dict[str, Any]:
         if self.schema is None:
             return
-        reordered_dict = self.reorder_dict_skip_missing(self.schema, self.schema_order)
+        reordered_dict = reorder_dict_skip_missing(self.schema, self.schema_order)
         self.schema = reordered_dict
         return reordered_dict
-
-    @staticmethod
-    def reorder_dict_skip_missing(
-        old_dict: Dict[Any, Any], key_list: List[Any]
-    ) -> Dict:
-        """
-        reorders dictionary according to ``key_list``
-        removing any key with no associated value
-        or that is not in the key list
-        """
-        return OrderedDict(
-            (k, old_dict[k])
-            for k in key_list
-            if (k in old_dict and old_dict[k] not in [[], "", None])
-        )

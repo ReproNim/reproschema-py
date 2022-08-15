@@ -15,6 +15,7 @@ from attrs.validators import instance_of
 from attrs.validators import optional
 
 from .ui import UI
+from .utils import reorder_dict_skip_missing
 
 
 def DEFAULT_LANG() -> str:
@@ -162,7 +163,6 @@ class SchemaBase:
     """
     Field only
     """
-    # inputType
     # additionalNotesObj
     inputType: str = field(
         factory=(str),
@@ -386,7 +386,7 @@ class SchemaBase:
         self.update_ui()
 
     def sort_schema(self) -> None:
-        reordered_dict = self.reorder_dict_skip_missing(self.schema, self.schema_order)
+        reordered_dict = reorder_dict_skip_missing(self.schema, self.schema_order)
         self.schema = reordered_dict
 
     def write(self, output_dir: Optional[Union[str, Path]] = None) -> None:
@@ -426,16 +426,3 @@ class SchemaBase:
         if "@type" not in data:
             raise ValueError("Missing @type key")
         return cls.from_data(data)
-
-    @staticmethod
-    def reorder_dict_skip_missing(old_dict: Dict, key_list: List) -> OrderedDict:
-        """
-        reorders dictionary according to ``key_list``
-        removing any key with no associated value
-        or that is not in the key list
-        """
-        return OrderedDict(
-            (k, old_dict[k])
-            for k in key_list
-            if (k in old_dict and old_dict[k] not in ["", [], None])
-        )
