@@ -47,3 +47,16 @@ def test_default():
     assert content == expected
 
     clean_up(response_options_dir, response_options)
+
+
+def test_constructor_from_file():
+
+    response_options = ResponseOption.from_file(
+        response_options_dir.joinpath(
+            "..", "data", "response_options", "example.jsonld"
+        )
+    )
+
+    assert response_options.at_id == "example.jsonld"
+    assert response_options.valueType == "xsd:integer"
+    assert response_options.choices[0]["name"] == {"en": "Not at all"}

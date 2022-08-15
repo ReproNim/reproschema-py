@@ -342,6 +342,12 @@ class ResponseOption(SchemaUtils):
         if klass.at_type != data["@type"]:
             raise ValueError(f"Mismatch in type {data['@type']} != {klass.at_type}")
         klass.schema = data
+        """Load values into instance"""
+        for key in klass.schema:
+            if key.startswith("@"):
+                klass.__setattr__(f"at_{key[1:]}", klass.schema[key])
+            else:
+                klass.__setattr__(key, klass.schema[key])
         return klass
 
     @classmethod
