@@ -1,8 +1,9 @@
-from collections import OrderedDict
+import re
 from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Union
 
 from attrs import define
 from attrs import field
@@ -13,12 +14,16 @@ from attrs.validators import optional
 
 from .utils import reorder_dict_skip_missing
 
+# from .protocol import Protocol
+# from .activity import Activity
+
 
 @define(
     kw_only=True,
 )
 class UI:
 
+    #: this is more to help set up things on the UI side than purely schema related
     SUPPORTED_INPUT_TYPES = (
         "text",
         "multitext",
@@ -133,23 +138,22 @@ class UI:
 
         self.update()
 
-    def append(self, obj=None, variableName: Optional[str] = None) -> None:
-        obj_properties = {
-            "variableName": variableName,
-            "isAbout": obj.URI,
-            "isVis": obj.visible,
-        }
-        if obj.prefLabel not in [None, "", {}]:
-            obj_properties["prefLabel"] = obj.prefLabel
+    def append(self, obj, variableName: Optional[str] = None) -> None:
 
-        if obj.required is not None:
-            obj_properties["requiredValue"] = obj.required
-
-        if obj.skippable is True:
-            obj_properties["allow"] = ["reproschema:Skipped"]
+        this_property = AddtionalPropertity(
+            variableName=variableName,
+            isAbout=obj.URI,
+            prefLabel=obj.prefLabel,
+            isVis=obj.visible,
+            requiredValue=obj.required,
+            skippable=obj.skippable,
+        )
+        this_property.update()
+        this_property.sort()
+        this_property.drop_empty_values_from_schema()
 
         self.order.append(obj.URI)
-        self.addProperties.append(obj_properties)
+        self.addProperties.append(this_property.schema)
         self.update()
 
     def update(self) -> None:
@@ -177,6 +181,111 @@ class UI:
         self.schema["inputType"] = self.inputType
 
         self.sort()
+
+    def sort(self) -> Dict[str, Any]:
+        if self.schema is None:
+            return
+        reordered_dict = reorder_dict_skip_missing(self.schema, self.schema_order)
+        self.schema = reordered_dict
+        return reordered_dict
+
+
+@define(
+    kw_only=True,
+)
+class AddtionalPropertity:
+
+    variableName: Optional[str] = field(
+        default=None,
+        converter=default_if_none(default=""),  # type: ignore
+        validator=optional(instance_of(str)),
+    )
+    isAbout: Optional[str] = field(
+        default=None,
+        converter=default_if_none(default=""),  # type: ignore
+        validator=optional(instance_of(str)),
+    )
+    prefLabel: Optional[Union[str, Dict[str, str]]] = field(
+        default=None,
+        converter=default_if_none(default={}),  # type: ignore
+        validator=optional(instance_of((str, dict))),
+    )
+    isVis: Optional[bool] = field(
+        default=None,
+        validator=optional(instance_of(bool)),
+    )
+    requiredValue: Optional[bool] = field(
+        default=None,
+        validator=optional(instance_of(bool)),
+    )
+    allow: Optional[List[str]] = field(
+        factory=list,
+        converter=default_if_none(default=[]),  # type: ignore
+        validator=optional(instance_of(list)),
+    )
+    limit: Optional[str] = field(
+        default=None,
+        converter=default_if_none(default=""),  # type: ignore
+        validator=optional(instance_of(str)),
+    )
+    maxRetakes: Optional[str] = field(
+        default=None,
+        converter=default_if_none(default=""),  # type: ignore
+        validator=optional(instance_of(str)),
+    )
+    randomMaxDelay: Optional[str] = field(
+        default=None,
+        converter=default_if_none(default=""),  # type: ignore
+        validator=optional(instance_of(str)),
+    )
+    schedule: Optional[str] = field(
+        default=None,
+        converter=default_if_none(default=""),  # type: ignore
+        validator=optional(instance_of(str)),
+    )
+
+    schema_order: Optional[List[str]] = field(
+        default=None,
+        converter=default_if_none(
+            default=[
+                "variableName",
+                "isAbout",
+                "prefLabel",
+                "isVis",
+                "requiredValue",
+                "allow",
+                "limit",
+                "maxRetakes",
+                "randomMaxDelay",
+                "schedule",
+            ]
+        ),  # type: ignore
+        validator=optional(instance_of(list)),
+    )
+
+    skippable: Optional[bool] = field(
+        factory=(bool),
+        converter=default_if_none(default=True),  # type: ignore
+        validator=optional(instance_of(bool)),
+    )
+
+    schema: Optional[Dict[str, Any]] = field(
+        factory=(dict),
+        validator=optional(instance_of(dict)),
+    )
+
+    def update(self) -> None:
+        """Updates the schema content based on the attributes."""
+        if self.skippable is True:
+            self.allow = ["reproschema:Skipped"]
+        for key in self.schema_order:
+            self.schema[key] = self.__getattribute__(key)
+
+    def drop_empty_values_from_schema(self) -> None:
+        tmp = dict(self.schema)
+        for key in tmp:
+            if self.schema[key] in [{}, [], "", None]:
+                self.schema.pop(key)
 
     def sort(self) -> Dict[str, Any]:
         if self.schema is None:

@@ -1,6 +1,5 @@
 import json
 import os
-from collections import OrderedDict
 from pathlib import Path
 from typing import Dict
 from typing import List
@@ -221,7 +220,7 @@ class SchemaBase:
         converter=default_if_none(default=[]),  # type: ignore
         validator=optional(instance_of(list)),
     )
-    output_dir = field(
+    output_dir: Optional[Union[str, Path]] = field(
         default=None,
         converter=default_if_none(default=Path.cwd()),  # type: ignore
         validator=optional(instance_of((str, Path))),

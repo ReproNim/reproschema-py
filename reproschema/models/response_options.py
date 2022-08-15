@@ -142,40 +142,40 @@ class ResponseOption:
         validator=optional(instance_of((str, list))),
     )
 
-    multipleChoice: bool = field(
+    multipleChoice: Optional[bool] = field(
         default=None,
         validator=optional(instance_of(bool)),
     )
 
-    minValue: int = field(
+    minValue: Optional[int] = field(
         default=None,
         validator=optional(instance_of(int)),
     )
 
-    maxValue: int = field(
+    maxValue: Optional[int] = field(
         default=None,
         validator=optional(instance_of(int)),
     )
 
-    unitOptions: str = field(
+    unitOptions: Optional[int] = field(
         default=None,
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(instance_of(str)),
     )
 
-    unitCode: str = field(
+    unitCode: Optional[str] = field(
         default=None,
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(instance_of(str)),
     )
 
-    datumType: str = field(
+    datumType: Optional[str] = field(
         default=None,
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(instance_of(str)),
     )
 
-    maxLength: int = field(
+    maxLength: Optional[int] = field(
         default=None,
         validator=optional(instance_of(int)),
     )
@@ -211,7 +211,7 @@ class ResponseOption:
         ),  # type: ignore
         validator=optional(instance_of(list)),
     )
-    output_dir = field(
+    output_dir: Optional[Union[str, Path]] = field(
         default=None,
         converter=default_if_none(default=Path.cwd()),  # type: ignore
         validator=optional(instance_of((str, Path))),
