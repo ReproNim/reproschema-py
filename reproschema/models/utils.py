@@ -1,19 +1,16 @@
-import json
-
-from . import Activity
-from . import Item
-from . import Protocol
+from collections import OrderedDict
+from typing import Dict
+from typing import List
 
 
-def load_schema(filepath):
-    with open(filepath) as fp:
-        data = json.load(fp)
-    if "@type" not in data:
-        raise ValueError("Missing @type key")
-    schema_type = data["@type"]
-    if schema_type == "reproschema:Protocol":
-        return Protocol.from_data(data)
-    if schema_type == "reproschema:Activity":
-        return Activity.from_data(data)
-    if schema_type == "reproschema:Item":
-        return Item.from_data(data)
+def reorder_dict_skip_missing(old_dict: Dict, key_list: List) -> OrderedDict:
+    """
+    reorders dictionary according to ``key_list``
+    removing any key with no associated value
+    or that is not in the key list
+    """
+    return OrderedDict(
+        (k, old_dict[k])
+        for k in key_list
+        if (k in old_dict and old_dict[k] not in ["", [], None])
+    )

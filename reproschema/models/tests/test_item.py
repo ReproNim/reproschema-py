@@ -70,9 +70,9 @@ tested both with:
 
 def test_radio():
 
-    response_options = ResponseOption(multiple_choice=False)
-    response_options.add_choice("Not at all", 0, "en")
-    response_options.add_choice("Several days", 1, "en")
+    response_options = ResponseOption(multipleChoice=False)
+    response_options.add_choice(name="Not at all", value=0)
+    response_options.add_choice(name="Several days", value=1)
 
     item = Item(name="radio", question="question for radio item", output_dir=item_dir)
     item.set_input_type_as_radio(response_options)
@@ -88,7 +88,8 @@ def test_radio():
     item.update()
     item.set_pref_label("radio multiple")
     item.set_question("question for radio item with multiple responses")
-    response_options.set_multiple_choice(True)
+    response_options.multipleChoice = True
+    # response_options.update()
     item.set_input_type_as_radio(response_options)
     item.write()
 
@@ -100,10 +101,10 @@ def test_radio():
 
 def test_select():
 
-    response_options = ResponseOption(multiple_choice=False)
-    response_options.add_choice("Response option 1", 0)
-    response_options.add_choice("Response option 2", 1)
-    response_options.add_choice("Response option 3", 2)
+    response_options = ResponseOption(multipleChoice=False)
+    response_options.add_choice(name="Response option 1", value=0)
+    response_options.add_choice(name="Response option 2", value=1)
+    response_options.add_choice(name="Response option 3", value=2)
 
     item = Item(name="select", question="question for select item", output_dir=item_dir)
     item.set_input_type_as_select(response_options)
@@ -119,7 +120,8 @@ def test_select():
     item.update()
     item.set_pref_label("select multiple")
     item.set_question("question for select item with multiple responses")
-    response_options.set_multiple_choice(True)
+    response_options.multipleChoice = True
+    # response_options.update()
     item.set_input_type_as_select(response_options)
     item.write()
 
@@ -132,11 +134,11 @@ def test_select():
 def test_slider():
 
     response_options = ResponseOption()
-    response_options.add_choice("not at all", 0)
-    response_options.add_choice("a bit", 1)
-    response_options.add_choice("so so", 2)
-    response_options.add_choice("a lot", 3)
-    response_options.add_choice("very much", 4)
+    response_options.add_choice(name="not at all", value=0)
+    response_options.add_choice(name="a bit", value=1)
+    response_options.add_choice(name="so so", value=2)
+    response_options.add_choice(name="a lot", value=3)
+    response_options.add_choice(name="very much", value=4)
 
     item = Item(name="slider", question="question for slider item", output_dir=item_dir)
     item.set_input_type_as_slider(response_options)

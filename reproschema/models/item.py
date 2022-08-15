@@ -133,30 +133,32 @@ class Item(SchemaBase):
             return
 
         if self.inputType == "text":
-            self.response_options.set_type("string")
-            self.response_options.set_length(300)
+            self.response_options.set_valueType("string")
+            self.response_options.maxLength = 300
+            self.response_options.update()
 
         elif self.inputType == "multitext":
-            self.response_options.set_length(300)
-            self.response_options.set_type("string")
+            self.response_options.set_valueType("string")
+            self.response_options.maxLength = 300
+            self.response_options.update()
 
         elif self.inputType == "integer":
-            self.response_options.set_type("integer")
+            self.response_options.set_valueType("integer")
 
         elif self.inputType == "float":
-            self.response_options.set_type("float")
+            self.response_options.set_valueType("float")
 
         elif self.inputType == "year":
-            self.response_options.set_type("date")
+            self.response_options.set_valueType("date")
             self.response_options.unset(
                 ["maxLength", "choices", "maxValue", "multipleChoice", "minValue"]
             )
 
         elif self.inputType == "date":
-            self.response_options.set_type("date")
+            self.response_options.set_valueType("date")
 
         elif self.inputType == "timeRange":
-            self.response_options.set_type("datetime")
+            self.response_options.set_valueType("datetime")
 
         elif self.inputType == "selectLanguage":
             self.set_input_type_as_language()
@@ -168,10 +170,10 @@ class Item(SchemaBase):
             self.set_input_type_as_state()
 
         elif self.inputType == "email":
-            self.response_options.set_type("string")
+            self.response_options.set_valueType("string")
 
         elif self.inputType == "pid":
-            self.response_options.set_type("string")
+            self.response_options.set_valueType("string")
 
         else:
 
@@ -190,15 +192,15 @@ class Item(SchemaBase):
         URL = self.set_input_from_preset(
             "https://raw.githubusercontent.com/ReproNim/reproschema-library/",
         )
-        self.response_options.set_multiple_choice(True)
+        self.response_options.multipleChoice = True
         self.response_options.use_preset(f"{URL}master/resources/languages.json")
 
     def set_input_type_as_country(self) -> None:
         URL = self.set_input_from_preset(
             "https://raw.githubusercontent.com/samayo/country-json/master/src/country-by-name.json",
         )
+        self.response_options.maxLength = 50
         self.response_options.use_preset(URL)
-        self.response_options.set_length(50)
 
     def set_input_type_as_state(self) -> None:
         URL = self.set_input_from_preset(
@@ -208,7 +210,7 @@ class Item(SchemaBase):
 
     def set_input_from_preset(self, arg0) -> str:
         result = arg0
-        self.response_options.set_type("string")
+        self.response_options.set_valueType("string")
 
         return result
 
@@ -226,12 +228,13 @@ class Item(SchemaBase):
         self.set_input_type_rasesli("select", response_options)
 
     def set_input_type_as_slider(self, response_options: ResponseOption) -> None:
-        response_options.set_multiple_choice(False)
+        response_options.multipleChoice = False
+        response_options.update()
         self.set_input_type_rasesli("slider", response_options)
 
     def set_input_type_rasesli(self, arg0, response_options: ResponseOption) -> None:
         self.ui.inputType = arg0
-        response_options.set_type("integer")
+        response_options.set_valueType("integer")
         self.response_options = response_options
 
     """
@@ -243,6 +246,12 @@ class Item(SchemaBase):
         Passes the content of the response options to the schema of the item.
         To be done before writing the item
         """
+        self.response_options.update()
+        self.response_options.sort()
+        self.response_options.drop_empty_values_from_schema()
+        self.response_options.schema.pop("@id")
+        self.response_options.schema.pop("@type")
+        self.response_options.schema.pop("@context")
         self.schema["responseOptions"] = self.response_options.schema
 
     def unset(self, keys) -> None:
