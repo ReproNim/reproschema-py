@@ -14,7 +14,6 @@ from attrs.validators import instance_of
 from attrs.validators import optional
 
 from .ui import UI
-from .utils import reorder_dict_skip_missing
 from .utils import SchemaUtils
 
 
@@ -38,6 +37,8 @@ def COMMON_SCHEMA_ORDER() -> list:
         "description",
         "preamble",
         "image",
+        "audio",
+        "video",
         "ui",
     ]
 
@@ -124,20 +125,18 @@ class SchemaBase(SchemaUtils):
     - about
     """
 
-    # TODO
-
     """
     Protocol, Activity, Field
     """
     # associatedMedia
     #  video
     #  audio
-    prefLabel: dict = field(
+    prefLabel: Optional[dict] = field(
         factory=(dict),
         converter=default_if_none(default={}),  # type: ignore
         validator=optional(instance_of(dict)),
     )
-    altLabel: dict = field(
+    altLabel: Optional[dict] = field(
         factory=(dict),
         converter=default_if_none(default={}),  # type: ignore
         validator=optional(instance_of(dict)),
@@ -152,15 +151,23 @@ class SchemaBase(SchemaUtils):
         default=None,
         validator=optional(instance_of((str, dict))),
     )
-
-    preamble: dict = field(
+    audio: Optional[Union[str, Dict[str, str]]] = field(
+        default=None,
+        validator=optional(instance_of((str, dict))),
+    )
+    video: Optional[Union[str, Dict[str, str]]] = field(
+        default=None,
+        validator=optional(instance_of((str, dict))),
+    )
+    preamble: Optional[dict] = field(
         factory=(dict),
         converter=default_if_none(default={}),  # type: ignore
         validator=optional(instance_of(dict)),
     )
+
     # Protocol only
     # TODO landing_page is a dict or a list of dict?
-    landingPage: dict = field(
+    landingPage: Optional[dict] = field(
         factory=(dict),
         converter=default_if_none(default={}),  # type: ignore
         validator=optional(instance_of(dict)),
@@ -169,14 +176,13 @@ class SchemaBase(SchemaUtils):
     """
     Protocol and Activity
     """
-    # cronTable
-    # messages
+    # TODO cronTable
     citation: Optional[str] = field(
         factory=(str),
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(instance_of(str)),
     )
-    compute: Optional[list] = field(
+    compute: Optional[List[Dict[str, str]]] = field(
         factory=(list),
         converter=default_if_none(default=[]),  # type: ignore
         validator=optional(instance_of(list)),
@@ -190,13 +196,13 @@ class SchemaBase(SchemaUtils):
     """
     Activity only
     """
-    # overrideProperties
+    # TODO overrideProperties
 
     """
     Field only
     """
-    # additionalNotesObj
-    inputType: str = field(
+    # TODO additionalNotesObj
+    inputType: Optional[str] = field(
         factory=(str),
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(instance_of(str)),
@@ -205,7 +211,7 @@ class SchemaBase(SchemaUtils):
         factory=(bool),
         validator=optional(instance_of(bool)),
     )
-    question: dict = field(
+    question: Optional[dict] = field(
         factory=(dict),
         converter=default_if_none(default={}),  # type: ignore
         validator=optional(instance_of(dict)),
@@ -305,6 +311,8 @@ class SchemaBase(SchemaUtils):
             "description",
             "citation",
             "image",
+            "audio",
+            "video",
             "preamble",
             "landingPage",
             "compute",

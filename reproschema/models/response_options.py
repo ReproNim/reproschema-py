@@ -28,7 +28,7 @@ class Choice(SchemaUtils):
         converter=default_if_none(default=""),
         validator=optional(instance_of((str, dict))),
     )
-    value = field(default=None)
+    value: Any = field(default=None)
     image: Optional[Union[str, Dict[str, str]]] = field(
         default=None, validator=optional(instance_of((str, dict)))
     )
@@ -214,20 +214,29 @@ class ResponseOption(SchemaUtils):
             self.valueType = f"xsd:{value}"
         self.update()
 
-    def values_all_options(self):
+    def values_all_options(self) -> List[Any]:
         return [i["value"] for i in self.choices if "value" in i]
 
     def set_min(self, value: int = None) -> None:
         if value is not None:
             self.minValue = value
         elif len(self.choices) > 1:
-            self.minValue = min(self.values_all_options())
+            self.minValue = 0
+            all_values = self.values_all_options()
+            if all(isinstance(x, int) for x in all_values):
+                self.minValue = min(all_values)
 
     def set_max(self, value: int = None) -> None:
+
         if value is not None:
             self.maxValue = value
+
         elif len(self.choices) > 1:
-            self.maxValue = max(self.values_all_options())
+            all_values = self.values_all_options()
+            self.maxValue = len(all_values) - 1
+            if all(isinstance(x, int) for x in all_values):
+                self.maxValue = max(all_values)
+
         self.update()
 
     def add_choice(
