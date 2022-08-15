@@ -6,9 +6,9 @@ from typing import Optional
 from typing import Union
 
 from .base import COMMON_SCHEMA_ORDER
-from .base import DEFAULT_LANG
 from .base import SchemaBase
 from .response_options import ResponseOption
+from .utils import DEFAULT_LANG
 
 
 class Item(SchemaBase):
@@ -75,6 +75,8 @@ class Item(SchemaBase):
             output_dir=output_dir,
             lang=lang,
         )
+
+        super().set_defaults()
 
         self.set_question(question=question)
 

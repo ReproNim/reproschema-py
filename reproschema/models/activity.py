@@ -4,9 +4,9 @@ from typing import Optional
 from typing import Union
 
 from .base import COMMON_SCHEMA_ORDER
-from .base import DEFAULT_LANG
 from .base import SchemaBase
 from .item import Item
+from .utils import DEFAULT_LANG
 
 
 class Activity(SchemaBase):
@@ -66,6 +66,7 @@ class Activity(SchemaBase):
             output_dir=output_dir,
             lang=lang,
         )
+        super().set_defaults()
         self.ui.shuffle = False
         self.update()
 

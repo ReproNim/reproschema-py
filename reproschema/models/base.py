@@ -15,11 +15,8 @@ from attrs.validators import instance_of
 from attrs.validators import optional
 
 from .ui import UI
+from .utils import DEFAULT_LANG
 from .utils import SchemaUtils
-
-
-def DEFAULT_LANG() -> str:
-    return "en"
 
 
 def DEFAULT_VERSION() -> str:
@@ -156,15 +153,15 @@ class SchemaBase(SchemaUtils):
     Protocol, Activity, Field
     """
     # associatedMedia
-    prefLabel: Optional[dict] = field(
+    prefLabel: Optional[Union[str, Dict[str, str]]] = field(
         factory=(dict),
         converter=default_if_none(default={}),  # type: ignore
-        validator=optional(instance_of(dict)),
+        validator=optional(instance_of((str, dict))),
     )
-    altLabel: Optional[dict] = field(
+    altLabel: Optional[Union[str, Dict[str, str]]] = field(
         factory=(dict),
         converter=default_if_none(default={}),  # type: ignore
-        validator=optional(instance_of(dict)),
+        validator=optional(instance_of((str, dict))),
     )
     # TODO description is language specific?
     description: str = field(
@@ -250,12 +247,9 @@ class SchemaBase(SchemaUtils):
     UI related
     """
     ui: UI = field(
+        default=UI(at_type="reproschema:Field"),
         validator=optional(instance_of(UI)),
     )
-
-    @ui.default
-    def _default_ui(self) -> UI:
-        return UI(at_type=self.at_type, readonlyValue=self.readonlyValue)
 
     visible: Optional[bool] = field(
         factory=(bool),
@@ -293,11 +287,7 @@ class SchemaBase(SchemaUtils):
     Those attributes help with file management
     and with printing json files with standardized key orders
     """
-    lang: Optional[str] = field(
-        factory=(str),
-        converter=default_if_none(default=DEFAULT_LANG()),  # type: ignore
-        validator=optional(instance_of(str)),
-    )
+
     output_dir: Optional[Union[str, Path]] = field(
         default=None,
         converter=default_if_none(default=Path.cwd()),  # type: ignore
@@ -319,12 +309,21 @@ class SchemaBase(SchemaUtils):
         validator=optional(instance_of((str, Path))),
     )
 
-    def __attrs_post_init__(self) -> None:
+    def set_defaults(self):
+
+        self.ui = UI(at_type=self.at_type, readonlyValue=self.readonlyValue)
 
         if self.description == "":
             self.description = self.at_id.replace("_", " ")
 
+        if self.prefLabel == "":
+            self.prefLabel = self.at_id.replace("_", " ")
+
+        if isinstance(self.prefLabel, str):
+            self.prefLabel = {self.lang: self.prefLabel}
+
         self.set_pref_label()
+
         self.set_filename()
 
     def update(self) -> None:
@@ -418,19 +417,22 @@ class SchemaBase(SchemaUtils):
     def set_pref_label(
         self, pref_label: Optional[str] = None, lang: Optional[str] = None
     ) -> None:
-        if pref_label is None:
-            if self.prefLabel == {} or self.prefLabel[DEFAULT_LANG()] in [
-                "protocol",
-                "activity",
-                "item",
-            ]:
-                self.set_pref_label(
-                    pref_label=self.at_id.replace("_", " "), lang=self.lang
-                )
-            return
-
         if lang is None:
             lang = self.lang
+
+        if pref_label is None:
+            if isinstance(self.prefLabel, dict) and (
+                self.prefLabel == {}
+                or self.prefLabel[lang]
+                in [
+                    "protocol",
+                    "activity",
+                    "item",
+                ]
+            ):
+                self.set_pref_label(pref_label=self.at_id.replace("_", " "), lang=lang)
+                # pref_label = self.at_id.replace("_", " ")
+            return
 
         self.prefLabel[lang] = pref_label
         self.update()
@@ -475,21 +477,3 @@ class SchemaBase(SchemaUtils):
 
         with open(output_dir.joinpath(self.at_id), "w") as ff:
             json.dump(self.schema, ff, sort_keys=False, indent=4)
-
-    @classmethod
-    def from_data(cls, data: dict):
-        klass = cls()
-        if klass.at_type is None:
-            raise ValueError("SchemaBase cannot be used to instantiate class")
-        if klass.at_type != data["@type"]:
-            raise ValueError(f"Mismatch in type {data['@type']} != {klass.at_type}")
-        klass.schema = data
-        return klass
-
-    @classmethod
-    def from_file(cls, filepath: Union[str, Path]):
-        with open(filepath) as fp:
-            data = json.load(fp)
-        if "@type" not in data:
-            raise ValueError("Missing @type key")
-        return cls.from_data(data)

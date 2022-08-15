@@ -14,7 +14,6 @@ from attrs.validators import in_
 from attrs.validators import instance_of
 from attrs.validators import optional
 
-from .base import DEFAULT_LANG
 from .base import DEFAULT_VERSION
 from .utils import SchemaUtils
 
@@ -27,11 +26,6 @@ class unitOption(SchemaUtils):
         factory=(dict),
         converter=default_if_none(default={}),  # type: ignore
         validator=optional(instance_of((dict, str))),
-    )
-    lang: Optional[str] = field(
-        default=None,
-        converter=default_if_none(default=DEFAULT_LANG()),  # type: ignore
-        validator=optional(instance_of(str)),
     )
 
     def __attrs_post_init__(self) -> None:
@@ -70,12 +64,6 @@ class Choice(SchemaUtils):
     value: Any = field(default=None)
     image: Optional[Union[str, Dict[str, str]]] = field(
         default=None, validator=optional(instance_of((str, dict)))
-    )
-
-    lang: Optional[str] = field(
-        default=None,
-        converter=default_if_none(default=DEFAULT_LANG()),  # type: ignore
-        validator=optional(instance_of(str)),
     )
 
     def __attrs_post_init__(self) -> None:
@@ -199,11 +187,11 @@ class ResponseOption(SchemaUtils):
     Those attributes help with file management
     and with printing json files with standardized key orders
     """
-    lang: Optional[str] = field(
-        default=None,
-        converter=default_if_none(default=DEFAULT_LANG()),  # type: ignore
-        validator=optional(instance_of(str)),
-    )
+    # lang: Optional[str] = field(
+    #     default=None,
+    #     converter=default_if_none(default=DEFAULT_LANG()),  # type: ignore
+    #     validator=optional(instance_of(str)),
+    # )
 
     output_dir: Optional[Union[str, Path]] = field(
         default=None,
@@ -333,27 +321,3 @@ class ResponseOption(SchemaUtils):
 
         with open(output_dir.joinpath(self.at_id), "w") as ff:
             json.dump(self.schema, ff, sort_keys=False, indent=4)
-
-    @classmethod
-    def from_data(cls, data: dict):
-        klass = cls()
-        if klass.at_type is None:
-            raise ValueError("SchemaBase cannot be used to instantiate class")
-        if klass.at_type != data["@type"]:
-            raise ValueError(f"Mismatch in type {data['@type']} != {klass.at_type}")
-        klass.schema = data
-        """Load values into instance"""
-        for key in klass.schema:
-            if key.startswith("@"):
-                klass.__setattr__(f"at_{key[1:]}", klass.schema[key])
-            else:
-                klass.__setattr__(key, klass.schema[key])
-        return klass
-
-    @classmethod
-    def from_file(cls, filepath: Union[str, Path]):
-        with open(filepath) as fp:
-            data = json.load(fp)
-        if "@type" not in data:
-            raise ValueError("Missing @type key")
-        return cls.from_data(data)
