@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 from reproschema.models.activity import Activity
+from reproschema.models.base import Message
 from reproschema.models.protocol import Protocol
 
 my_path = Path(__file__).resolve().parent
@@ -62,11 +63,19 @@ def test_protocol():
 
 def test_protocol_1():
 
+    messages = [
+        Message(
+            jsExpression="item1 > 0",
+            message="Test message: Triggered when item1 value is greater than 0",
+        ).schema
+    ]
+
     protocol = Protocol(
         name="protocol1",
         prefLabel="Protocol1",
         lang="en",
         description="example Protocol",
+        messages=messages,
         output_dir=protocol_dir,
         suffix="",
     )

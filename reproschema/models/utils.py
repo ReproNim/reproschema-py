@@ -38,13 +38,15 @@ class SchemaUtils:
             if self.schema[key] in [{}, [], "", None]:
                 self.schema.pop(key)
 
-    def update(self) -> None:
+    def update(self):
         """Updates the schema content based on the attributes."""
 
         for key in self.schema_order:
             if key.startswith("@"):
                 continue
             self.schema[key] = self.__getattribute__(key)
+
+        return self
 
 
 def reorder_dict_skip_missing(old_dict: Dict, key_list: List) -> OrderedDict:

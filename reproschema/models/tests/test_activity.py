@@ -1,11 +1,11 @@
 import os
-from unittest import skip
 
 from utils import clean_up
 from utils import load_jsons
 from utils import output_dir
 
 from reproschema.models.activity import Activity
+from reproschema.models.base import Message
 from reproschema.models.item import Item
 
 activity_dir = output_dir("activities")
@@ -78,11 +78,19 @@ def test_activity():
 
 def test_activity_1():
 
+    messages = [
+        Message(
+            jsExpression="item1 > 1",
+            message="Test message: Triggered when item1 value is greater than 1",
+        ).schema
+    ]
+
     activity = Activity(
         name="activity1",
         prefLabel="Example 1",
         description="Activity example 1",
         citation="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1495268/",
+        messages=messages,
         output_dir=activity_dir,
         suffix="",
     )

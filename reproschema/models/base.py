@@ -43,6 +43,31 @@ def COMMON_SCHEMA_ORDER() -> list:
 
 
 @define(kw_only=True)
+class Message(SchemaUtils):
+
+    jsExpression: Optional[str] = field(
+        factory=(str),
+        converter=default_if_none(default=""),  # type: ignore
+        validator=optional(instance_of(str)),
+    )
+    message: Optional[str] = field(
+        factory=(str),
+        converter=default_if_none(default=""),  # type: ignore
+        validator=optional(instance_of(str)),
+    )
+
+    def __attrs_post_init__(self) -> None:
+
+        if self.schema_order in [None, []]:
+            self.schema_order = [
+                "message",
+                "jsExpression",
+            ]
+
+        self.update().sort_schema()
+
+
+@define(kw_only=True)
 class SchemaBase(SchemaUtils):
 
     """
@@ -152,6 +177,11 @@ class SchemaBase(SchemaUtils):
         validator=optional(instance_of(str)),
     )
     compute: Optional[list] = field(
+        factory=(list),
+        converter=default_if_none(default=[]),  # type: ignore
+        validator=optional(instance_of(list)),
+    )
+    messages: Optional[list] = field(
         factory=(list),
         converter=default_if_none(default=[]),  # type: ignore
         validator=optional(instance_of(list)),
@@ -279,6 +309,7 @@ class SchemaBase(SchemaUtils):
             "landingPage",
             "compute",
             "question",
+            "messages",
         ]
         for key in keys_to_update:
             self.schema[key] = self.__getattribute__(key)

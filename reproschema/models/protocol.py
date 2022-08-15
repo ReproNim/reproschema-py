@@ -25,6 +25,7 @@ class Protocol(SchemaBase):
         landingPage: Optional[dict] = None,
         citation: Optional[str] = None,
         image: Optional[Union[str, Dict[str, str]]] = None,
+        messages: Optional[Dict[str, str]] = None,
         suffix: Optional[str] = "_schema",
         ext: Optional[str] = ".jsonld",
         output_dir: Optional[Union[str, Path]] = Path.cwd(),
@@ -35,6 +36,7 @@ class Protocol(SchemaBase):
             "landingPage",
             "citation",
             "compute",
+            "messages",
         ]
 
         super().__init__(
@@ -47,6 +49,7 @@ class Protocol(SchemaBase):
             landingPage=landingPage,
             preamble=preamble,
             citation=citation,
+            messages=messages,
             image=image,
             schema_order=schema_order,
             suffix=suffix,

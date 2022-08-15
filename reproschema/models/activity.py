@@ -24,6 +24,7 @@ class Activity(SchemaBase):
         preamble: Optional[str] = None,
         citation: Optional[str] = None,
         image: Optional[Union[str, Dict[str, str]]] = None,
+        messages: Optional[Dict[str, str]] = None,
         suffix: Optional[str] = "_schema",
         visible: Optional[bool] = True,
         required: Optional[bool] = False,
@@ -36,10 +37,7 @@ class Activity(SchemaBase):
         lang: Optional[str] = DEFAULT_LANG(),
     ):
 
-        schema_order = COMMON_SCHEMA_ORDER() + [
-            "citation",
-            "compute",
-        ]
+        schema_order = COMMON_SCHEMA_ORDER() + ["citation", "compute", "messages"]
 
         super().__init__(
             at_id=name,
@@ -50,6 +48,7 @@ class Activity(SchemaBase):
             description=description,
             preamble=preamble,
             citation=citation,
+            messages=messages,
             image=image,
             schema_order=schema_order,
             visible=visible,
