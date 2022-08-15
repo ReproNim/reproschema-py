@@ -89,7 +89,6 @@ def test_radio():
     item.set_pref_label("radio multiple")
     item.set_question("question for radio item with multiple responses")
     response_options.multipleChoice = True
-    # response_options.update()
     item.set_input_type_as_radio(response_options)
     item.write()
 
@@ -121,7 +120,6 @@ def test_select():
     item.set_pref_label("select multiple")
     item.set_question("question for select item with multiple responses")
     response_options.multipleChoice = True
-    # response_options.update()
     item.set_input_type_as_select(response_options)
     item.write()
 

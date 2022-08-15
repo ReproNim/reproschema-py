@@ -243,12 +243,6 @@ class ResponseOption:
         self.schema["@type"] = self.at_type
         self.set_filename()
 
-    def unset(self, keys) -> None:
-        if type(keys) == str:
-            keys = [keys]
-        for i in keys:
-            self.schema.pop(i, None)
-
     def set_valueType(self, value: str = None) -> None:
         if value is not None:
             self.valueType = f"xsd:{value}"
@@ -268,14 +262,6 @@ class ResponseOption:
             self.maxValue = value
         elif len(self.choices) > 1:
             self.maxValue = max(self.values_all_options())
-        self.update()
-
-    def use_preset(self, URI) -> None:
-        """
-        In case the list response options are read from another file
-        like for languages, country, state...
-        """
-        self.choices = URI
         self.update()
 
     def add_choice(

@@ -113,70 +113,19 @@ class Item(SchemaBase):
             "integer",
             "float",
             "date",
-            "time",
+            "year",
             "timeRange",
             "selectLanguage",
             "selectCountry",
             "selectState",
             "email",
             "pid",
+            "select",
+            "radio",
+            "slider",
         )
 
-        if self.inputType in SUPPORTED_TYPES:
-            self.response_options.unset(
-                ["maxLength", "choices", "maxValue", "multipleChoice", "minValue"]
-            )
-
-        self.ui.inputType = self.inputType if self.inputType != "integer" else "number"
-
-        if not self.inputType or self.inputType in ["select", "radio", "slider"]:
-            return
-
-        if self.inputType == "text":
-            self.response_options.set_valueType("string")
-            self.response_options.maxLength = 300
-            self.response_options.update()
-
-        elif self.inputType == "multitext":
-            self.response_options.set_valueType("string")
-            self.response_options.maxLength = 300
-            self.response_options.update()
-
-        elif self.inputType == "integer":
-            self.response_options.set_valueType("integer")
-
-        elif self.inputType == "float":
-            self.response_options.set_valueType("float")
-
-        elif self.inputType == "year":
-            self.response_options.set_valueType("date")
-            self.response_options.unset(
-                ["maxLength", "choices", "maxValue", "multipleChoice", "minValue"]
-            )
-
-        elif self.inputType == "date":
-            self.response_options.set_valueType("date")
-
-        elif self.inputType == "timeRange":
-            self.response_options.set_valueType("datetime")
-
-        elif self.inputType == "selectLanguage":
-            self.set_input_type_as_language()
-
-        elif self.inputType == "selectCountry":
-            self.set_input_type_as_country()
-
-        elif self.inputType == "selectState":
-            self.set_input_type_as_state()
-
-        elif self.inputType == "email":
-            self.response_options.set_valueType("string")
-
-        elif self.inputType == "pid":
-            self.response_options.set_valueType("string")
-
-        else:
-
+        if self.inputType not in SUPPORTED_TYPES:
             raise ValueError(
                 f"""
             Input_type {self.inputType} not supported.
@@ -184,35 +133,49 @@ class Item(SchemaBase):
             """
             )
 
-    """
-    input types with preset response choices
-    """
+        self.ui.inputType = self.inputType if self.inputType != "integer" else "number"
 
-    def set_input_type_as_language(self) -> None:
-        URL = self.set_input_from_preset(
-            "https://raw.githubusercontent.com/ReproNim/reproschema-library/",
-        )
-        self.response_options.multipleChoice = True
-        self.response_options.use_preset(f"{URL}master/resources/languages.json")
+        if not self.inputType or self.inputType in [
+            "text",
+            "multitext",
+            "selectLanguage",
+            "email",
+            "pid",
+            "selectLanguage",
+            "selectCountry",
+            "selectState",
+        ]:
+            self.response_options.set_valueType("string")
 
-    def set_input_type_as_country(self) -> None:
-        URL = self.set_input_from_preset(
-            "https://raw.githubusercontent.com/samayo/country-json/master/src/country-by-name.json",
-        )
-        self.response_options.maxLength = 50
-        self.response_options.use_preset(URL)
+        if not self.inputType or self.inputType in ["select", "radio", "slider"]:
+            return
 
-    def set_input_type_as_state(self) -> None:
-        URL = self.set_input_from_preset(
-            "https://gist.githubusercontent.com/mshafrir/2646763/raw/8b0dbb93521f5d6889502305335104218454c2bf/states_hash.json",
-        )
-        self.response_options.use_preset(URL)
+        if self.inputType in ["text", "multitext"]:
+            self.response_options.maxLength = 300
+            self.response_options.update()
 
-    def set_input_from_preset(self, arg0) -> str:
-        result = arg0
-        self.response_options.set_valueType("string")
+        elif self.inputType in ["integer", "float", "date"]:
+            self.response_options.set_valueType(self.inputType)
 
-        return result
+        elif self.inputType == "year":
+            self.response_options.set_valueType("date")
+
+        elif self.inputType == "timeRange":
+            self.response_options.set_valueType("datetime")
+
+        elif self.inputType == "selectLanguage":
+            URL = "https://raw.githubusercontent.com/ReproNim/reproschema-library/"
+            self.response_options.multipleChoice = True
+            self.response_options.choices = f"{URL}master/resources/languages.json"
+
+        elif self.inputType == "selectCountry":
+            URL = "https://raw.githubusercontent.com/samayo/country-json/master/src/country-by-name.json"
+            self.response_options.maxLength = 50
+            self.response_options.choices = URL
+
+        elif self.inputType == "selectState":
+            URL = "https://gist.githubusercontent.com/mshafrir/2646763/raw/8b0dbb93521f5d6889502305335104218454c2bf/states_hash.json"
+            self.response_options.choices = URL
 
     """
     input types with 'different response choices'
@@ -229,10 +192,11 @@ class Item(SchemaBase):
 
     def set_input_type_as_slider(self, response_options: ResponseOption) -> None:
         response_options.multipleChoice = False
-        response_options.update()
         self.set_input_type_rasesli("slider", response_options)
 
-    def set_input_type_rasesli(self, arg0, response_options: ResponseOption) -> None:
+    def set_input_type_rasesli(
+        self, arg0: str, response_options: ResponseOption
+    ) -> None:
         self.ui.inputType = arg0
         response_options.set_valueType("integer")
         self.response_options = response_options
