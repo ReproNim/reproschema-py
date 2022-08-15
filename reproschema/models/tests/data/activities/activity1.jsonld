@@ -2,7 +2,7 @@
     "@context": "../../contexts/generic",
     "@type": "reproschema:Activity",
     "@id": "activity1.jsonld",
-    "prefLabel": "Example 1",
+    "prefLabel": {"en": "Example 1"},
     "description": "Activity example 1",
     "schemaVersion": "1.0.0-rc4",
     "version": "0.0.1",

@@ -16,7 +16,7 @@ item_dir = output_dir("items")
 def test_default():
 
     item = Item(name="default", output_dir=item_dir)
-    print(item.question)
+    print(item.schema_order)
 
     item.write()
     item_content, expected = load_jsons(item_dir, item)
@@ -31,15 +31,15 @@ def test_default():
         ("text", "question for text item", "text"),
         ("multitext", "item with several text field", "multitext"),
         ("email", "input email address", "email"),
-        ("participant id", "input the participant id number", "id"),
+        ("participant id", "input the participant id number", "pid"),
         ("date", "input a date", "date"),
-        ("time range", "input a time range", "time_range"),
+        ("time range", "input a time range", "timeRange"),
         ("year", "input a year", "year"),
-        ("language", "item to select several language", "language"),
-        ("country", "select a country", "country"),
-        ("state", "select a USA state", "state"),
+        ("language", "item to select several language", "selectLanguage"),
+        ("country", "select a country", "selectCountry"),
+        ("state", "select a USA state", "selectState"),
         ("float", "item to input a float", "float"),
-        ("integer", "item to input a integer", "int"),
+        ("integer", "item to input a integer", "integer"),
     ],
 )
 def test_items(name, question, input_type):
@@ -163,7 +163,7 @@ def test_read_only():
     item = Item(
         name="activity1_total_score",
         ext="",
-        input_type="int",
+        input_type="integer",
         read_only=True,
         output_dir=item_dir,
     )

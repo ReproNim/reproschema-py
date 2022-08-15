@@ -4,6 +4,7 @@ from typing import Optional
 from typing import Union
 
 from .activity import Activity
+from .base import COMMON_SCHEMA_ORDER
 from .base import DEFAULT_LANG
 from .base import SchemaBase
 
@@ -17,29 +18,23 @@ class Protocol(SchemaBase):
         self,
         name: Optional[str] = "protocol",
         schemaVersion: Optional[str] = None,
-        prefLabel: Optional[Union[str, Dict[str, str]]] = "protocol",
+        prefLabel: Optional[str] = "protocol",
+        altLabel: Optional[Dict[str, str]] = None,
         description: Optional[str] = "",
+        preamble: Optional[str] = None,
         landingPage: Optional[dict] = None,
         citation: Optional[str] = None,
+        image: Optional[Union[str, Dict[str, str]]] = None,
         suffix: Optional[str] = "_schema",
         ext: Optional[str] = ".jsonld",
         output_dir: Optional[Union[str, Path]] = Path.cwd(),
         lang: Optional[str] = DEFAULT_LANG(),
     ):
 
-        schema_order = [
-            "@context",
-            "@type",
-            "@id",
-            "schemaVersion",
-            "version",
-            "prefLabel",
-            "description",
+        schema_order = COMMON_SCHEMA_ORDER() + [
             "landingPage",
             "citation",
-            "image",
             "compute",
-            "ui",
         ]
 
         super().__init__(
@@ -47,9 +42,12 @@ class Protocol(SchemaBase):
             at_type="reproschema:Protocol",
             schemaVersion=schemaVersion,
             prefLabel={lang: prefLabel},
+            altLabel=altLabel,
             description=description,
             landingPage=landingPage,
+            preamble=preamble,
             citation=citation,
+            image=image,
             schema_order=schema_order,
             suffix=suffix,
             ext=ext,

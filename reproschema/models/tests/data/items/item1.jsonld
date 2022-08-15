@@ -1,0 +1,72 @@
+{
+    "@context": "../../../contexts/generic",
+    "@type": "reproschema:Field",
+    "@id": "item1.jsonld",
+    "prefLabel": "item1",
+    "description": "Q1 of example 1",
+    "schemaVersion": "1.0.0-rc4",
+    "version": "0.0.1",
+    "audio": {
+      "@type": "AudioObject",
+      "contentUrl": "http://media.freesound.org/sample-file.mp4"
+    },
+    "image": {
+        "@type": "ImageObject",
+        "contentUrl": "http://example.com/sample-image.jpg"
+    },
+    "question": {
+        "en": "Little interest or pleasure in doing things",
+        "es": "Poco interés o placer en hacer cosas"
+    },
+    "ui": {
+        "inputType": "radio"
+    },
+    "responseOptions": {
+        "valueType": "xsd:integer",
+        "minValue": 0,
+        "maxValue": 3,
+        "multipleChoice": false,
+        "choices": [
+        {
+            "name": {
+                "en": "Not at all",
+                "es": "Para nada"
+            },
+            "value": 0
+        },
+        {
+            "name": {
+                "en": "Several days",
+                "es": "Varios días"
+            },
+            "value": "a"
+        },
+        {
+            "name": {
+                "en": "More than half the days",
+                "es": "Más de la mitad de los días"
+            },
+            "value": {"@id": "http://example.com/choice3" }
+        },
+        {
+            "name": {
+                "en": "Nearly everyday",
+                "es": "Casi todos los días"
+            },
+            "value": {"@value": "choice-with-lang", "@language": "en"}
+        }
+        ]
+    },
+    "additionalNotesObj": [
+        {
+            "source": "redcap",
+            "column": "notes",
+            "value": "some extra note"
+        },
+        {
+            "source": "redcap",
+            "column": "notes",
+            "value": {"@id": "http://example.com/iri-example"}
+        }
+    ]
+}

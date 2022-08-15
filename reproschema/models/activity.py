@@ -3,6 +3,7 @@ from typing import Dict
 from typing import Optional
 from typing import Union
 
+from .base import COMMON_SCHEMA_ORDER
 from .base import DEFAULT_LANG
 from .base import SchemaBase
 from .item import Item
@@ -17,10 +18,12 @@ class Activity(SchemaBase):
         self,
         name: Optional[str] = "activity",
         schemaVersion: Optional[str] = None,
-        prefLabel: Optional[Union[str, Dict[str, str]]] = "activity",
+        prefLabel: Optional[str] = "activity",
+        altLabel: Optional[Dict[str, str]] = None,
         description: Optional[str] = "",
         preamble: Optional[str] = None,
         citation: Optional[str] = None,
+        image: Optional[Union[str, Dict[str, str]]] = None,
         suffix: Optional[str] = "_schema",
         visible: Optional[bool] = True,
         required: Optional[bool] = False,
@@ -30,19 +33,9 @@ class Activity(SchemaBase):
         lang: Optional[str] = DEFAULT_LANG(),
     ):
 
-        schema_order = [
-            "@context",
-            "@type",
-            "@id",
-            "schemaVersion",
-            "version",
-            "prefLabel",
-            "description",
-            "preamble",
+        schema_order = COMMON_SCHEMA_ORDER() + [
             "citation",
-            "image",
             "compute",
-            "ui",
         ]
 
         super().__init__(
@@ -50,9 +43,11 @@ class Activity(SchemaBase):
             schemaVersion=schemaVersion,
             at_type="reproschema:Activity",
             prefLabel={lang: prefLabel},
+            altLabel=altLabel,
             description=description,
             preamble=preamble,
             citation=citation,
+            image=image,
             schema_order=schema_order,
             visible=visible,
             required=required,

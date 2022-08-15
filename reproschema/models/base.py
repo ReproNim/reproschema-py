@@ -25,6 +25,22 @@ def DEFAULT_VERSION() -> str:
     return "1.0.0-rc4"
 
 
+def COMMON_SCHEMA_ORDER() -> list:
+    return [
+        "@context",
+        "@type",
+        "@id",
+        "schemaVersion",
+        "version",
+        "prefLabel",
+        "altLabel",
+        "description",
+        "preamble",
+        "image",
+        "ui",
+    ]
+
+
 @define(kw_only=True)
 class SchemaBase:
 
@@ -79,6 +95,7 @@ class SchemaBase:
     - order
     - addProperties
     - allow
+    - about
     """
 
     # TODO
@@ -86,21 +103,33 @@ class SchemaBase:
     """
     Protocol, Activity, Field
     """
-    # altLabel
     # associatedMedia
-    # about
     prefLabel: dict = field(
         factory=(dict),
         converter=default_if_none(default={}),  # type: ignore
         validator=optional(instance_of(dict)),
     )
-    # TODO description is language specific
+    altLabel: dict = field(
+        factory=(dict),
+        converter=default_if_none(default={}),  # type: ignore
+        validator=optional(instance_of(dict)),
+    )
+    # TODO description is language specific?
     description: str = field(
         factory=(str),
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(instance_of(str)),
     )
+    image: Optional[Union[str, Dict[str, str]]] = field(
+        default=None,
+        validator=optional(instance_of((str, dict))),
+    )
 
+    preamble: dict = field(
+        factory=(dict),
+        converter=default_if_none(default={}),  # type: ignore
+        validator=optional(instance_of(dict)),
+    )
     # Protocol only
     # TODO landing_page is a dict or a list of dict?
     landingPage: dict = field(
@@ -130,19 +159,16 @@ class SchemaBase:
     """
     # overrideProperties
 
-    #: Activity and Field
-    preamble: dict = field(
-        factory=(dict),
-        converter=default_if_none(default={}),  # type: ignore
-        validator=optional(instance_of(dict)),
-    )
-
     """
     Field only
     """
-    # image
     # inputType
     # additionalNotesObj
+    inputType: str = field(
+        factory=(str),
+        converter=default_if_none(default=""),  # type: ignore
+        validator=optional(instance_of(str)),
+    )
     readonlyValue: Optional[bool] = field(
         factory=(bool),
         validator=optional(instance_of(bool)),
@@ -240,8 +266,10 @@ class SchemaBase:
             "schemaVersion",
             "version",
             "prefLabel",
+            "altLabel",
             "description",
             "citation",
+            "image",
             "preamble",
             "landingPage",
             "compute",
@@ -255,10 +283,6 @@ class SchemaBase:
     def update_ui(self) -> None:
         self.ui.update()
         self.schema["ui"] = self.ui.schema
-
-    # TODO
-    def set_image(self, image) -> None:
-        self.schema["image"] = image
 
     """SETTERS
 
@@ -305,6 +329,16 @@ class SchemaBase:
 
         self.at_id = f"{name}{self.suffix}{self.ext}"
         self.URI = os.path.join(self.output_dir, self.at_id)
+        self.update()
+
+    def set_alt_label(
+        self, alt_label: Optional[str] = None, lang: Optional[str] = None
+    ) -> None:
+        if alt_label is None:
+            return
+        if lang is None:
+            lang = self.lang
+        self.alt_label[lang] = alt_label
         self.update()
 
     def set_pref_label(
@@ -359,16 +393,10 @@ class SchemaBase:
 
         self.sort()
 
-        attrib_to_remove_if_empty = [
-            "ui",
-            "preamble",
-            "landingPage",
-            "compute",
-            "question",
-        ]
-        for attrib in attrib_to_remove_if_empty:
-            if attrib in self.schema and self.schema[attrib] in [{}, [], ""]:
-                self.schema.pop(attrib)
+        tmp = dict(self.schema)
+        for key in tmp:
+            if self.schema[key] in [{}, [], ""]:
+                self.schema.pop(key)
 
         if output_dir is None:
             output_dir = self.output_dir

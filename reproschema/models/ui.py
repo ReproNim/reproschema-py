@@ -135,9 +135,11 @@ class UI:
         obj_properties = {
             "variableName": variableName,
             "isAbout": obj.URI,
-            "prefLabel": obj.prefLabel,
             "isVis": obj.visible,
         }
+        if obj.prefLabel not in [None, "", {}]:
+            obj_properties["prefLabel"] = obj.prefLabel
+
         if obj.required is not None:
             obj_properties["requiredValue"] = obj.required
 

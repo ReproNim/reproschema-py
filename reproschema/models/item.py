@@ -1,7 +1,9 @@
 from pathlib import Path
+from typing import Dict
 from typing import Optional
 from typing import Union
 
+from .base import COMMON_SCHEMA_ORDER
 from .base import DEFAULT_LANG
 from .base import SchemaBase
 from .response_options import ResponseOption
@@ -18,8 +20,10 @@ class Item(SchemaBase):
         input_type: Optional[str] = "text",
         question: Optional[Union[dict, str]] = "",
         schemaVersion: Optional[str] = None,
-        prefLabel="item",
+        prefLabel: Optional[str] = "item",
+        altLabel: Optional[Dict[str, str]] = None,
         description: Optional[str] = "",
+        image: Optional[Union[str, Dict[str, str]]] = None,
         preamble: Optional[str] = None,
         visible: Optional[bool] = True,
         required: Optional[bool] = False,
@@ -31,27 +35,21 @@ class Item(SchemaBase):
         lang: Optional[str] = DEFAULT_LANG(),
     ):
 
-        schema_order = [
-            "@context",
-            "@type",
-            "@id",
-            "schemaVersion",
-            "version",
-            "prefLabel",
-            "description",
-            "preamble",
+        schema_order = COMMON_SCHEMA_ORDER() + [
             "question",
             "responseOptions",
-            "ui",
         ]
 
         super().__init__(
             at_id=name,
             at_type="reproschema:Field",
+            inputType=input_type,
             schemaVersion=schemaVersion,
             prefLabel={lang: prefLabel},
+            altLabel=altLabel,
             description=description,
             preamble=preamble,
+            image=image,
             schema_order=schema_order,
             visible=visible,
             required=required,
@@ -68,7 +66,6 @@ class Item(SchemaBase):
         self.response_options: ResponseOption = ResponseOption()
         self.set_response_options()
 
-        self.input_type = input_type
         self.set_input_type()
 
         self.update()
@@ -113,86 +110,77 @@ class Item(SchemaBase):
         SUPPORTED_TYPES = (
             "text",
             "multitext",
-            "int",
+            "integer",
             "float",
             "date",
             "time",
-            "time_range",
-            "language",
-            "country",
-            "state",
+            "timeRange",
+            "selectLanguage",
+            "selectCountry",
+            "selectState",
             "email",
-            "id",
+            "pid",
         )
 
-        if not self.input_type or self.input_type in ["select", "radio", "slider"]:
+        if self.inputType in SUPPORTED_TYPES:
+            self.response_options.unset(
+                ["maxLength", "choices", "maxValue", "multipleChoice", "minValue"]
+            )
+
+        self.ui.inputType = self.inputType if self.inputType != "integer" else "number"
+
+        if not self.inputType or self.inputType in ["select", "radio", "slider"]:
             return
 
-        if self.input_type in SUPPORTED_TYPES:
-            self.response_options.unset(
-                ["maxLength", "choices", "maxValue", "multipleChoice", "minValue"]
-            )
-
-        if self.input_type == "text":
-            self.ui.inputType = "text"
+        if self.inputType == "text":
             self.response_options.set_type("string")
             self.response_options.set_length(300)
 
-        elif self.input_type == "multitext":
-            self.ui.inputType = "multitext"
+        elif self.inputType == "multitext":
             self.response_options.set_length(300)
             self.response_options.set_type("string")
 
-        elif self.input_type == "int":
-            self.set_input_type_numeric("number", "integer")
+        elif self.inputType == "integer":
+            self.response_options.set_type("integer")
 
-        elif self.input_type == "float":
-            self.set_input_type_numeric("float", "float")
+        elif self.inputType == "float":
+            self.response_options.set_type("float")
 
-        elif self.input_type == "year":
-            self.ui.inputType = "year"
+        elif self.inputType == "year":
             self.response_options.set_type("date")
             self.response_options.unset(
                 ["maxLength", "choices", "maxValue", "multipleChoice", "minValue"]
             )
 
-        elif self.input_type == "date":
-            self.ui.inputType = "date"
+        elif self.inputType == "date":
             self.response_options.set_type("date")
 
-        elif self.input_type == "time_range":
-            self.ui.inputType = "timeRange"
+        elif self.inputType == "timeRange":
             self.response_options.set_type("datetime")
 
-        elif self.input_type == "language":
+        elif self.inputType == "selectLanguage":
             self.set_input_type_as_language()
 
-        elif self.input_type == "country":
+        elif self.inputType == "selectCountry":
             self.set_input_type_as_country()
 
-        elif self.input_type == "state":
+        elif self.inputType == "selectState":
             self.set_input_type_as_state()
 
-        elif self.input_type == "email":
-            self.ui.inputType = "email"
+        elif self.inputType == "email":
             self.response_options.set_type("string")
 
-        elif self.input_type == "id":
-            self.ui.inputType = "pid"
+        elif self.inputType == "pid":
             self.response_options.set_type("string")
 
         else:
 
             raise ValueError(
                 f"""
-            Input_type {self.input_type} not supported.
+            Input_type {self.inputType} not supported.
             Supported input_types are: {SUPPORTED_TYPES}
             """
             )
-
-    def set_input_type_numeric(self, arg0: str, arg1: str) -> None:
-        self.ui.inputType = arg0
-        self.response_options.set_type(arg1)
 
     """
     input types with preset response choices
@@ -201,7 +189,6 @@ class Item(SchemaBase):
     def set_input_type_as_language(self) -> None:
         URL = self.set_input_from_preset(
             "https://raw.githubusercontent.com/ReproNim/reproschema-library/",
-            "selectLanguage",
         )
         self.response_options.set_multiple_choice(True)
         self.response_options.use_preset(f"{URL}master/resources/languages.json")
@@ -209,7 +196,6 @@ class Item(SchemaBase):
     def set_input_type_as_country(self) -> None:
         URL = self.set_input_from_preset(
             "https://raw.githubusercontent.com/samayo/country-json/master/src/country-by-name.json",
-            "selectCountry",
         )
         self.response_options.use_preset(URL)
         self.response_options.set_length(50)
@@ -217,13 +203,11 @@ class Item(SchemaBase):
     def set_input_type_as_state(self) -> None:
         URL = self.set_input_from_preset(
             "https://gist.githubusercontent.com/mshafrir/2646763/raw/8b0dbb93521f5d6889502305335104218454c2bf/states_hash.json",
-            "selectState",
         )
         self.response_options.use_preset(URL)
 
-    def set_input_from_preset(self, arg0, arg1: str) -> str:
+    def set_input_from_preset(self, arg0) -> str:
         result = arg0
-        self.ui.inputType = arg1
         self.response_options.set_type("string")
 
         return result
