@@ -15,7 +15,6 @@ from attrs.validators import instance_of
 from attrs.validators import optional
 
 from .ui import UI
-from .utils import DEFAULT_LANG
 from .utils import SchemaUtils
 
 
@@ -43,16 +42,25 @@ def COMMON_SCHEMA_ORDER() -> list:
 
 @define(kw_only=True)
 class AdditionalNoteObj(SchemaUtils):
+    """A set of objects to define notes in a field.
+
+    For example, most Redcap and NDA data dictionaries have notes
+    for each item which needs to be captured in reproschema.
+    """
+
+    #: An element to define the column name where the note was taken from
     column: Optional[str] = field(
         factory=(str),
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(instance_of(str)),
     )
+    #: An element to define the source (eg. RedCap, NDA) where the note was taken from.
     source: Optional[str] = field(
         factory=(str),
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(instance_of(str)),
     )
+    #: The value for each option in choices or in additionalNotesObj
     value: Any = field(default=None)
 
     def __attrs_post_init__(self) -> None:
@@ -69,12 +77,15 @@ class AdditionalNoteObj(SchemaUtils):
 
 @define(kw_only=True)
 class Message(SchemaUtils):
+    """An object to define messages in an activity or protocol."""
 
+    #: A JavaScript expression to compute a score from other variables.
     jsExpression: Optional[str] = field(
         factory=(str),
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(instance_of(str)),
     )
+    #: The message to be conditionally displayed for an item.
     message: Optional[str] = field(
         factory=(str),
         converter=default_if_none(default=""),  # type: ignore

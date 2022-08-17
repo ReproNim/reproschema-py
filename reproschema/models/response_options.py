@@ -20,8 +20,14 @@ from .utils import SchemaUtils
 
 @define(kw_only=True)
 class unitOption(SchemaUtils):
+    """
+    An object to represent a human displayable name,
+    alongside the more formal value for units.
+    """
 
+    #: The value for each option in choices or in additionalNotesObj
     value: Any = field(default=None)
+    #: The preferred label.
     prefLabel: Optional[Union[str, Dict[str, str]]] = field(
         factory=(dict),
         converter=default_if_none(default={}),  # type: ignore
@@ -55,13 +61,17 @@ class unitOption(SchemaUtils):
 
 @define(kw_only=True)
 class Choice(SchemaUtils):
+    """An object to describe a response option."""
 
+    #: The name of the item.
     name: Optional[Union[str, Dict[str, str]]] = field(
         default=None,
         converter=default_if_none(default=""),
         validator=optional(instance_of((str, dict))),
     )
+    #: The value for each option in choices or in additionalNotesObj
     value: Any = field(default=None)
+    #: An image of the item. This can be a URL or a fully described ImageObject.
     image: Optional[Union[str, Dict[str, str]]] = field(
         default=None, validator=optional(instance_of((str, dict)))
     )
@@ -81,9 +91,6 @@ class Choice(SchemaUtils):
         self.update()
         self.sort_schema()
         self.drop_empty_values_from_schema()
-
-    def update(self) -> None:
-        super().update()
 
 
 @define(kw_only=True)
@@ -131,67 +138,67 @@ class ResponseOption(SchemaUtils):
         VERSION = self.schemaVersion or DEFAULT_VERSION()
         return URL + VERSION + "/contexts/generic"
 
+    #: The type of the response of an item. For example, string, integer, etc.
     valueType: str = field(
         factory=(str),
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(in_(SUPPORTED_VALUE_TYPES)),
     )
-
+    #: List the available options for response of the Field item.
     choices: Optional[Union[str, List[Choice]]] = field(
         factory=(list),
         converter=default_if_none(default=[]),  # type: ignore
         validator=optional(instance_of((str, list))),
     )
-
+    #: Indicates if response for the Field item has one or more answer.
     multipleChoice: Optional[bool] = field(
         default=None,
         validator=optional(instance_of(bool)),
     )
-
+    #: The lower value of some characteristic or property.
     minValue: Optional[int] = field(
         default=None,
         validator=optional(instance_of(int)),
     )
-
+    #: The upper value of some characteristic or property.
     maxValue: Optional[int] = field(
         default=None,
         validator=optional(instance_of(int)),
     )
-
+    #: A list to represent a human displayable name alongside the more formal value for units.
     unitOptions: Optional[list] = field(
         default=None,
         converter=default_if_none(default=[]),  # type: ignore
         validator=optional(instance_of(list)),
     )
-
+    #: The unit of measurement given using the UN/CEFACT Common Code (3 characters) or a URL.
+    # Other codes than the UN/CEFACT Common Code may be used with a prefix followed by a colon.
     unitCode: Optional[str] = field(
         default=None,
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(instance_of(str)),
     )
-
+    #: Indicates what type of datum the response is
+    # (e.g. range,count,scalar etc.) for the Field item.
     datumType: Optional[str] = field(
         default=None,
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(instance_of(str)),
     )
-
+    # Technically not in the schema, but useful for the UI
     maxLength: Optional[int] = field(
         default=None,
         validator=optional(instance_of(int)),
     )
 
     """
+
     Non schema based attributes: OPTIONAL
 
     Those attributes help with file management
     and with printing json files with standardized key orders
+
     """
-    # lang: Optional[str] = field(
-    #     default=None,
-    #     converter=default_if_none(default=DEFAULT_LANG()),  # type: ignore
-    #     validator=optional(instance_of(str)),
-    # )
 
     output_dir: Optional[Union[str, Path]] = field(
         default=None,
@@ -232,19 +239,30 @@ class ResponseOption(SchemaUtils):
                 "maxLength",
             ]
 
+    """
+    SETTERS:
+    """
+
     def set_defaults(self) -> None:
         self.schema["@type"] = self.at_type
         self.set_filename()
 
     def set_valueType(self, value: str = None) -> None:
+        """_summary_
+
+        :param value: _description_, defaults to None
+        :type value: str, optional
+        """
         if value is not None:
             self.valueType = f"xsd:{value}"
         self.update()
 
-    def values_all_options(self) -> List[Any]:
-        return [i["value"] for i in self.choices if "value" in i]
-
     def set_min(self, value: int = None) -> None:
+        """_summary_
+
+        :param value: _description_, defaults to None
+        :type value: int, optional
+        """
         if value is not None:
             self.minValue = value
         elif len(self.choices) > 1:
@@ -254,7 +272,11 @@ class ResponseOption(SchemaUtils):
                 self.minValue = min(all_values)
 
     def set_max(self, value: int = None) -> None:
+        """_summary_
 
+        :param value: _description_, defaults to None
+        :type value: int, optional
+        """
         if value is not None:
             self.maxValue = value
 
@@ -266,12 +288,24 @@ class ResponseOption(SchemaUtils):
 
         self.update()
 
+    def values_all_options(self) -> List[Any]:
+        return [i["value"] for i in self.choices if "value" in i]
+
     def add_choice(
         self,
         name: Optional[str] = None,
         value: Any = None,
         lang: Optional[str] = None,
     ) -> None:
+        """Add a response choice.
+
+        :param name: _description_, defaults to None
+        :type name: Optional[str], optional
+        :param value: _description_, defaults to None
+        :type value: Any, optional
+        :param lang: _description_, defaults to None
+        :type lang: Optional[str], optional
+        """
         if lang is None:
             lang = self.lang
         # TODO replace existing choice if already set
@@ -279,9 +313,11 @@ class ResponseOption(SchemaUtils):
         self.set_max()
         self.set_min()
 
-    def update(self) -> None:
-        """Updates the schema content based on the attributes."""
+    """
+    MISC
+    """
 
+    def update(self) -> None:
         self.schema["@id"] = self.at_id
         self.schema["@type"] = self.at_type
         self.schema["@context"] = self.at_context

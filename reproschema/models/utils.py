@@ -20,6 +20,7 @@ def DEFAULT_LANG() -> str:
 @define(kw_only=True)
 class SchemaUtils:
 
+    #: specifies the order of keys in the output file
     schema_order: Optional[list] = field(
         factory=(list),
         converter=default_if_none(default=[]),  # type: ignore
@@ -31,6 +32,7 @@ class SchemaUtils:
         converter=default_if_none(default={}),  # type: ignore
         validator=optional(instance_of(dict)),
     )
+    #: default language for the schema
     lang: Optional[str] = field(
         default=None,
         converter=default_if_none(default=DEFAULT_LANG()),  # type: ignore
@@ -45,6 +47,7 @@ class SchemaUtils:
         return reordered_dict
 
     def drop_empty_values_from_schema(self) -> None:
+        """Remove any empty keys from the schema to avoid cluttering output files."""
         tmp = dict(self.schema)
         for key in tmp:
             if self.schema[key] in [{}, [], "", None]:
@@ -86,11 +89,22 @@ class SchemaUtils:
 
 
 def reorder_dict_skip_missing(old_dict: Dict, key_list: List) -> OrderedDict:
+    """Reorders dictionary according to ``key_list``.
+
+    Removing any key with no associated value, or that is not in ``key_list``
+
+    This is useful to ensure that order of keys in output files is the same across files.
+
+    :param old_dict: _description_
+    :type old_dict: Dict
+
+    :param key_list: _description_
+    :type key_list: List
+
+    :return: _description_
+    :rtype: OrderedDict
     """
-    reorders dictionary according to ``key_list``
-    removing any key with no associated value
-    or that is not in the key list
-    """
+
     return OrderedDict(
         (k, old_dict[k])
         for k in key_list

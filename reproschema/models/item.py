@@ -90,6 +90,13 @@ class Item(SchemaBase):
     def set_question(
         self, question: Optional[Union[str, dict]] = None, lang: Optional[str] = None
     ) -> None:
+        """_summary_
+
+        :param question: _description_, defaults to None
+        :type question: Optional[Union[str, dict]], optional
+        :param lang: _description_, defaults to None
+        :type lang: Optional[str], optional
+        """
 
         if question is None:
             question = self.question
@@ -107,9 +114,6 @@ class Item(SchemaBase):
 
         self.update()
 
-    """
-    CREATE DIFFERENT ITEMS
-    """
     # TODO: items not yet covered
     # audioCheck: AudioCheck/AudioCheck.vue
     # audioRecord: WebAudioRecord/Audio.vue
@@ -122,7 +126,13 @@ class Item(SchemaBase):
     # static: Static/Static.vue
     # StaticReadOnly: Static/Static.vue
 
-    def set_input_type(self, response_options: ResponseOption = None) -> None:
+    def set_input_type(self, response_options: Optional[ResponseOption] = None) -> None:
+        """Set the input type of the item in the UI and the ResponseOptions objects.
+
+        :param response_options: _description_, defaults to None
+        :type response_options: Optional[ResponseOption], optional
+        :raises ValueError: When the input type is not one of the supported values.
+        """
 
         SUPPORTED_TYPES = (
             "text",
@@ -192,6 +202,7 @@ class Item(SchemaBase):
             self.response_options.choices = URL
 
         elif self.inputType in ["radio", "select", "slider"]:
+            # TODO make it more general to be able to pass response_options for all input types
             if response_options is not None:
                 if self.inputType in ["slider"]:
                     response_options.multipleChoice = False
@@ -203,8 +214,8 @@ class Item(SchemaBase):
     """
 
     def set_response_options(self) -> None:
-        """
-        Passes the content of the response options to the schema of the item.
+        """Pass the content of the response options object to the schema of the item.
+
         Also removes some "unnecessary" fields.
         """
         self.response_options.update()
@@ -216,8 +227,9 @@ class Item(SchemaBase):
         self.schema["responseOptions"] = self.response_options.schema
 
     def unset(self, keys) -> None:
-        """
-        Mostly used to remove some empty keys from the schema. Rarely used.
+        """Remove empty keys from the schema.
+
+        Rarely used.
         """
         for i in keys:
             self.schema.pop(i, None)

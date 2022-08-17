@@ -121,6 +121,13 @@ class UI(SchemaUtils):
         self.update()
 
     def append(self, obj, variableName: Optional[str] = None) -> None:
+        """Append Field or Activity to the UI schema.
+
+        :param obj: _description_
+        :type obj: _type_
+        :param variableName: _description_, defaults to None
+        :type variableName: Optional[str], optional
+        """
 
         this_property = AdditionalProperty(
             variableName=variableName,
@@ -172,50 +179,64 @@ class UI(SchemaUtils):
     kw_only=True,
 )
 class AdditionalProperty(SchemaUtils):
+    """An object to describe the various properties added to assessments and fields."""
 
+    #: The name used to represent an item.
     variableName: Optional[str] = field(
         default=None,
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(instance_of(str)),
     )
+    #: A pointer to the node describing the item.
     isAbout: Optional[str] = field(
         default=None,
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(instance_of(str)),
     )
+    #: The preferred label.
     prefLabel: Optional[Union[str, Dict[str, str]]] = field(
         default=None,
         converter=default_if_none(default={}),  # type: ignore
         validator=optional(instance_of((str, dict))),
     )
+    #: An element to describe (by boolean or conditional statement)
+    # visibility conditions of items in an assessment.
     isVis: Optional[bool] = field(
         default=None,
         validator=optional(instance_of(bool)),
     )
+    #: Whether the property must be filled in to complete the action.
     requiredValue: Optional[bool] = field(
         default=None,
         validator=optional(instance_of(bool)),
     )
+    #: List of items indicating properties allowed.
     allow: Optional[List[str]] = field(
         factory=list,
         converter=default_if_none(default=[]),  # type: ignore
         validator=optional(instance_of(list)),
     )
+    #: An element to limit the duration (uses ISO 8601)
+    # this activity is allowed to be completed by once activity is available.
     limit: Optional[str] = field(
         default=None,
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(instance_of(str)),
     )
+    #: Defines number of times the item is allowed to be redone.
     maxRetakes: Optional[str] = field(
         default=None,
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(instance_of(str)),
     )
+    #: Present activity/item within some random offset of activity available time up
+    # to the maximum specified by this ISO 8601 duration
     randomMaxDelay: Optional[str] = field(
         default=None,
         converter=default_if_none(default=""),  # type: ignore
         validator=optional(instance_of(str)),
     )
+    #: An element to set make activity available/repeat info using ISO 8601 repeating interval format.
     schedule: Optional[str] = field(
         default=None,
         converter=default_if_none(default=""),  # type: ignore

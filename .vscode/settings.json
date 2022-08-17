@@ -2,5 +2,6 @@
     "cSpell.words": [
         "reproschema"
     ],
-    "autoDocstring.docstringFormat": "numpy"
+    "autoDocstring.docstringFormat": "sphinx",
+    "esbonio.sphinx.confDir": ""
 }
