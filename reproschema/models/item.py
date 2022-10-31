@@ -1,158 +1,241 @@
+from pathlib import Path
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
+
+from .base import COMMON_SCHEMA_ORDER
 from .base import SchemaBase
+from .response_options import ResponseOption
+from .utils import DEFAULT_LANG
 
 
 class Item(SchemaBase):
     """
-    class to deal with reproschema activities
+    class to deal with reproschema items
     """
 
-    schema_type = "reproschema:Field"
+    def __init__(
+        self,
+        name: Optional[str] = "item",
+        input_type: Optional[str] = "text",
+        question: Optional[Union[dict, str]] = "",
+        schemaVersion: Optional[str] = None,
+        prefLabel: Optional[str] = "item",
+        altLabel: Optional[Dict[str, str]] = None,
+        description: Optional[str] = "",
+        image: Optional[Union[str, Dict[str, str]]] = None,
+        audio: Optional[Union[str, Dict[str, str]]] = None,
+        video: Optional[Union[str, Dict[str, str]]] = None,
+        preamble: Optional[str] = None,
+        additionalNotesObj: List[Dict[str, Any]] = None,
+        visible: Optional[bool] = True,
+        required: Optional[bool] = False,
+        skippable: Optional[bool] = True,
+        read_only: Optional[bool] = None,
+        limit: Optional[str] = None,
+        randomMaxDelay: Optional[str] = None,
+        schedule: Optional[str] = None,
+        suffix: Optional[str] = "",
+        ext: Optional[str] = ".jsonld",
+        output_dir=Path.cwd(),
+        lang: Optional[str] = DEFAULT_LANG(),
+    ):
 
-    def __init__(self, version=None):
-        super().__init__(version)
-        self.schema["ui"] = {"inputType": []}
-        self.schema["question"] = {}
-        self.schema["responseOptions"] = {}
-        # default input type is "char"
-        self.set_input_type_as_char()
+        schema_order = COMMON_SCHEMA_ORDER() + [
+            "question",
+            "responseOptions",
+            "additionalNotesObj",
+        ]
 
-    def set_URI(self, URI):
-        self.URI = URI
+        super().__init__(
+            at_id=name,
+            at_type="reproschema:Field",
+            inputType=input_type,
+            schemaVersion=schemaVersion,
+            prefLabel={lang: prefLabel},
+            altLabel=altLabel,
+            description=description,
+            preamble=preamble,
+            image=image,
+            audio=audio,
+            video=video,
+            additionalNotesObj=additionalNotesObj,
+            schema_order=schema_order,
+            visible=visible,
+            required=required,
+            skippable=skippable,
+            readonlyValue=read_only,
+            schedule=schedule,
+            limit=limit,
+            randomMaxDelay=randomMaxDelay,
+            suffix=suffix,
+            ext=ext,
+            output_dir=output_dir,
+            lang=lang,
+        )
 
-    # TODO
-    # image
-    # readonlyValue
+        super().set_defaults()
 
-    def set_defaults(self, name):
-        self._ReproschemaSchema__set_defaults(name)  # this looks wrong
-        self.schema_file = name
-        self.schema["@id"] = name
-        self.set_input_type_as_char()
+        self.set_question(question=question)
 
-    def set_question(self, question, lang="en"):
-        self.schema["question"][lang] = question
+        self.response_options: ResponseOption = ResponseOption()
+        self.set_response_options()
 
-    def set_input_type(self, input_type):
-        self.schema["ui"]["inputType"] = input_type
+        self.set_input_type()
 
-    def set_response_options(self, response_options):
-        self.schema["responseOptions"] = response_options
+        self.update()
 
-    """
+    def set_question(
+        self, question: Optional[Union[str, dict]] = None, lang: Optional[str] = None
+    ) -> None:
+        """_summary_
 
-    input types with different response choices
+        :param question: _description_, defaults to None
+        :type question: Optional[Union[str, dict]], optional
+        :param lang: _description_, defaults to None
+        :type lang: Optional[str], optional
+        """
 
-    """
+        if question is None:
+            question = self.question
 
-    def set_input_type_as_radio(self, response_options):
-        self.set_input_type("radio")
-        self.set_response_options(response_options)
+        if lang is None:
+            lang = self.lang
 
-    def set_input_type_as_select(self, response_options):
-        self.set_input_type("select")
-        self.set_response_options(response_options)
+        if question == {}:
+            return
 
-    def set_input_type_as_slider(self):
-        self.set_input_type_as_char()  # until the slide item of the ui is fixed
-        # self.set_input_type("slider")
-        # self.set_response_options({"valueType": "xsd:string"})
+        if isinstance(question, str):
+            self.question[lang] = question
+        elif isinstance(question, dict):
+            self.question = question
 
-    def set_input_type_as_language(self):
+        self.update()
 
-        URL = "https://raw.githubusercontent.com/ReproNim/reproschema/"
-
-        self.set_input_type("selectLanguage")
-
-        response_options = {
-            "valueType": "xsd:string",
-            "multipleChoice": True,
-            "choices": URL + "master/resources/languages.json",
-        }
-        self.set_response_options(response_options)
-
-    """
-
-    input types with no response choice
-
-    """
-
-    def set_input_type_as_char(self):
-        self.set_input_type("text")
-        self.set_response_options({"valueType": "xsd:string"})
-
-    def set_input_type_as_int(self):
-        self.set_input_type("number")
-        self.set_response_options({"valueType": "xsd:integer"})
-
-    def set_input_type_as_float(self):
-        self.set_input_type("float")
-        self.set_response_options({"valueType": "xsd:float"})
-
-    def set_input_type_as_time_range(self):
-        self.set_input_type("timeRange")
-        self.set_response_options({"valueType": "datetime"})
-
-    def set_input_type_as_date(self):
-        self.set_input_type("date")
-        self.set_response_options({"valueType": "xsd:date"})
-
-    """
-
-    input types with no response choice but with some parameters
-
-    """
-
-    def set_input_type_as_multitext(self, max_length=300):
-        self.set_input_type("text")
-        self.set_response_options({"valueType": "xsd:string", "maxLength": max_length})
-
-    # TODO
-    # email: EmailInput/EmailInput.vue
+    # TODO: items not yet covered
     # audioCheck: AudioCheck/AudioCheck.vue
     # audioRecord: WebAudioRecord/Audio.vue
     # audioPassageRecord: WebAudioRecord/Audio.vue
     # audioImageRecord: WebAudioRecord/Audio.vue
     # audioRecordNumberTask: WebAudioRecord/Audio.vue
     # audioAutoRecord: AudioCheckRecord/AudioCheckRecord.vue
-    # year: YearInput/YearInput.vue
-    # selectCountry: SelectInput/SelectInput.vue
-    # selectState: SelectInput/SelectInput.vue
     # documentUpload: DocumentUpload/DocumentUpload.vue
     # save: SaveData/SaveData.vue
     # static: Static/Static.vue
     # StaticReadOnly: Static/Static.vue
 
-    def set_basic_response_type(self, response_type):
+    def set_input_type(self, response_options: Optional[ResponseOption] = None) -> None:
+        """Set the input type of the item in the UI and the ResponseOptions objects.
 
-        # default (also valid for "char" input type)
-        self.set_input_type_as_char()
+        :param response_options: _description_, defaults to None
+        :type response_options: Optional[ResponseOption], optional
+        :raises ValueError: When the input type is not one of the supported values.
+        """
 
-        if response_type == "int":
-            self.set_input_type_as_int()
+        SUPPORTED_TYPES = (
+            "text",
+            "multitext",
+            "integer",
+            "float",
+            "date",
+            "year",
+            "timeRange",
+            "selectLanguage",
+            "selectCountry",
+            "selectState",
+            "email",
+            "pid",
+            "select",
+            "radio",
+            "slider",
+        )
 
-        elif response_type == "float":
-            self.set_input_type_as_float()
+        if self.inputType not in SUPPORTED_TYPES:
+            raise ValueError(
+                f"""
+            Input_type {self.inputType} not supported.
+            Supported input_types are: {SUPPORTED_TYPES}
+            """
+            )
 
-        elif response_type == "date":
-            self.set_input_type_as_date()
+        self.ui.inputType = self.inputType if self.inputType != "integer" else "number"
 
-        elif response_type == "time range":
-            self.set_input_type_as_time_range()
+        if not self.inputType or self.inputType in [
+            "text",
+            "multitext",
+            "selectLanguage",
+            "email",
+            "pid",
+            "selectLanguage",
+            "selectCountry",
+            "selectState",
+        ]:
+            self.response_options.set_valueType("string")
 
-        elif response_type == "language":
-            self.set_input_type_as_language()
+        if self.inputType in ["text", "multitext"]:
+            self.response_options.maxLength = 300
+            self.response_options.update()
 
-    def sort(self):
-        schema_order = [
-            "@context",
-            "@type",
-            "@id",
-            "prefLabel",
-            "description",
-            "schemaVersion",
-            "version",
-            "ui",
-            "question",
-            "responseOptions",
-        ]
-        self.sort_schema(schema_order)
+        elif self.inputType in ["integer", "float", "date"]:
+            self.response_options.set_valueType(self.inputType)
+
+        elif self.inputType == "year":
+            self.response_options.set_valueType("date")
+
+        elif self.inputType == "timeRange":
+            self.response_options.set_valueType("datetime")
+
+        elif self.inputType == "selectLanguage":
+            URL = "https://raw.githubusercontent.com/ReproNim/reproschema-library/"
+            self.response_options.multipleChoice = True
+            self.response_options.choices = f"{URL}master/resources/languages.json"
+
+        elif self.inputType == "selectCountry":
+            URL = "https://raw.githubusercontent.com/samayo/country-json/master/src/country-by-name.json"
+            self.response_options.maxLength = 50
+            self.response_options.choices = URL
+
+        elif self.inputType == "selectState":
+            URL = "https://gist.githubusercontent.com/mshafrir/2646763/raw/8b0dbb93521f5d6889502305335104218454c2bf/states_hash.json"
+            self.response_options.choices = URL
+
+        elif self.inputType in ["radio", "select", "slider"]:
+            # TODO make it more general to be able to pass response_options for all input types
+            if response_options is not None:
+                if self.inputType in ["slider"]:
+                    response_options.multipleChoice = False
+                self.response_options = response_options
+                self.response_options.set_valueType("integer")
+
+    """
+    writing, reading, sorting, unsetting
+    """
+
+    def set_response_options(self) -> None:
+        """Pass the content of the response options object to the schema of the item.
+
+        Also removes some "unnecessary" fields.
+        """
+        self.response_options.update()
+        self.response_options.sort_schema()
+        self.response_options.drop_empty_values_from_schema()
+        self.response_options.schema.pop("@id")
+        self.response_options.schema.pop("@type")
+        self.response_options.schema.pop("@context")
+        self.schema["responseOptions"] = self.response_options.schema
+
+    def unset(self, keys) -> None:
+        """Remove empty keys from the schema.
+
+        Rarely used.
+        """
+        for i in keys:
+            self.schema.pop(i, None)
+
+    def write(self, output_dir=None) -> None:
+        if output_dir is None:
+            output_dir = self.output_dir
+        self.set_response_options()
+        super().write(output_dir)

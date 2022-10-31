@@ -1,7 +1,9 @@
 import os
 import threading
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import HTTPServer
+from http.server import SimpleHTTPRequestHandler
 from tempfile import mkdtemp
+
 import requests
 import requests_cache
 

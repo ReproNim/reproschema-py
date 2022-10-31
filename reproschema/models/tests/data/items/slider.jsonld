@@ -1,0 +1,55 @@
+{
+    "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
+    "@type": "reproschema:Field",
+    "@id": "slider.jsonld",
+    "prefLabel": {
+        "en": "slider"
+    },
+    "description": "slider",
+    "schemaVersion": "1.0.0-rc4",
+    "version": "0.0.1",
+    "question": {
+        "en": "question for slider item"
+    },
+    "ui": {
+        "inputType": "slider"
+    },
+    "responseOptions": {
+        "valueType": "xsd:integer",
+        "minValue": 0,
+        "maxValue": 4,
+        "multipleChoice": false,
+        "choices": [
+            {
+                "name": {
+                    "en": "not at all"
+                },
+                "value": 0
+            },
+            {
+                "name": {
+                    "en": "a bit"
+                },
+                "value": 1
+            },
+            {
+                "name": {
+                    "en": "so so"
+                },
+                "value": 2
+            },
+            {
+                "name": {
+                    "en": "a lot"
+                },
+                "value": 3
+            },
+            {
+                "name": {
+                    "en": "very much"
+                },
+                "value": 4
+            }
+        ]
+    }
+}

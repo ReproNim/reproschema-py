@@ -1,4 +1,12 @@
+from pathlib import Path
+from typing import Dict
+from typing import Optional
+from typing import Union
+
+from .base import COMMON_SCHEMA_ORDER
 from .base import SchemaBase
+from .item import Item
+from .utils import DEFAULT_LANG
 
 
 class Activity(SchemaBase):
@@ -6,62 +14,61 @@ class Activity(SchemaBase):
     class to deal with reproschema activities
     """
 
-    schema_type = "reproschema:Activity"
+    def __init__(
+        self,
+        name: Optional[str] = "activity",
+        schemaVersion: Optional[str] = None,
+        prefLabel: Optional[Union[str, Dict[str, str]]] = "activity",
+        altLabel: Optional[Union[str, Dict[str, str]]] = None,
+        description: Optional[str] = "",
+        preamble: Optional[str] = None,
+        citation: Optional[str] = None,
+        image: Optional[Union[str, Dict[str, str]]] = None,
+        audio: Optional[Union[str, Dict[str, str]]] = None,
+        video: Optional[Union[str, Dict[str, str]]] = None,
+        messages: Optional[Dict[str, str]] = None,
+        suffix: Optional[str] = "_schema",
+        visible: Optional[bool] = True,
+        required: Optional[bool] = False,
+        skippable: Optional[bool] = True,
+        limit: Optional[str] = None,
+        randomMaxDelay: Optional[str] = None,
+        schedule: Optional[str] = None,
+        ext: Optional[str] = ".jsonld",
+        output_dir: Optional[Union[str, Path]] = Path.cwd(),
+        lang: Optional[str] = DEFAULT_LANG(),
+    ):
 
-    def __init__(self, version=None):
-        super().__init__(version)
-        self.schema["ui"] = {"shuffle": [], "order": [], "addProperties": []}
+        schema_order = COMMON_SCHEMA_ORDER() + ["citation", "compute", "messages"]
 
-    def set_ui_shuffle(self, shuffle=False):
-        self.schema["ui"]["shuffle"] = shuffle
+        super().__init__(
+            at_id=name,
+            schemaVersion=schemaVersion,
+            at_type="reproschema:Activity",
+            prefLabel={lang: prefLabel},
+            altLabel=altLabel,
+            description=description,
+            preamble=preamble,
+            citation=citation,
+            messages=messages,
+            image=image,
+            audio=audio,
+            video=video,
+            schema_order=schema_order,
+            visible=visible,
+            required=required,
+            skippable=skippable,
+            limit=limit,
+            randomMaxDelay=randomMaxDelay,
+            schedule=schedule,
+            suffix=suffix,
+            ext=ext,
+            output_dir=output_dir,
+            lang=lang,
+        )
+        super().set_defaults()
+        self.ui.shuffle = False
+        self.update()
 
-    def set_URI(self, URI):
-        self.URI = URI
-
-    def get_URI(self):
-        return self.URI
-
-    # TODO
-    # preamble
-    # compute
-    # citation
-    # image
-
-    def set_defaults(self, name):
-        self._ReproschemaSchema__set_defaults(name)  # this looks wrong
-        self.set_ui_shuffle(False)
-
-    def update_activity(self, item_info):
-
-        # TODO
-        # - remove the hard coding on visibility and valueRequired
-
-        # update the content of the activity schema with new item
-
-        item_info["URI"] = "items/" + item_info["name"]
-
-        append_to_activity = {
-            "variableName": item_info["name"],
-            "isAbout": item_info["URI"],
-            "isVis": item_info["visibility"],
-            "valueRequired": False,
-        }
-
-        self.schema["ui"]["order"].append(item_info["URI"])
-        self.schema["ui"]["addProperties"].append(append_to_activity)
-
-    def sort(self):
-        schema_order = [
-            "@context",
-            "@type",
-            "@id",
-            "prefLabel",
-            "description",
-            "schemaVersion",
-            "version",
-            "ui",
-        ]
-        self.sort_schema(schema_order)
-
-        ui_order = ["shuffle", "order", "addProperties"]
-        self.sort_ui(ui_order)
+    def append_item(self, item: Item):
+        self.ui.append(obj=item, variableName=item.get_basename())

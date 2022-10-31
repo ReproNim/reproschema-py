@@ -1,0 +1,46 @@
+{
+    "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
+    "@id": "example.jsonld",
+    "@type": "reproschema:ResponseOption",
+    "valueType": "xsd:integer",
+    "minValue": 0,
+    "maxValue": 6,
+    "choices": [
+        {
+            "name": {
+                "en": "Not at all"
+            },
+            "value": 0
+        },
+        {
+            "name": {
+                "en": ""
+            },
+            "value": 1
+        },
+        {
+            "name": {
+                "en": ""
+            },
+            "value": 2
+        },
+        {
+            "name": {
+                "en": ""
+            },
+            "value": 3
+        },
+        {
+            "name": {
+                "en": ""
+            },
+            "value": 4
+        },
+        {
+            "name": {
+                "en": "Completely"
+            },
+            "value": 6
+        }
+    ]
+}

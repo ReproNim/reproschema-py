@@ -1,0 +1,20 @@
+{
+    "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
+    "@type": "reproschema:Field",
+    "@id": "date.jsonld",
+    "prefLabel": {
+        "en": "date"
+    },
+    "description": "date",
+    "schemaVersion": "1.0.0-rc4",
+    "version": "0.0.1",
+    "question": {
+        "en": "input a date"
+    },
+    "ui": {
+        "inputType": "date"
+    },
+    "responseOptions": {
+        "valueType": "xsd:date"
+    }
+}

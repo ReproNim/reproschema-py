@@ -1,78 +1,76 @@
+from pathlib import Path
+from typing import Dict
+from typing import Optional
+from typing import Union
+
+from attrs import define
+
+from .activity import Activity
+from .base import COMMON_SCHEMA_ORDER
 from .base import SchemaBase
+from .utils import DEFAULT_LANG
 
 
+@define(kw_only=True)
 class Protocol(SchemaBase):
     """
     class to deal with reproschema protocols
     """
 
-    schema_type = "reproschema:Protocol"
+    def __init__(
+        self,
+        name: Optional[str] = "protocol",
+        schemaVersion: Optional[str] = None,
+        prefLabel: Optional[str] = "protocol",
+        altLabel: Optional[Union[str, Dict[str, str]]] = None,
+        description: Optional[str] = "",
+        landingPage: Optional[dict] = None,
+        preamble: Optional[str] = None,
+        citation: Optional[str] = None,
+        image: Optional[Union[str, Dict[str, str]]] = None,
+        audio: Optional[Union[str, Dict[str, str]]] = None,
+        video: Optional[Union[str, Dict[str, str]]] = None,
+        messages: Optional[Dict[str, str]] = None,
+        suffix: Optional[str] = "_schema",
+        ext: Optional[str] = ".jsonld",
+        output_dir: Optional[Union[str, Path]] = Path.cwd(),
+        lang: Optional[str] = DEFAULT_LANG(),
+        **kwargs
+    ):
 
-    def __init__(self, version=None):
-        super().__init__(version)
-        self.schema["ui"] = {
-            "allow": [],
-            "shuffle": [],
-            "order": [],
-            "addProperties": [],
-        }
-
-    def set_landing_page(self, landing_page_url, lang="en"):
-        self.schema["landingPage"] = {"@id": landing_page_url, "inLanguage": lang}
-
-    # TODO
-    # def add_landing_page(self, landing_page_url, lang="en"):
-    # preamble
-    # compute
-
-    def set_image(self, image_url):
-        self.schema["image"] = image_url
-
-    def set_ui_allow(self):
-        self.schema["ui"]["allow"] = [
-            "reproschema:AutoAdvance",
-            "reproschema:AllowExport",
-        ]
-
-    def set_ui_shuffle(self, shuffle=False):
-        self.schema["ui"]["shuffle"] = shuffle
-
-    def set_defaults(self, name):
-        self._ReproschemaSchema__set_defaults(name)  # this looks wrong
-        self.set_landing_page("../../README-en.md")
-        self.set_ui_allow()
-        self.set_ui_shuffle(False)
-
-    def append_activity(self, activity):
-
-        # TODO
-        # - remove the hard coding on visibility and valueRequired
-
-        # update the content of the protocol with this new activity
-        append_to_protocol = {
-            "variableName": activity.get_name(),
-            "isAbout": activity.get_URI(),
-            "prefLabel": {"en": activity.schema["prefLabel"]},
-            "isVis": True,
-            "valueRequired": False,
-        }
-
-        self.schema["ui"]["order"].append(activity.URI)
-        self.schema["ui"]["addProperties"].append(append_to_protocol)
-
-    def sort(self):
-        schema_order = [
-            "@context",
-            "@type",
-            "@id",
-            "prefLabel",
-            "description",
-            "schemaVersion",
-            "version",
+        schema_order = COMMON_SCHEMA_ORDER() + [
             "landingPage",
-            "ui",
+            "citation",
+            "compute",
+            "messages",
         ]
-        self.sort_schema(schema_order)
 
-        ui_order = ["allow", "shuffle", "order", "addProperties"]
-        self.sort_ui(ui_order)
+        super().__init__(
+            at_id=name,
+            at_type="reproschema:Protocol",
+            schemaVersion=schemaVersion,
+            prefLabel={lang: prefLabel},
+            altLabel=altLabel,
+            description=description,
+            landingPage=landingPage,
+            preamble=preamble,
+            citation=citation,
+            messages=messages,
+            image=image,
+            audio=audio,
+            video=video,
+            schema_order=schema_order,
+            suffix=suffix,
+            ext=ext,
+            output_dir=output_dir,
+            lang=lang,
+            **kwargs
+        )
+        super().set_defaults()
+        self.ui.shuffle = False
+        self.update()
+
+    def append_activity(self, activity: Activity):
+        self.ui.append(
+            obj=activity, variableName=activity.get_basename().replace("_schema", "")
+        )

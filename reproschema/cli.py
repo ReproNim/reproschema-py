@@ -1,8 +1,10 @@
 import os
+
 import click
 
-from . import get_logger, set_logger_level
 from . import __version__
+from . import get_logger
+from . import set_logger_level
 
 lgr = get_logger()
 
