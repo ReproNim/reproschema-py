@@ -32,7 +32,6 @@ class Activity(SchemaBase):
         self.set_ui_shuffle(False)
 
     def update_activity(self, item_info):
-
         # TODO
         # - remove the hard coding on visibility and valueRequired
 

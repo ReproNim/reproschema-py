@@ -58,7 +58,6 @@ class Item(SchemaBase):
         # self.set_response_options({"valueType": "xsd:string"})
 
     def set_input_type_as_language(self):
-
         URL = "https://raw.githubusercontent.com/ReproNim/reproschema/"
 
         self.set_input_type("selectLanguage")
@@ -123,7 +122,6 @@ class Item(SchemaBase):
     # StaticReadOnly: Static/Static.vue
 
     def set_basic_response_type(self, response_type):
-
         # default (also valid for "char" input type)
         self.set_input_type_as_char()
 

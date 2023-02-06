@@ -10,7 +10,6 @@ class SchemaBase:
     schema_type = None
 
     def __init__(self, version):
-
         URL = "https://raw.githubusercontent.com/ReproNim/reproschema/"
         VERSION = version or "1.0.0-rc2"
 
@@ -47,12 +46,10 @@ class SchemaBase:
         self.set_description(name.replace("_", " "))
 
     def sort_schema(self, schema_order):
-
         reordered_dict = {k: self.schema[k] for k in schema_order}
         self.schema = reordered_dict
 
     def sort_ui(self, ui_order):
-
         reordered_dict = {k: self.schema["ui"][k] for k in ui_order}
         self.schema["ui"] = reordered_dict
 
