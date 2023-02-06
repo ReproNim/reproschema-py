@@ -44,7 +44,6 @@ class Protocol(SchemaBase):
         self.set_ui_shuffle(False)
 
     def append_activity(self, activity):
-
         # TODO
         # - remove the hard coding on visibility and valueRequired
 
