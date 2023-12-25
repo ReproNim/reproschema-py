@@ -9,11 +9,15 @@ import yaml
 from collections import defaultdict
 from bs4 import BeautifulSoup
 
+
 def parse_arguments():
-    parser = argparse.ArgumentParser(description='Process REDCap data dictionary and reproschema protocol.')
-    parser.add_argument('csv_file', help='Path to the REDCap data dictionary CSV file.')
-    parser.add_argument('yaml_file', help='Path to the reproschema protocol YAML file.')
+    parser = argparse.ArgumentParser(
+        description="Process REDCap data dictionary and reproschema protocol."
+    )
+    parser.add_argument("csv_file", help="Path to the REDCap data dictionary CSV file.")
+    parser.add_argument("yaml_file", help="Path to the reproschema protocol YAML file.")
     return parser.parse_args()
+
 
 def normalize_condition(condition_str):
     re_parentheses = re.compile(r"\(([0-9]*)\)")
@@ -26,68 +30,73 @@ def normalize_condition(condition_str):
     condition_str = re_brackets.sub(r" \1 ", condition_str)
     return condition_str
 
+
 def process_visibility(data):
-    condition = data.get('Branching Logic (Show field only if...)')
+    condition = data.get("Branching Logic (Show field only if...)")
     if condition:
         condition = normalize_condition(condition)
     else:
         condition = True
 
     visibility_obj = {
-        "variableName": data['Variable / Field Name'],
+        "variableName": data["Variable / Field Name"],
         "isAbout": f"items/{data['Variable / Field Name']}",
-        "isVis": condition
+        "isVis": condition,
     }
     return visibility_obj
 
+
 def parse_field_type_and_value(data, input_type_map):
-    field_type = data.get('Field Type', '')
-    
+    field_type = data.get("Field Type", "")
+
     input_type = input_type_map.get(field_type, field_type)
-    
+
     value_type_map = {
-        'number': 'xsd:int',
-        'date_': 'xsd:date',
-        'datetime_': 'datetime',
-        'time_': 'xsd:date',
-        'email': 'email',
-        'phone': 'phone'
+        "number": "xsd:int",
+        "date_": "xsd:date",
+        "datetime_": "datetime",
+        "time_": "xsd:date",
+        "email": "email",
+        "phone": "phone",
     }
-    validation_type = data.get('Text Validation Type OR Show Slider Number', '')
-    
-    value_type = value_type_map.get(validation_type, 'xsd:string')
+    validation_type = data.get("Text Validation Type OR Show Slider Number", "")
+
+    value_type = value_type_map.get(validation_type, "xsd:string")
 
     return input_type, value_type
 
+
 def process_choices(choices_str):
     choices = []
-    for choice in choices_str.split('|'):
-        parts = choice.split(', ')
-        choice_obj = {'schema:value': int(parts[0]), 'schema:name': parts[1]}
+    for choice in choices_str.split("|"):
+        parts = choice.split(", ")
+        choice_obj = {"schema:value": int(parts[0]), "schema:name": parts[1]}
         if len(parts) == 3:
             # TODO: handle image url
-            choice_obj['schema:image'] = f"{parts[2]}.png"
+            choice_obj["schema:image"] = f"{parts[2]}.png"
         choices.append(choice_obj)
     return choices
 
+
 def write_to_file(form_name, field_name, rowData):
-    file_path = os.path.join('activities', form_name, 'items', f'{field_name}')
+    file_path = os.path.join("activities", form_name, "items", f"{field_name}")
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     try:
-        with open(file_path, 'w') as file:
+        with open(file_path, "w") as file:
             json.dump(rowData, file, indent=4)
         print(f"Item schema for {form_name} written successfully.")
     except Exception as e:
         print(f"Error in writing item schema for {form_name}: {e}")
 
-def parse_html(input_string, default_language='en'):
-    result = {}
-    soup = BeautifulSoup(input_string, 'html.parser')
 
-    lang_elements = soup.find_all(True, {'lang': True})
+def parse_html(input_string, default_language="en"):
+    result = {}
+    soup = BeautifulSoup(input_string, "html.parser")
+
+    lang_elements = soup.find_all(True, {"lang": True})
     if lang_elements:
         for element in lang_elements:
-            lang = element.get('lang', default_language)
+            lang = element.get("lang", default_language)
             text = element.get_text(strip=True)
             if text:
                 result[lang] = text
@@ -98,58 +107,97 @@ def parse_html(input_string, default_language='en'):
 
     return result
 
-def process_row(schema_context_url, form_name, field, schema_map, input_type_map, ui_list, response_list, additional_notes_list):
+
+def process_row(
+    schema_context_url,
+    form_name,
+    field,
+    schema_map,
+    input_type_map,
+    ui_list,
+    response_list,
+    additional_notes_list,
+):
     rowData = {
-        '@context': schema_context_url,
-        '@type': 'reproschema:Field',
+        "@context": schema_context_url,
+        "@type": "reproschema:Field",
     }
 
-    field_type = field.get('Field Type', '')
-    schema_map['Choices, Calculations, OR Slider Labels'] = 'scoringLogic' if field_type == 'calc' else 'choices'
+    field_type = field.get("Field Type", "")
+    schema_map["Choices, Calculations, OR Slider Labels"] = (
+        "scoringLogic" if field_type == "calc" else "choices"
+    )
 
     input_type, value_type = parse_field_type_and_value(field, input_type_map)
-    rowData['ui'] = {'inputType': input_type}
+    rowData["ui"] = {"inputType": input_type}
     if value_type:
-        rowData['responseOptions'] = {'valueType': value_type}
+        rowData["responseOptions"] = {"valueType": value_type}
 
     for key, value in field.items():
-        if schema_map.get(key) == 'allow' and value:
-            rowData.setdefault('ui', {}).update({schema_map[key]: value.split(', ')})
+        if schema_map.get(key) == "allow" and value:
+            rowData.setdefault("ui", {}).update({schema_map[key]: value.split(", ")})
 
         elif key in ui_list and value:
-            rowData.setdefault('ui', {}).update({schema_map[key]: input_type_map.get(value, value)})
+            rowData.setdefault("ui", {}).update(
+                {schema_map[key]: input_type_map.get(value, value)}
+            )
 
         elif key in response_list and value:
-            if key == 'multipleChoice':
-                value = value == '1'
-            rowData.setdefault('responseOptions', {}).update({schema_map[key]: value})
+            if key == "multipleChoice":
+                value = value == "1"
+            rowData.setdefault("responseOptions", {}).update({schema_map[key]: value})
 
-        elif schema_map.get(key) == 'choices' and value:
-            rowData.setdefault('responseOptions', {}).update({'choices': process_choices(value)})
+        elif schema_map.get(key) == "choices" and value:
+            rowData.setdefault("responseOptions", {}).update(
+                {"choices": process_choices(value)}
+            )
 
-        elif schema_map.get(key) == 'scoringLogic' and value:
+        elif schema_map.get(key) == "scoringLogic" and value:
             condition = normalize_condition(value)
-            rowData.setdefault('ui', {}).update({'hidden': True})
-            rowData.setdefault('scoringLogic', []).append({"variableName": field['Variable / Field Name'], "jsExpression": condition})
+            rowData.setdefault("ui", {}).update({"hidden": True})
+            rowData.setdefault("scoringLogic", []).append(
+                {
+                    "variableName": field["Variable / Field Name"],
+                    "jsExpression": condition,
+                }
+            )
 
-        elif schema_map.get(key) == 'visibility' and value:
+        elif schema_map.get(key) == "visibility" and value:
             condition = normalize_condition(value)
-            rowData.setdefault('visibility', []).append({"variableName": field['Variable / Field Name'], "isVis": condition})
+            rowData.setdefault("visibility", []).append(
+                {"variableName": field["Variable / Field Name"], "isVis": condition}
+            )
 
-        elif key in ['question', 'schema:description', 'preamble'] and value:
+        elif key in ["question", "schema:description", "preamble"] and value:
             rowData.update({schema_map[key]: parse_html(value)})
 
-        elif key == 'Identifier?' and value:
-            identifier_val = value.lower() == 'y'
-            rowData.update({schema_map[key]: [{"legalStandard": "unknown", "isIdentifier": identifier_val}]})
+        elif key == "Identifier?" and value:
+            identifier_val = value.lower() == "y"
+            rowData.update(
+                {
+                    schema_map[key]: [
+                        {"legalStandard": "unknown", "isIdentifier": identifier_val}
+                    ]
+                }
+            )
 
         elif key in additional_notes_list and value:
             notes_obj = {"source": "redcap", "column": key, "value": value}
-            rowData.setdefault('additionalNotesObj', []).append(notes_obj)
+            rowData.setdefault("additionalNotesObj", []).append(notes_obj)
 
-    write_to_file(form_name, field['Variable / Field Name'], rowData)
+    write_to_file(form_name, field["Variable / Field Name"], rowData)
 
-def create_form_schema(schema_context_url, form_name, activity_display_name, activity_description, order, bl_list, matrix_list, scores_list):
+
+def create_form_schema(
+    schema_context_url,
+    form_name,
+    activity_display_name,
+    activity_description,
+    order,
+    bl_list,
+    matrix_list,
+    scores_list,
+):
     # Construct the JSON-LD structure
     json_ld = {
         "@context": schema_context_url,
@@ -162,21 +210,21 @@ def create_form_schema(schema_context_url, form_name, activity_display_name, act
         "ui": {
             "order": order.get(form_name, []),
             "addProperties": bl_list,
-            "shuffle": False
-        }
+            "shuffle": False,
+        },
     }
 
     if matrix_list:
-        json_ld['matrixInfo'] = matrix_list
+        json_ld["matrixInfo"] = matrix_list
     if scores_list:
-        json_ld['scoringLogic'] = scores_list
+        json_ld["scoringLogic"] = scores_list
 
-    path = os.path.join('activities', form_name)
-    filename = f'{form_name}_schema'
+    path = os.path.join("activities", form_name)
+    filename = f"{form_name}_schema"
     file_path = os.path.join(path, filename)
     try:
         os.makedirs(path, exist_ok=True)
-        with open(file_path, 'w') as file:
+        with open(file_path, "w") as file:
             json.dump(json_ld, file, indent=4)
         print(f"{form_name} Instrument schema created")
     except OSError as e:
@@ -184,18 +232,29 @@ def create_form_schema(schema_context_url, form_name, activity_display_name, act
     except IOError as e:
         print(f"Error writing to file {file_path}: {e}")
 
-def process_activities(activity_name, protocol_visibility_obj, protocol_variable_map, protocol_order):
+
+def process_activities(
+    activity_name, protocol_visibility_obj, protocol_variable_map, protocol_order
+):
     # Set default visibility condition
     protocol_visibility_obj[activity_name] = True
 
     # Add activity to variableMap and Order
-    protocol_variable_map.append({
-        "variableName": activity_name,
-        "isAbout": f"items/{activity_name}"
-    })
+    protocol_variable_map.append(
+        {"variableName": activity_name, "isAbout": f"items/{activity_name}"}
+    )
     protocol_order.append(activity_name)
 
-def create_protocol_schema(schema_context_url, protocol_name, protocol_display_name, protocol_description, protocol_variable_map, protocol_order, protocol_visibility_obj):
+
+def create_protocol_schema(
+    schema_context_url,
+    protocol_name,
+    protocol_display_name,
+    protocol_description,
+    protocol_variable_map,
+    protocol_order,
+    protocol_visibility_obj,
+):
     # Construct the protocol schema
     protocol_schema = {
         "@context": schema_context_url,
@@ -210,17 +269,17 @@ def create_protocol_schema(schema_context_url, protocol_name, protocol_display_n
         "ui": {
             "order": protocol_order,
             "shuffle": False,
-            "visibility": protocol_visibility_obj
-        }
+            "visibility": protocol_visibility_obj,
+        },
     }
 
-    protocol_dir = f'{protocol_name}'
-    schema_file = f'{protocol_name}_schema'
+    protocol_dir = f"{protocol_name}"
+    schema_file = f"{protocol_name}_schema"
     file_path = os.path.join(protocol_dir, schema_file)
 
     try:
         os.makedirs(protocol_dir, exist_ok=True)
-        with open(file_path, 'w') as file:
+        with open(file_path, "w") as file:
             json.dump(protocol_schema, file, indent=4)
         print("Protocol schema created")
     except OSError as e:
@@ -228,56 +287,83 @@ def create_protocol_schema(schema_context_url, protocol_name, protocol_display_n
     except IOError as e:
         print(f"Error writing to file {file_path}: {e}")
 
-def parse_language_iso_codes(input_string):
-    soup = BeautifulSoup(input_string, 'lxml')
-    return [element.get('lang') for element in soup.find_all(True, {'lang': True})]
 
-def process_csv(csv_path, schema_context_url, schema_map, input_type_map, ui_list, response_list, additional_notes_list, protocol_name):
+def parse_language_iso_codes(input_string):
+    soup = BeautifulSoup(input_string, "lxml")
+    return [element.get("lang") for element in soup.find_all(True, {"lang": True})]
+
+
+def process_csv(
+    csv_path,
+    schema_context_url,
+    schema_map,
+    input_type_map,
+    ui_list,
+    response_list,
+    additional_notes_list,
+    protocol_name,
+):
     datas = {}
     order = {}
     languages = []
 
-    with open(csv_path, mode='r', encoding='utf-8') as csvfile:
+    with open(csv_path, mode="r", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            form_name = row['Form Name']
+            form_name = row["Form Name"]
             if form_name not in datas:
                 datas[form_name] = []
                 order[form_name] = []
-                os.makedirs(f'activities/{form_name}/items', exist_ok=True)
+                os.makedirs(f"activities/{form_name}/items", exist_ok=True)
 
             datas[form_name].append(row)
 
             if not languages:
-                languages = parse_language_iso_codes(row['Field Label'])
+                languages = parse_language_iso_codes(row["Field Label"])
 
             for field in datas[form_name]:
-                field_name = field['Variable / Field Name']
+                field_name = field["Variable / Field Name"]
                 order[form_name].append(f"items/{field_name}")
-                process_row(schema_context_url, form_name, field, schema_map, input_type_map, ui_list, response_list, additional_notes_list)
+                process_row(
+                    schema_context_url,
+                    form_name,
+                    field,
+                    schema_map,
+                    input_type_map,
+                    ui_list,
+                    response_list,
+                    additional_notes_list,
+                )
 
-    os.makedirs(f'protocols/{protocol_name}', exist_ok=True)
+    os.makedirs(f"protocols/{protocol_name}", exist_ok=True)
     return datas, order, languages
 
-def main(csv_path, schema_context_url, protocol_name, protocol_display_name, protocol_description):
+
+def main(
+    csv_path,
+    schema_context_url,
+    protocol_name,
+    protocol_display_name,
+    protocol_description,
+):
     # Initialize variables
     schema_map = {
-        "Variable / Field Name": "@id", # column A
+        "Variable / Field Name": "@id",  # column A
         "Item Display Name": "prefLabel",
-        "Field Annotation": "description", # column R
-        "Section Header": "preamble", # column C (need double-check)
-        "Field Label": "question", # column E
-        "Field Type": "inputType", # column D
+        "Field Annotation": "description",  # column R
+        "Section Header": "preamble",  # column C (need double-check)
+        "Field Label": "question",  # column E
+        "Field Type": "inputType",  # column D
         "Allow": "allow",
-        "Required Field?": "requiredValue", # column M
-        "Text Validation Min": "minValue", # column I
-        "Text Validation Max": "maxValue", # column J
-        "Choices, Calculations, OR Slider Labels": "choices", # column F
-        "Branching Logic (Show field only if...)": "visibility", # column L
-        "Custom Alignment": "customAlignment", # column N
-        "Identifier?": "identifiable", # column K
+        "Required Field?": "requiredValue",  # column M
+        "Text Validation Min": "minValue",  # column I
+        "Text Validation Max": "maxValue",  # column J
+        "Choices, Calculations, OR Slider Labels": "choices",  # column F
+        "Branching Logic (Show field only if...)": "visibility",  # column L
+        "Custom Alignment": "customAlignment",  # column N
+        "Identifier?": "identifiable",  # column K
         "multipleChoice": "multipleChoice",
-        "responseType": "@type"
+        "responseType": "@type",
     }
 
     input_type_map = {
@@ -285,18 +371,29 @@ def main(csv_path, schema_context_url, protocol_name, protocol_display_name, pro
         "checkbox": "radio",
         "descriptive": "static",
         "dropdown": "select",
-        "notes": "text"
+        "notes": "text",
     }
 
-    ui_list = ['inputType', 'shuffle', 'allow', 'customAlignment']
-    response_list = ['valueType', 'minValue', 'maxValue', 'requiredValue', 'multipleChoice']
-    additional_notes_list = ['Field Note', 'Question Number (surveys only)']
+    ui_list = ["inputType", "shuffle", "allow", "customAlignment"]
+    response_list = [
+        "valueType",
+        "minValue",
+        "maxValue",
+        "requiredValue",
+        "multipleChoice",
+    ]
+    additional_notes_list = ["Field Note", "Question Number (surveys only)"]
 
     # Process the CSV file
     datas, order, languages = process_csv(
-        csv_path, schema_context_url, schema_map, 
-        input_type_map, ui_list, response_list, additional_notes_list, 
-        protocol_name
+        csv_path,
+        schema_context_url,
+        schema_map,
+        input_type_map,
+        ui_list,
+        response_list,
+        additional_notes_list,
+        protocol_name,
     )
     # Initialize other variables for protocol context and schema
     protocol_variable_map = []
@@ -313,48 +410,47 @@ def main(csv_path, schema_context_url, protocol_name, protocol_display_name, pro
             visibility_obj = process_visibility(field)
             bl_list.append(visibility_obj)
 
-            if field.get('Matrix Group Name') or field.get('Matrix Ranking?'):
-                matrix_list.append({
-                    "variableName": field['Variable / Field Name'], 
-                    "matrixGroupName": field['Matrix Group Name'], 
-                    "matrixRanking": field['Matrix Ranking?']
-                })
+            if field.get("Matrix Group Name") or field.get("Matrix Ranking?"):
+                matrix_list.append(
+                    {
+                        "variableName": field["Variable / Field Name"],
+                        "matrixGroupName": field["Matrix Group Name"],
+                        "matrixRanking": field["Matrix Ranking?"],
+                    }
+                )
 
-        activity_display_name = rows[0]['Form Name']
-        activity_description = rows[0]['Form Note']
+        activity_display_name = rows[0]["Form Name"]
+        activity_description = rows[0]["Form Note"]
         create_form_schema(
-            schema_context_url, 
-            form_name, 
-            activity_display_name, 
-            activity_description, 
-            order.get(form_name, []), 
-            bl_list, 
-            matrix_list, 
-            scores_list
+            schema_context_url,
+            form_name,
+            activity_display_name,
+            activity_description,
+            order.get(form_name, []),
+            bl_list,
+            matrix_list,
+            scores_list,
         )
 
         process_activities(
-            form_name, 
-            protocol_visibility_obj, 
-            protocol_variable_map, 
-            protocol_order
+            form_name, protocol_visibility_obj, protocol_variable_map, protocol_order
         )
 
     # Create protocol schema
     create_protocol_schema(
-        schema_context_url, 
-        protocol_name, 
-        protocol_display_name, 
-        protocol_description, 
-        protocol_variable_map, 
-        protocol_order, 
-        protocol_visibility_obj
+        schema_context_url,
+        protocol_name,
+        protocol_display_name,
+        protocol_description,
+        protocol_variable_map,
+        protocol_order,
+        protocol_visibility_obj,
     )
 
+
 if __name__ == "__main__":
-    
-    schema_context_url = 'https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic' # we may also want to keep this schema version updated or in the yaml file
-    
+    schema_context_url = "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic"  # we may also want to keep this schema version updated or in the yaml file
+
     args = parse_arguments()
 
     # Read the CSV file path
@@ -363,23 +459,29 @@ if __name__ == "__main__":
     # Read the YAML configuration
     yaml_path = args.yaml_file
     try:
-        with open(yaml_path, 'r') as f:
+        with open(yaml_path, "r") as f:
             protocol = yaml.safe_load(f)
     except FileNotFoundError:
         print(f"Error: YAML file '{yaml_path}' not found.")
         sys.exit(1)
 
     # Extract values from YAML file
-    protocol_name = protocol.get('protocol_name')
-    protocol_display_name = protocol.get('protocol_display_name')
-    protocol_description = protocol.get('protocol_description')
-    repo_url = protocol.get('repo_url')
+    protocol_name = protocol.get("protocol_name")
+    protocol_display_name = protocol.get("protocol_display_name")
+    protocol_description = protocol.get("protocol_description")
+    repo_url = protocol.get("repo_url")
 
     # git clone the repo
-    subprocess.run(['git', 'clone', repo_url])
+    subprocess.run(["git", "clone", repo_url])
     # set up branch and checkout
-    subprocess.run(['git', 'checkout', 'main'])
+    subprocess.run(["git", "checkout", "main"])
     # cd to the repo
-    os.chdir(repo_url.split('/')[-1])
+    os.chdir(repo_url.split("/")[-1])
 
-    main(csv_path, schema_context_url, protocol_name, protocol_display_name, protocol_description)
+    main(
+        csv_path,
+        schema_context_url,
+        protocol_name,
+        protocol_display_name,
+        protocol_description,
+    )

@@ -43,8 +43,8 @@ Commands:
 ### Prerequisites
 Before using the conversion script, ensure you have the following:
 
-1. **GitHub Repository**: 
-   - [Create a GitHub repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository) named `reproschema` to store all your reproschema protocols. 
+1. **GitHub Repository**:
+   - [Create a GitHub repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository) named `reproschema` to store all your reproschema protocols.
    - This repository should be set up before converting any data using the script.
 
 2. **YAML Configuration File**:
