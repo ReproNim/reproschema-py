@@ -1,0 +1,19 @@
+# User inputs: these are specific to your protocol, fill out before using the script
+
+# 1. your protocol id: use underscore for spaces, avoid special characters. 
+#    The display name is the one that will show up in the app, this will be parsed as a string.
+protocol_name = "your_protocol_name" # e.g. "My_Protocol"
+
+# 2. your protocol display name: this will show up in the app and be parsed as a string
+protocol_display_name = "Your protocol display name"
+
+# 3. create your raw GitHub repo URL
+user_name = 'your_github_username'
+repo_name = 'your_repo_name'
+branch_name = 'main'
+
+repo_url = f"https://github.com/{user_name}/{repo_name}" # no need to change
+raw_repo_url = f"https://raw.githubusercontent.com/{user_name}/{repo_name}/{branch_name}" # no need to change
+
+# 4. add a description to your protocol
+protocol_description = "Description for your protocol" # e.g. "This is a protocol for ..."
