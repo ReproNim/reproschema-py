@@ -3,6 +3,7 @@ import click
 
 from . import get_logger, set_logger_level
 from . import __version__
+from .reproschema2redcap import main as rs2redcap
 
 lgr = get_logger()
 
@@ -95,3 +96,16 @@ def serve(port):
     from .utils import start_server
 
     start_server(port=port)
+
+@main.command("reproschema2redcap")
+@click.argument("input_path", type=click.Path(exists=True, dir_okay=True))
+@click.argument("output_csv_path", type=click.Path(writable=True))
+def reproschema2redcap(input_path, output_csv_path):
+    """
+    Convert reproschema JSON to Redcap CSV format.
+
+    INPUT_PATH: Directory containing reproschema JSON files.
+    OUTPUT_CSV_PATH: Path to the output CSV file.
+    """
+    rs2redcap(input_path, output_csv_path)
+    click.echo(f"Converted reproschema JSON from {input_path} to Redcap CSV at {output_csv_path}")

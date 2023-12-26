@@ -38,6 +38,38 @@ Commands:
   validate
 ```
 
+## `reproschema2redcap.py` Usage
+
+### Command-Line Usage
+
+You can use the `reproschema2redcap.py` script from the command line to convert ReproSchema JSON files to REDCap CSV format.
+
+```
+python reproschema2redcap.py <input_dir_path> <output_csv_filename>
+```
+
+- `<input_dir_path>`: The path to the root folder of a protocol. For example, to convert the reproschema-demo-protocol provided by ReproNim, you can use the following commands:
+  ```bash
+  git clone https://github.com/ReproNim/reproschema-demo-protocol.git
+  cd reproschema-demo-protocol
+  pwd
+  ```
+  In this case, `path-to/reproschema-demo-protocol` should be your `<input_dir_path>`.
+- `<output_csv_filename>`: The name of the output CSV file.
+
+### Python Function Usage
+
+You can also use the reproschema2redcap function from the `reproschema-py` package in your Python code.
+
+```python
+from reproschema import reproschema2redcap
+
+input_dir_path = "path-to/reproschema-demo-protocol"
+output_csv_filename = "output.csv"
+
+reproschema2redcap(input_dir_path, output_csv_filename)
+```
+
 ## Developer installation
 
 Install repo in developer mode:
