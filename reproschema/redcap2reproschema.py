@@ -6,18 +6,7 @@ import csv
 import json
 import re
 import yaml
-from collections import defaultdict
 from bs4 import BeautifulSoup
-
-
-def parse_arguments():
-    parser = argparse.ArgumentParser(
-        description="Process REDCap data dictionary and reproschema protocol."
-    )
-    parser.add_argument("csv_file", help="Path to the REDCap data dictionary CSV file.")
-    parser.add_argument("yaml_file", help="Path to the reproschema protocol YAML file.")
-    return parser.parse_args()
-
 
 def normalize_condition(condition_str):
     re_parentheses = re.compile(r"\(([0-9]*)\)")
@@ -339,13 +328,28 @@ def process_csv(
     return datas, order, languages
 
 
-def main(
-    csv_path,
-    schema_context_url,
-    protocol_name,
-    protocol_display_name,
-    protocol_description,
-):
+def redcap2reproschema(csv_path, yaml_path, schema_context_url=None):
+    """
+    Convert a REDCap data dictionary to Reproschema format.
+
+    :param csv_path: Path to the REDCap CSV file.
+    :param yaml_path: Path to the YAML configuration file.
+    :param schema_context_url: URL of the schema context. Optional.
+    """
+    if schema_context_url is None:
+        schema_context_url = "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic"
+
+    # Read YAML configuration
+    try:
+        with open(yaml_path, "r") as f:
+            protocol_info = yaml.safe_load(f)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"YAML file '{yaml_path}' not found.")
+
+    protocol_name = protocol.get("protocol_name")
+    protocol_display_name = protocol.get("protocol_display_name")
+    protocol_description = protocol.get("protocol_description")
+
     # Initialize variables
     schema_map = {
         "Variable / Field Name": "@id",  # column A
@@ -447,41 +451,29 @@ def main(
         protocol_visibility_obj,
     )
 
-
-if __name__ == "__main__":
-    schema_context_url = "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic"  # we may also want to keep this schema version updated or in the yaml file
-
-    args = parse_arguments()
-
-    # Read the CSV file path
-    csv_path = args.csv_file
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Convert REDCap data dictionary to Reproschema format.")
+    parser.add_argument("csv_file", help="Path to the REDCap data dictionary CSV file.")
+    parser.add_argument("yaml_file", help="Path to the Reproschema protocol YAML file.")
+    args = parser.parse_args()
 
     # Read the YAML configuration
-    yaml_path = args.yaml_file
     try:
-        with open(yaml_path, "r") as f:
+        with open(args.yaml_file, "r") as f:
             protocol = yaml.safe_load(f)
     except FileNotFoundError:
-        print(f"Error: YAML file '{yaml_path}' not found.")
-        sys.exit(1)
+        raise FileNotFoundError(f"YAML file '{args.yaml_file}' not found.")
 
-    # Extract values from YAML file
-    protocol_name = protocol.get("protocol_name")
-    protocol_display_name = protocol.get("protocol_display_name")
-    protocol_description = protocol.get("protocol_description")
     repo_url = protocol.get("repo_url")
 
-    # git clone the repo
+    # Git operations
     subprocess.run(["git", "clone", repo_url])
-    # set up branch and checkout
     subprocess.run(["git", "checkout", "main"])
-    # cd to the repo
     os.chdir(repo_url.split("/")[-1])
 
-    main(
-        csv_path,
-        schema_context_url,
-        protocol_name,
-        protocol_display_name,
-        protocol_description,
-    )
+    # Call the main conversion function
+    redcap2reproschema(args.csv_file, args.yaml_file)
+
+if __name__ == "__main__":
+    main()

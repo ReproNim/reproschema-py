@@ -1,5 +1,6 @@
 import os
 import click
+import yaml
 
 from . import get_logger, set_logger_level
 from . import __version__
@@ -100,11 +101,10 @@ def serve(port):
 @main.command()
 @click.argument('csv_path', type=click.Path(exists=True, dir_okay=False))
 @click.argument('yaml_path', type=click.Path(exists=True, dir_okay=False))
-@click.option('--schema-url', default='https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic', show_default=True, help='URL of the schema context')
-def redcap2reproschema(csv_path, yaml_path, schema_url):
+def redcap2reproschema(csv_path, yaml_path):
     """
     Convert REDCap CSV files to Reproschema format.
-    
+
     Provide the path to the REDCap CSV file and the YAML configuration file.
     """
     if not os.path.exists(csv_path):
@@ -113,7 +113,7 @@ def redcap2reproschema(csv_path, yaml_path, schema_url):
         raise click.ClickException(f"YAML file not found at {yaml_path}")
 
     try:
-        # Call the redcap2reproschema main function with provided arguments
-        redcap2rs(csv_path, schema_url, yaml_path)
+        redcap2rs(csv_path, yaml_path)
+        click.echo("Converted REDCap data dictionary to Reproschema format.")
     except Exception as e:
         raise click.ClickException(f"Error during conversion: {e}")

@@ -38,10 +38,11 @@ Commands:
   validate
 ```
 
-## redcap2reproschema.py Usage
+## redcap2reproschema Usage
+The `redcap2reproschema` function is designed to process a given REDCap CSV file and YAML configuration to generate the output in the reproschema format.
 
 ### Prerequisites
-Before using the conversion script, ensure you have the following:
+Before the conversion, ensure you have the following:
 
 1. **GitHub Repository**:
    - [Create a GitHub repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository) named `reproschema` to store all your reproschema protocols.
@@ -67,8 +68,25 @@ user_name: "john_doe"
 repo_name: "reproschema"
 protocol_description: "This protocol is for assessing cognitive skills."
 ```
+### Command-Line Usage
 
-### Using the Script
+The `redcap2reproschema`` function has been integrated into a CLI tool, use the following command:
+```bash
+reproschema redcap2reproschema path/to/your_redcap_data_dic.csv path/to/your_redcap2rs.yaml
+```
+
+### Python Function Usage
+
+You can also use the `redcap2reproschema` function from the `reproschema-py` package in your Python code.
+
+```python
+from reproschema import redcap2reproschema
+
+csv_path = "path-to/your_redcap_data_dic.csv"
+yaml_path = "path-to/your_redcap2rs.yaml"
+
+reproschema2redcap(input_dir_path, output_csv_filename)
+```
 
 After configuring the YAML file:
 
