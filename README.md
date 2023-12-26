@@ -36,6 +36,7 @@ Commands:
   create
   serve
   validate
+  reproschema2redcap
 ```
 
 ## `reproschema2redcap` Usage
