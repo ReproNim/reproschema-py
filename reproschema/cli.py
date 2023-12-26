@@ -98,9 +98,10 @@ def serve(port):
 
     start_server(port=port)
 
+
 @main.command()
-@click.argument('csv_path', type=click.Path(exists=True, dir_okay=False))
-@click.argument('yaml_path', type=click.Path(exists=True, dir_okay=False))
+@click.argument("csv_path", type=click.Path(exists=True, dir_okay=False))
+@click.argument("yaml_path", type=click.Path(exists=True, dir_okay=False))
 def redcap2reproschema(csv_path, yaml_path):
     """
     Convert REDCap CSV files to Reproschema format.

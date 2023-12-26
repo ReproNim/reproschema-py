@@ -8,6 +8,7 @@ import re
 import yaml
 from bs4 import BeautifulSoup
 
+
 def normalize_condition(condition_str):
     re_parentheses = re.compile(r"\(([0-9]*)\)")
     re_non_gt_lt_equal = re.compile(r"([^>|<])=")
@@ -451,9 +452,13 @@ def redcap2reproschema(csv_path, yaml_path, schema_context_url=None):
         protocol_visibility_obj,
     )
 
+
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description="Convert REDCap data dictionary to Reproschema format.")
+
+    parser = argparse.ArgumentParser(
+        description="Convert REDCap data dictionary to Reproschema format."
+    )
     parser.add_argument("csv_file", help="Path to the REDCap data dictionary CSV file.")
     parser.add_argument("yaml_file", help="Path to the Reproschema protocol YAML file.")
     args = parser.parse_args()
@@ -474,6 +479,7 @@ def main():
 
     # Call the main conversion function
     redcap2reproschema(args.csv_file, args.yaml_file)
+
 
 if __name__ == "__main__":
     main()
