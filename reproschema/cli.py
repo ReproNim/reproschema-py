@@ -97,6 +97,7 @@ def serve(port):
 
     start_server(port=port)
 
+
 @main.command("reproschema2redcap")
 @click.argument("input_path", type=click.Path(exists=True, dir_okay=True))
 @click.argument("output_csv_path", type=click.Path(writable=True))
@@ -108,4 +109,6 @@ def reproschema2redcap(input_path, output_csv_path):
     OUTPUT_CSV_PATH: Path to the output CSV file.
     """
     rs2redcap(input_path, output_csv_path)
-    click.echo(f"Converted reproschema JSON from {input_path} to Redcap CSV at {output_csv_path}")
+    click.echo(
+        f"Converted reproschema JSON from {input_path} to Redcap CSV at {output_csv_path}"
+    )
