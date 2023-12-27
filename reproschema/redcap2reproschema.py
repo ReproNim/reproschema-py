@@ -69,7 +69,9 @@ def process_choices(choices_str):
 
 
 def write_to_file(abs_repo_path, form_name, field_name, rowData):
-    file_path = os.path.join(f"{abs_repo_path}", "activities", form_name, "items", f"{field_name}")
+    file_path = os.path.join(
+        f"{abs_repo_path}", "activities", form_name, "items", f"{field_name}"
+    )
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     try:
         with open(file_path, "w") as file:
@@ -99,16 +101,16 @@ def parse_html(input_string, default_language="en"):
 
 
 def process_row(
-        abs_repo_path,
-        schema_context_url,
-        form_name,
-        field,
-        schema_map,
-        input_type_map,
-        ui_list,
-        response_list,
-        additional_notes_list,
-    ):
+    abs_repo_path,
+    schema_context_url,
+    form_name,
+    field,
+    schema_map,
+    input_type_map,
+    ui_list,
+    response_list,
+    additional_notes_list,
+):
     rowData = {
         "@context": schema_context_url,
         "@type": "reproschema:Field",
@@ -180,16 +182,16 @@ def process_row(
 
 
 def create_form_schema(
-        abs_repo_path,
-        schema_context_url,
-        form_name,
-        activity_display_name,
-        activity_description,
-        order,
-        bl_list,
-        matrix_list,
-        scores_list,
-    ):
+    abs_repo_path,
+    schema_context_url,
+    form_name,
+    activity_display_name,
+    activity_description,
+    order,
+    bl_list,
+    matrix_list,
+    scores_list,
+):
     # Construct the JSON-LD structure
     json_ld = {
         "@context": schema_context_url,
@@ -239,15 +241,15 @@ def process_activities(
 
 
 def create_protocol_schema(
-        abs_repo_path,
-        schema_context_url,
-        protocol_name,
-        protocol_display_name,
-        protocol_description,
-        protocol_variable_map,
-        protocol_order,
-        protocol_visibility_obj,
-    ):
+    abs_repo_path,
+    schema_context_url,
+    protocol_name,
+    protocol_display_name,
+    protocol_description,
+    protocol_variable_map,
+    protocol_order,
+    protocol_visibility_obj,
+):
     # Construct the protocol schema
     protocol_schema = {
         "@context": schema_context_url,
@@ -265,14 +267,14 @@ def create_protocol_schema(
             "shuffle": False,
         },
     }
-    
+
     # Populate addProperties list
     for activity in protocol_order:
         add_property = {
             "isAbout": f"../activities/{activity}/{activity}_schema",
             "variableName": f"{activity}_schema",
             # Assuming activity name as prefLabel, update as needed
-            "prefLabel": activity.replace("_", " ").title()
+            "prefLabel": activity.replace("_", " ").title(),
         }
         protocol_schema["ui"]["addProperties"].append(add_property)
 
@@ -322,7 +324,9 @@ def process_csv(
             if form_name not in datas:
                 datas[form_name] = []
                 order[form_name] = []
-                os.makedirs(f"{abs_repo_path}/activities/{form_name}/items", exist_ok=True)
+                os.makedirs(
+                    f"{abs_repo_path}/activities/{form_name}/items", exist_ok=True
+                )
 
             datas[form_name].append(row)
 
@@ -348,7 +352,14 @@ def process_csv(
     return datas, order, languages
 
 
-def redcap2reproschema(csv_path, abs_repo_path, protocol_name, protocol_display_name, protocol_description, schema_context_url=None):
+def redcap2reproschema(
+    csv_path,
+    abs_repo_path,
+    protocol_name,
+    protocol_display_name,
+    protocol_description,
+    schema_context_url=None,
+):
     """
     Convert a REDCap data dictionary to Reproschema format.
 
@@ -464,6 +475,7 @@ def redcap2reproschema(csv_path, abs_repo_path, protocol_name, protocol_display_
         protocol_visibility_obj,
     )
 
+
 def main():
     import argparse
 
@@ -491,21 +503,30 @@ def main():
         raise ValueError("User name and/or repo name not specified in the YAML file.")
 
     repo_url = f"https://github.com/{user_name}/{repo_name}"
-    local_repo_path = repo_name  # Assuming repo is cloned into a folder with the repo's name
+    local_repo_path = (
+        repo_name  # Assuming repo is cloned into a folder with the repo's name
+    )
 
     # Check if the directory already exists
     if not os.path.exists(local_repo_path):
         # Git operations
         subprocess.run(["git", "clone", repo_url])
-    
+
     # Get absolute path of the local repository
     abs_repo_path = os.path.abspath(local_repo_path)
     print(f"Local repository path: {abs_repo_path}")
     os.chdir(abs_repo_path)
     subprocess.run(["git", "checkout", "main"])
-    os.chdir('..')
+    os.chdir("..")
     # Call the main conversion function
-    redcap2reproschema(args.csv_file, abs_repo_path, protocol_name, protocol_display_name, protocol_description)
+    redcap2reproschema(
+        args.csv_file,
+        abs_repo_path,
+        protocol_name,
+        protocol_display_name,
+        protocol_description,
+    )
+
 
 if __name__ == "__main__":
     main()
