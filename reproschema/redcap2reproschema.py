@@ -470,7 +470,9 @@ def main():
     except FileNotFoundError:
         raise FileNotFoundError(f"YAML file '{args.yaml_file}' not found.")
 
-    repo_url = protocol.get("repo_url")
+    user_name = protocol.get("user_name")
+    repo_name = protocol.get("repo_name")
+    repo_url = f"https://github.com/{user_name}/{repo_name}"
 
     # Git operations
     subprocess.run(["git", "clone", repo_url])
