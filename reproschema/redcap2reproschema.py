@@ -225,9 +225,7 @@ def create_form_schema(
         print(f"Error writing to file {file_path}: {e}")
 
 
-def process_activities(
-    activity_name, protocol_visibility_obj, protocol_order
-):
+def process_activities(activity_name, protocol_visibility_obj, protocol_order):
     # Set default visibility condition
     protocol_visibility_obj[activity_name] = True
 
@@ -464,9 +462,7 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
             scores_list,
         )
 
-        process_activities(
-            form_name, protocol_visibility_obj, protocol_order
-        )
+        process_activities(form_name, protocol_visibility_obj, protocol_order)
 
     # Create protocol schema
     create_protocol_schema(
