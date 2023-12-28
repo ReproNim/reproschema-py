@@ -1,7 +1,5 @@
-import sys
 import os
 import argparse
-import subprocess
 import csv
 import json
 import re
@@ -351,7 +349,6 @@ def process_csv(
     os.makedirs(f"{abs_folder_path}/protocols/{protocol_name}", exist_ok=True)
     return datas, order, languages
 
-
 def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
     """
     Convert a REDCap data dictionary to Reproschema format.
@@ -490,7 +487,9 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
     )
 
 def main():
-    parser = argparse.ArgumentParser(description="Convert REDCap data dictionary to Reproschema format.")
+    parser = argparse.ArgumentParser(
+        description="Convert REDCap data dictionary to Reproschema format."
+    )
     parser.add_argument("csv_file", help="Path to the REDCap data dictionary CSV file.")
     parser.add_argument("yaml_file", help="Path to the Reproschema protocol YAML file.")
     args = parser.parse_args()
