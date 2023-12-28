@@ -44,28 +44,20 @@ The `redcap2reproschema` function is designed to process a given REDCap CSV file
 ### Prerequisites
 Before the conversion, ensure you have the following:
 
-1. **GitHub Repository**:
-   - [Create a GitHub repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository) named `reproschema` to store all your reproschema protocols.
-   - This repository should be set up before converting any data using the script.
-
-2. **YAML Configuration File**:
-   - Fill out the `templates/redcap2rs.yaml` file with your protocol details.
+**YAML Configuration File**:
+   - Download [templates/redcap2rs.yaml](templates/redcap2rs.yaml) and fill it out with your protocol details.
 
 ### YAML File Configuration
 In the `templates/redcap2rs.yaml` file, provide the following information:
 
 - **protocol_name**: This is a unique identifier for your protocol. Use underscores for spaces and avoid special characters.
 - **protocol_display_name**: The name that will appear in the application.
-- **user_name**: Your GitHub username.
-- **repo_name**: The repository name where your protocols are stored. It's recommended to use `reproschema`.
 - **protocol_description**: A brief description of your protocol.
 
 Example:
 ```yaml
 protocol_name: "My_Protocol"
 protocol_display_name: "Assessment Protocol"
-user_name: "john_doe"
-repo_name: "reproschema"
 protocol_description: "This protocol is for assessing cognitive skills."
 ```
 ### Command-Line Usage

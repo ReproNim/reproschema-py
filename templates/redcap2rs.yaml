@@ -9,12 +9,6 @@ protocol_name: "your_protocol_name"  # Example: "My_Protocol"
 # This name will be displayed in the application.
 protocol_display_name: "Your protocol display name"
 
-# GitHub Repository Information:
-# Create a GitHub repository named 'reproschema' to store your reproschema protocols.
-# Replace 'your_github_username' with your actual GitHub username.
-user_name: "your_github_username"
-repo_name: "reproschema"  # Recommended name; can be different if preferred.
-
 # Protocol Description:
 # Provide a brief description of your protocol.
 protocol_description: "Description for your protocol"  # Example: "This protocol is for ..."
