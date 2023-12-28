@@ -1,0 +1,21 @@
+# Reproschema Protocol Configuration
+
+# Protocol Name:
+# Use underscores for spaces and avoid special characters.
+# This is the unique identifier for your protocol.
+protocol_name: "test_redcap2rs"  # Example: "My_Protocol"
+
+# Protocol Display Name:
+# This name will be displayed in the application.
+protocol_display_name: "redcap protocols"
+
+# GitHub Repository Information:
+# Create a GitHub repository named 'reproschema' to store your reproschema protocols.
+# Replace 'your_github_username' with your actual GitHub username.
+user_name: "yibeichan"
+repo_name: "redcap2reproschema"  # Recommended name; can be different if preferred.
+repo_url: "https://github.com/{{user_name}}/{{repo_name}}"
+
+# Protocol Description:
+# Provide a brief description of your protocol.
+protocol_description: "testing"  # Example: "This protocol is for ..."
