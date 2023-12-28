@@ -1,5 +1,6 @@
 import os
 import click
+from pathlib import Path
 
 from . import get_logger, set_logger_level
 from . import __version__
@@ -104,11 +105,8 @@ def serve(port):
 def reproschema2redcap(input_path, output_csv_path):
     """
     Convert reproschema JSON to Redcap CSV format.
-
-    INPUT_PATH: Directory containing reproschema JSON files.
-    OUTPUT_CSV_PATH: Path to the output CSV file.
     """
-    rs2redcap(input_path, output_csv_path)
-    click.echo(
-        f"Converted reproschema JSON from {input_path} to Redcap CSV at {output_csv_path}"
-    )
+    # Convert input_path to a Path object
+    input_path_obj = Path(input_path)
+    rs2redcap(input_path_obj, output_csv_path)
+    click.echo(f"Converted reproschema JSON from {input_path} to Redcap CSV at {output_csv_path}")

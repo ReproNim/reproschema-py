@@ -121,6 +121,7 @@ def get_csv_data(dir_path):
                         relative_activity_path.lstrip("../")
                     )
                     activity_path = dir_path / normalized_relative_path
+                    print(f"Processing activity {activity_path}")
                     parsed_activity_json = read_json_file(activity_path)
 
                     if parsed_activity_json:
