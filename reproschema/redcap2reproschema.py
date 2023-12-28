@@ -226,15 +226,11 @@ def create_form_schema(
 
 
 def process_activities(
-    activity_name, protocol_visibility_obj, protocol_variable_map, protocol_order
+    activity_name, protocol_visibility_obj, protocol_order
 ):
     # Set default visibility condition
     protocol_visibility_obj[activity_name] = True
 
-    # Add activity to variableMap and Order
-    protocol_variable_map.append(
-        {"variableName": activity_name, "isAbout": f"items/{activity_name}"}
-    )
     protocol_order.append(activity_name)
 
 
@@ -244,21 +240,19 @@ def create_protocol_schema(
     protocol_name,
     protocol_display_name,
     protocol_description,
-    protocol_variable_map,
     protocol_order,
     protocol_visibility_obj,
 ):
     # Construct the protocol schema
     protocol_schema = {
         "@context": schema_context_url,
-        "@type": "reproschema:ActivitySet",
+        "@type": "reproschema:Protocol",
         "@id": f"{protocol_name}_schema",
         "skos:prefLabel": protocol_display_name,
         "skos:altLabel": f"{protocol_name}_schema",
         "schema:description": protocol_description,
         "schema:schemaVersion": "1.0.0-rc4",
         "schema:version": "0.0.1",
-        "variableMap": protocol_variable_map,
         "ui": {
             "addProperties": [],
             "order": protocol_order,
@@ -432,7 +426,6 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
         protocol_name,
     )
     # Initialize other variables for protocol context and schema
-    protocol_variable_map = []
     protocol_visibility_obj = {}
     protocol_order = []
 
@@ -471,7 +464,7 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
         )
 
         process_activities(
-            form_name, protocol_visibility_obj, protocol_variable_map, protocol_order
+            form_name, protocol_visibility_obj, protocol_order
         )
 
     # Create protocol schema
@@ -481,7 +474,6 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
         protocol_name,
         protocol_display_name,
         protocol_description,
-        protocol_variable_map,
         protocol_order,
         protocol_visibility_obj,
     )
