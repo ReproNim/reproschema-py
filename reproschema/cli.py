@@ -1,10 +1,9 @@
 import os
 import click
-import yaml
 
 from . import get_logger, set_logger_level
 from . import __version__
-from .redcap2reproschema import main as redcap2rs
+from .redcap2reproschema import redcap2reproschema as redcap2rs
 
 lgr = get_logger()
 
@@ -105,14 +104,7 @@ def serve(port):
 def redcap2reproschema(csv_path, yaml_path):
     """
     Convert REDCap CSV files to Reproschema format.
-
-    Provide the path to the REDCap CSV file and the YAML configuration file.
     """
-    if not os.path.exists(csv_path):
-        raise click.ClickException(f"CSV file not found at {csv_path}")
-    if not os.path.exists(yaml_path):
-        raise click.ClickException(f"YAML file not found at {yaml_path}")
-
     try:
         redcap2rs(csv_path, yaml_path)
         click.echo("Converted REDCap data dictionary to Reproschema format.")
