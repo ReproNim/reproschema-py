@@ -349,6 +349,7 @@ def process_csv(
     os.makedirs(f"{abs_folder_path}/protocols/{protocol_name}", exist_ok=True)
     return datas, order, languages
 
+
 def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
     """
     Convert a REDCap data dictionary to Reproschema format.
@@ -360,7 +361,7 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
 
     # Read the YAML configuration
     with open(yaml_file, "r") as f:
-            protocol = yaml.safe_load(f)
+        protocol = yaml.safe_load(f)
 
     protocol_name = protocol.get("protocol_name")
     protocol_display_name = protocol.get("protocol_display_name")
@@ -369,7 +370,7 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
     if not protocol_name:
         raise ValueError("Protocol name not specified in the YAML file.")
 
-    protocol_name = protocol_name.replace(' ', '_')  # Replacing spaces with underscores
+    protocol_name = protocol_name.replace(" ", "_")  # Replacing spaces with underscores
 
     # Check if the directory already exists
     if not os.path.exists(protocol_name):
@@ -486,6 +487,7 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
         protocol_visibility_obj,
     )
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="Convert REDCap data dictionary to Reproschema format."
@@ -496,6 +498,7 @@ def main():
 
     # Call the main conversion function
     redcap2reproschema(args.csv_file, args.yaml_file)
+
 
 if __name__ == "__main__":
     main()
