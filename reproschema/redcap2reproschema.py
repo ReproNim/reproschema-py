@@ -475,15 +475,18 @@ def redcap2reproschema(
         protocol_visibility_obj,
     )
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Convert REDCap data dictionary to Reproschema format.")
+    parser = argparse.ArgumentParser(
+        description="Convert REDCap data dictionary to Reproschema format."
+    )
     parser.add_argument("csv_file", help="Path to the REDCap data dictionary CSV file.")
     parser.add_argument("yaml_file", help="Path to the Reproschema protocol YAML file.")
     args = parser.parse_args()
 
     # Read the YAML configuration
     with open(args.yaml_file, "r") as f:
-            protocol = yaml.safe_load(f)
+        protocol = yaml.safe_load(f)
 
     protocol_name = protocol.get("protocol_name")
     protocol_display_name = protocol.get("protocol_display_name")
@@ -492,7 +495,7 @@ def main():
     if not protocol_name:
         raise ValueError("Protocol name not specified in the YAML file.")
 
-    protocol_name = protocol_name.replace(' ', '_')  # Replacing spaces with underscores
+    protocol_name = protocol_name.replace(" ", "_")  # Replacing spaces with underscores
 
     # Check if the directory already exists
     if not os.path.exists(protocol_name):
@@ -509,6 +512,7 @@ def main():
         protocol_display_name,
         protocol_description,
     )
+
 
 if __name__ == "__main__":
     main()
