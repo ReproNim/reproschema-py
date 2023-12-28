@@ -340,7 +340,7 @@ def process_csv(
                     additional_notes_list,
                 )
 
-    os.makedirs(f"{abs_folder_path}/protocols/{protocol_name}", exist_ok=True)
+    os.makedirs(f"{abs_folder_path}/{protocol_name}", exist_ok=True)
     return datas, order, languages
 
 
