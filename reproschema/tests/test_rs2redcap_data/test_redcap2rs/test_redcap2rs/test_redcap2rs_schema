@@ -1,0 +1,33 @@
+{
+    "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
+    "@type": "reproschema:Protocol",
+    "@id": "test_redcap2rs_schema",
+    "skos:prefLabel": "redcap protocols",
+    "skos:altLabel": "test_redcap2rs_schema",
+    "schema:description": "testing",
+    "schema:schemaVersion": "1.0.0-rc4",
+    "schema:version": "0.0.1",
+    "ui": {
+        "addProperties": [
+            {
+                "isAbout": "../activities/autism_parenting_stress_index_apsi/autism_parenting_stress_index_apsi_schema",
+                "variableName": "autism_parenting_stress_index_apsi_schema",
+                "prefLabel": "Autism Parenting Stress Index Apsi"
+            },
+            {
+                "isAbout": "../activities/cognitive_and_affective_mindfulness_scalerevised_c/cognitive_and_affective_mindfulness_scalerevised_c_schema",
+                "variableName": "cognitive_and_affective_mindfulness_scalerevised_c_schema",
+                "prefLabel": "Cognitive And Affective Mindfulness Scalerevised C"
+            }
+        ],
+        "order": [
+            "autism_parenting_stress_index_apsi",
+            "cognitive_and_affective_mindfulness_scalerevised_c"
+        ],
+        "shuffle": false,
+        "visibility": {
+            "autism_parenting_stress_index_apsi": true,
+            "cognitive_and_affective_mindfulness_scalerevised_c": true
+        }
+    }
+}

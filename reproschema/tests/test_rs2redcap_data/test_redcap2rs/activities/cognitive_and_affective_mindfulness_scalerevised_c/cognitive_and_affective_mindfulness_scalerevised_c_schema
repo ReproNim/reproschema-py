@@ -1,0 +1,154 @@
+{
+    "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
+    "@type": "reproschema:Activity",
+    "@id": "cognitive_and_affective_mindfulness_scalerevised_c_schema",
+    "prefLabel": "cognitive_and_affective_mindfulness_scalerevised_c",
+    "description": "Default description",
+    "schemaVersion": "1.0.0-rc4",
+    "version": "0.0.1",
+    "ui": {
+        "order": [
+            "items/cams_r_1",
+            "items/cams_r_1",
+            "items/cams_r_2",
+            "items/cams_r_1",
+            "items/cams_r_2",
+            "items/cams_r_3",
+            "items/cams_r_1",
+            "items/cams_r_2",
+            "items/cams_r_3",
+            "items/cams_r_4",
+            "items/cams_r_1",
+            "items/cams_r_2",
+            "items/cams_r_3",
+            "items/cams_r_4",
+            "items/cams_r_5",
+            "items/cams_r_1",
+            "items/cams_r_2",
+            "items/cams_r_3",
+            "items/cams_r_4",
+            "items/cams_r_5",
+            "items/cams_r_6",
+            "items/cams_r_1",
+            "items/cams_r_2",
+            "items/cams_r_3",
+            "items/cams_r_4",
+            "items/cams_r_5",
+            "items/cams_r_6",
+            "items/cams_r_7",
+            "items/cams_r_1",
+            "items/cams_r_2",
+            "items/cams_r_3",
+            "items/cams_r_4",
+            "items/cams_r_5",
+            "items/cams_r_6",
+            "items/cams_r_7",
+            "items/cams_r_8",
+            "items/cams_r_1",
+            "items/cams_r_2",
+            "items/cams_r_3",
+            "items/cams_r_4",
+            "items/cams_r_5",
+            "items/cams_r_6",
+            "items/cams_r_7",
+            "items/cams_r_8",
+            "items/cams_r_9",
+            "items/cams_r_1",
+            "items/cams_r_2",
+            "items/cams_r_3",
+            "items/cams_r_4",
+            "items/cams_r_5",
+            "items/cams_r_6",
+            "items/cams_r_7",
+            "items/cams_r_8",
+            "items/cams_r_9",
+            "items/cams_r_10",
+            "items/cams_r_1",
+            "items/cams_r_2",
+            "items/cams_r_3",
+            "items/cams_r_4",
+            "items/cams_r_5",
+            "items/cams_r_6",
+            "items/cams_r_7",
+            "items/cams_r_8",
+            "items/cams_r_9",
+            "items/cams_r_10",
+            "items/cams_r_11",
+            "items/cams_r_1",
+            "items/cams_r_2",
+            "items/cams_r_3",
+            "items/cams_r_4",
+            "items/cams_r_5",
+            "items/cams_r_6",
+            "items/cams_r_7",
+            "items/cams_r_8",
+            "items/cams_r_9",
+            "items/cams_r_10",
+            "items/cams_r_11",
+            "items/cams_r_12"
+        ],
+        "addProperties": [
+            {
+                "variableName": "cams_r_1",
+                "isAbout": "items/cams_r_1",
+                "isVis": true
+            },
+            {
+                "variableName": "cams_r_2",
+                "isAbout": "items/cams_r_2",
+                "isVis": true
+            },
+            {
+                "variableName": "cams_r_3",
+                "isAbout": "items/cams_r_3",
+                "isVis": true
+            },
+            {
+                "variableName": "cams_r_4",
+                "isAbout": "items/cams_r_4",
+                "isVis": true
+            },
+            {
+                "variableName": "cams_r_5",
+                "isAbout": "items/cams_r_5",
+                "isVis": true
+            },
+            {
+                "variableName": "cams_r_6",
+                "isAbout": "items/cams_r_6",
+                "isVis": true
+            },
+            {
+                "variableName": "cams_r_7",
+                "isAbout": "items/cams_r_7",
+                "isVis": true
+            },
+            {
+                "variableName": "cams_r_8",
+                "isAbout": "items/cams_r_8",
+                "isVis": true
+            },
+            {
+                "variableName": "cams_r_9",
+                "isAbout": "items/cams_r_9",
+                "isVis": true
+            },
+            {
+                "variableName": "cams_r_10",
+                "isAbout": "items/cams_r_10",
+                "isVis": true
+            },
+            {
+                "variableName": "cams_r_11",
+                "isAbout": "items/cams_r_11",
+                "isVis": true
+            },
+            {
+                "variableName": "cams_r_12",
+                "isAbout": "items/cams_r_12",
+                "isVis": true
+            }
+        ],
+        "shuffle": false
+    }
+}

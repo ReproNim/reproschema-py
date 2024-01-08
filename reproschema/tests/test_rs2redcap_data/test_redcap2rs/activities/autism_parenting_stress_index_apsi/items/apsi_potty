@@ -1,0 +1,32 @@
+{
+    "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
+    "@type": "reproschema:Field",
+    "ui": {
+        "inputType": "radio"
+    },
+    "responseOptions": {
+        "valueType": "xsd:string",
+        "choices": [
+            {
+                "schema:value": 0,
+                "schema:name": "0 - Not stressful "
+            },
+            {
+                "schema:value": 1,
+                "schema:name": "1 - Sometimes creates stress "
+            },
+            {
+                "schema:value": 2,
+                "schema:name": "2 - Often creates stress "
+            },
+            {
+                "schema:value": 3,
+                "schema:name": "3 - Very stressful on a daily basis "
+            },
+            {
+                "schema:value": 5,
+                "schema:name": "5 - So stressful sometimes we feel we can't cope"
+            }
+        ]
+    }
+}

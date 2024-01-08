@@ -1,0 +1,28 @@
+{
+    "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
+    "@type": "reproschema:Field",
+    "ui": {
+        "inputType": "radio"
+    },
+    "responseOptions": {
+        "valueType": "xsd:string",
+        "choices": [
+            {
+                "schema:value": 1,
+                "schema:name": "1 - Rarely/Not at all "
+            },
+            {
+                "schema:value": 2,
+                "schema:name": "2 - Sometimes "
+            },
+            {
+                "schema:value": 3,
+                "schema:name": "3 - Often "
+            },
+            {
+                "schema:value": 4,
+                "schema:name": "4 - Almost Always"
+            }
+        ]
+    }
+}

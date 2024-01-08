@@ -1,9 +1,11 @@
 import os
 import click
+from pathlib import Path
 
 from . import get_logger, set_logger_level
 from . import __version__
 from .redcap2reproschema import redcap2reproschema as redcap2rs
+from .reproschema2redcap import main as rs2redcap
 
 lgr = get_logger()
 
@@ -110,3 +112,18 @@ def redcap2reproschema(csv_path, yaml_path):
         click.echo("Converted REDCap data dictionary to Reproschema format.")
     except Exception as e:
         raise click.ClickException(f"Error during conversion: {e}")
+
+
+@main.command()
+@click.argument("input_path", type=click.Path(exists=True, dir_okay=True))
+@click.argument("output_csv_path", type=click.Path(writable=True))
+def reproschema2redcap(input_path, output_csv_path):
+    """
+    Convert reproschema protocol to Redcap CSV format.
+    """
+    # Convert input_path to a Path object
+    input_path_obj = Path(input_path)
+    rs2redcap(input_path_obj, output_csv_path)
+    click.echo(
+        f"Converted reproschema protocol from {input_path} to Redcap CSV at {output_csv_path}"
+    )
