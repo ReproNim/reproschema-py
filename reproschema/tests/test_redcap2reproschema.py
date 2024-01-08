@@ -7,8 +7,8 @@ from ..cli import main  # Import the Click group
 # Assuming your test files are located in a 'tests' directory
 CSV_FILE_NAME = "redcap_dict.csv"
 YAML_FILE_NAME = "redcap2rs.yaml"
-CSV_TEST_FILE = os.path.join(os.path.dirname(__file__), "test_data", CSV_FILE_NAME)
-YAML_TEST_FILE = os.path.join(os.path.dirname(__file__), "test_data", YAML_FILE_NAME)
+CSV_TEST_FILE = os.path.join(os.path.dirname(__file__), "test_redcap2rs_data", CSV_FILE_NAME)
+YAML_TEST_FILE = os.path.join(os.path.dirname(__file__), "test_redcap2rs_data", YAML_FILE_NAME)
 
 
 def test_redcap2reproschema_success():
