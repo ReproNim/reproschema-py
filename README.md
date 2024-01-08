@@ -71,6 +71,57 @@ output_csv_filename = "output.csv"
 reproschema2redcap(input_dir_path, output_csv_filename)
 ```
 
+## redcap2reproschema Usage
+The `redcap2reproschema` function is designed to process a given REDCap CSV file and YAML configuration to generate the output in the reproschema format.
+
+### Prerequisites
+Before the conversion, ensure you have the following:
+
+**YAML Configuration File**:
+   - Download [templates/redcap2rs.yaml](templates/redcap2rs.yaml) and fill it out with your protocol details.
+
+### YAML File Configuration
+In the `templates/redcap2rs.yaml` file, provide the following information:
+
+- **protocol_name**: This is a unique identifier for your protocol. Use underscores for spaces and avoid special characters.
+- **protocol_display_name**: The name that will appear in the application.
+- **protocol_description**: A brief description of your protocol.
+
+Example:
+```yaml
+protocol_name: "My_Protocol"
+protocol_display_name: "Assessment Protocol"
+protocol_description: "This protocol is for assessing cognitive skills."
+```
+### Command-Line Usage
+
+The `redcap2reproschema`` function has been integrated into a CLI tool, use the following command:
+```bash
+reproschema redcap2reproschema path/to/your_redcap_data_dic.csv path/to/your_redcap2rs.yaml
+```
+
+### Python Function Usage
+
+You can also use the `redcap2reproschema` function from the `reproschema-py` package in your Python code.
+
+```python
+from reproschema import redcap2reproschema
+
+csv_path = "path-to/your_redcap_data_dic.csv"
+yaml_path = "path-to/your_redcap2rs.yaml"
+
+reproschema2redcap(input_dir_path, output_csv_filename)
+```
+
+After configuring the YAML file:
+
+1. Run the Python script with the paths to your CSV file and the YAML file as arguments.
+2. Command Format: `python script_name.py path/to/your_redcap_data_dic.csv path/to/your_redcap2rs.yaml`
+
+### Notes
+1. The script requires an active internet connection to access the GitHub repository.
+2. Make sure you use `git add`, `git commit`, `git push` properly afterwards to maintain a good version control for your converted data.
+
 ## Developer installation
 
 Install repo in developer mode:
