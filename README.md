@@ -48,12 +48,13 @@ Options:
                                   Log level name  [default: INFO]
   --help                          Show this message and exit.
 
-convert
+Commands:
+  convert
   create
   redcap2reproschema  Convert REDCap CSV files to Reproschema format.
+  reproschema2redcap  Convert reproschema protocol to REDCap CSV format.
   serve
   validate
-  reproschema2redcap
 ```
 
 ## `reproschema2redcap` Usage
@@ -88,7 +89,7 @@ output_csv_filename = "output.csv"
 reproschema2redcap(input_dir_path, output_csv_filename)
 ```
 
-## redcap2reproschema Usage
+## `redcap2reproschema` Usage
 The `redcap2reproschema` function is designed to process a given REDCap CSV file and YAML configuration to generate the output in the reproschema format.
 
 ### Prerequisites

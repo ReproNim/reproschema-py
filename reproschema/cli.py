@@ -119,7 +119,7 @@ def redcap2reproschema(csv_path, yaml_path):
 @click.argument("output_csv_path", type=click.Path(writable=True))
 def reproschema2redcap(input_path, output_csv_path):
     """
-    Convert reproschema protocol to Redcap CSV format.
+    Convert reproschema protocol to REDCap CSV format.
     """
     # Convert input_path to a Path object
     input_path_obj = Path(input_path)
