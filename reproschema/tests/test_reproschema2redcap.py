@@ -30,7 +30,7 @@ def test_reproschema2redcap_success():
 
         # Assert the expected outcomes
         assert result.exit_code == 0
-        
+
         # Check if the output CSV file has been created
         assert os.path.exists(output_csv_path)
 
