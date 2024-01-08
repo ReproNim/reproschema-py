@@ -12,14 +12,22 @@ pip install reproschema
 
 ### Developer installation
 
-To install in developer mode:
+Install repo in developer mode:
 
 ```
-git clone git@github.com:ReproNim/reproschema-py.git
+git clone https://github.com/ReproNim/reproschema-py.git
 cd reproschema-py
-pip install -e ".[dev]"
+pip install -e .[dev]
 ```
 
+It is also useful to install pre-commit, which takes care of styling when
+committing code. When pre-commit is used you may have to run git commit twice,
+since pre-commit may make additional changes to your code for styling and will
+not commit these changes by default:
+
+```
+pre-commit install
+```
 ## CLI usage
 
 This package installs `reproschema` a CLI.
@@ -40,9 +48,9 @@ Options:
                                   Log level name  [default: INFO]
   --help                          Show this message and exit.
 
-Commands:
-  convert
+convert
   create
+  redcap2reproschema  Convert REDCap CSV files to Reproschema format.
   serve
   validate
 ```
@@ -97,22 +105,3 @@ After configuring the YAML file:
 ### Notes
 1. The script requires an active internet connection to access the GitHub repository.
 2. Make sure you use `git add`, `git commit`, `git push` properly afterwards to maintain a good version control for your converted data.
-
-## Developer installation
-
-Install repo in developer mode:
-
-```
-git clone https://github.com/ReproNim/reproschema-py.git
-cd reproschema-py
-pip install -e .[dev]
-```
-
-It is also useful to install pre-commit, which takes care of styling when
-committing code. When pre-commit is used you may have to run git commit twice,
-since pre-commit may make additional changes to your code for styling and will
-not commit these changes by default:
-
-```
-pre-commit install
-```
