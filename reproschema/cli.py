@@ -3,6 +3,7 @@ import click
 
 from . import get_logger, set_logger_level
 from . import __version__
+from .redcap2reproschema import redcap2reproschema as redcap2rs
 
 lgr = get_logger()
 
@@ -95,3 +96,17 @@ def serve(port):
     from .utils import start_server
 
     start_server(port=port)
+
+
+@main.command()
+@click.argument("csv_path", type=click.Path(exists=True, dir_okay=False))
+@click.argument("yaml_path", type=click.Path(exists=True, dir_okay=False))
+def redcap2reproschema(csv_path, yaml_path):
+    """
+    Convert REDCap CSV files to Reproschema format.
+    """
+    try:
+        redcap2rs(csv_path, yaml_path)
+        click.echo("Converted REDCap data dictionary to Reproschema format.")
+    except Exception as e:
+        raise click.ClickException(f"Error during conversion: {e}")

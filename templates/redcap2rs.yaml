@@ -1,0 +1,14 @@
+# Reproschema Protocol Configuration
+
+# Protocol Name:
+# Use underscores for spaces and avoid special characters.
+# This is the unique identifier for your protocol.
+protocol_name: "your_protocol_name"  # Example: "My_Protocol"
+
+# Protocol Display Name:
+# This name will be displayed in the application.
+protocol_display_name: "Your protocol display name"
+
+# Protocol Description:
+# Provide a brief description of your protocol.
+protocol_description: "Description for your protocol"  # Example: "This protocol is for ..."
