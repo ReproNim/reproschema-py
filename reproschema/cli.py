@@ -114,14 +114,14 @@ def redcap2reproschema(csv_path, yaml_path):
         raise click.ClickException(f"Error during conversion: {e}")
 
 
-@main.command("reproschema2redcap")
+@main.command()
 @click.argument("input_path", type=click.Path(exists=True, dir_okay=True))
 @click.argument("output_csv_path", type=click.Path(writable=True))
 def reproschema2redcap(input_path, output_csv_path):
     """
-    Convert reproschema JSON to Redcap CSV format.
+    Convert reproschema protocol to Redcap CSV format.
     """
     # Convert input_path to a Path object
     input_path_obj = Path(input_path)
     rs2redcap(input_path_obj, output_csv_path)
-    click.echo(f"Converted reproschema JSON from {input_path} to Redcap CSV at {output_csv_path}")
+    click.echo(f"Converted reproschema protocol from {input_path} to Redcap CSV at {output_csv_path}")
