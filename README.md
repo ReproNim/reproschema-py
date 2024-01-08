@@ -2,13 +2,22 @@
 
 # Reproschema Python library and Command Line Interface (CLI)
 
-
-### Installation
+## Installation
 
 reproschema requires Python 3.7+.
 
 ```
 pip install reproschema
+```
+
+### Developer installation
+
+To install in developer mode:
+
+```
+git clone git@github.com:ReproNim/reproschema-py.git
+cd reproschema-py
+pip install -e ".[dev]"
 ```
 
 ## CLI usage
