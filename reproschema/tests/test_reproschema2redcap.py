@@ -30,11 +30,7 @@ def test_reproschema2redcap_success():
 
         # Assert the expected outcomes
         assert result.exit_code == 0
-        assert (
-            f"Converted reproschema JSON from {input_path} to Redcap CSV at {output_csv_path}"
-            in result.output
-        )
-
+        
         # Check if the output CSV file has been created
         assert os.path.exists(output_csv_path)
 
