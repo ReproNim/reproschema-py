@@ -2,7 +2,7 @@ import sys
 import json
 import csv
 from pathlib import Path
-
+import requests
 
 def read_json_file(file_path):
     try:
@@ -12,7 +12,28 @@ def read_json_file(file_path):
         print(f"Error reading file {file_path}: {e}")
         return None
 
+def fetch_choices_from_url(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
 
+        # Check if the data is a list or a dictionary and process accordingly
+        if isinstance(data, list):
+            # Assuming each item in the list is a dictionary with one key-value pair
+            choices = [list(item.values())[0] for item in data if isinstance(item, dict) and item]
+        elif isinstance(data, dict):
+            # Extracting the values from the dictionary
+            choices = list(data.values())
+        else:
+            # If data is neither a list nor a dictionary, return an empty string
+            return ""
+
+        return " | ".join(str(choice) for choice in choices)
+    except Exception as e:
+        print(f"Error fetching choices from {url}: {e}")
+        return ""
+    
 def find_Ftype_and_colH(item_json, row_data):
     """
     Find the field type and column header based on the given item_json.
@@ -44,6 +65,9 @@ def find_Ftype_and_colH(item_json, row_data):
     elif f_type in ["radio", "checkbox", "dropdown", "file"]:
         # No change needed, these are valid REDCap field types
         pass
+    elif f_type == "select":
+        multiple_choice = item_json.get("responseOptions", {}).get("multipleChoice", False)
+        f_type = "checkbox" if multiple_choice else "radio"
     else:
         # Fallback for unsupported types
         f_type = "text"
@@ -68,43 +92,43 @@ def process_item(item_json, activity_name):
     Returns:
         dict: A dictionary containing the extracted information.
     """
-    row_data = {}
+    row_data = {
+        "val_min": "",
+        "val_max": "",
+        "choices": "",
+        "required": "",
+        "field_notes": "",
+        "var_name": "",
+        "activity": activity_name.lower(),
+        "field_label": "",
+    }
 
     # Extract min and max values from response options, if available
     response_options = item_json.get("responseOptions", {})
     row_data["val_min"] = response_options.get("schema:minValue", "")
     row_data["val_max"] = response_options.get("schema:maxValue", "")
 
+    # 'choices' processing is now handled in 'find_Ftype_and_colH' if it's a URL
     choices = response_options.get("choices")
-    if choices:
+    if choices and not isinstance(choices, str):
         if isinstance(choices, list):
-            # Extract choice values and names, and join them with a '|'
             item_choices = [
                 f"{ch.get('schema:value', ch.get('value', ''))}, {ch.get('schema:name', ch.get('name', ''))}"
                 for ch in choices
             ]
             row_data["choices"] = " | ".join(item_choices)
-        elif isinstance(choices, str):
-            row_data["choices"] = choices
-        else:
-            row_data["choices"] = ""
 
     row_data["required"] = response_options.get("requiredValue", "")
-
     row_data["field_notes"] = item_json.get("skos:altLabel", "")
-
     row_data["var_name"] = item_json.get("@id", "")
-    row_data["activity"] = activity_name
 
     question = item_json.get("question")
     if isinstance(question, dict):
         row_data["field_label"] = question.get("en", "")
     elif isinstance(question, str):
         row_data["field_label"] = question
-    else:
-        row_data["field_label"] = ""
 
-    # Call helper function to find Ftype and colH values and update row_data
+    # Call helper function to find field type and validation type (if any) and update row_data
     row_data = find_Ftype_and_colH(item_json, row_data)
 
     return row_data
@@ -148,28 +172,52 @@ def get_csv_data(dir_path):
 
 
 def write_to_csv(csv_data, output_csv_filename):
-    # Define the headers for the CSV file as per the JavaScript file
+    # REDCap-specific headers
     headers = [
-        "var_name",
-        "activity",
-        "section",
-        "field_type",
-        "field_label",
-        "choices",
-        "field_notes",
-        "val_type_OR_slider",
-        "val_min",
-        "val_max",
-        "identifier",
-        "visibility",
-        "required",
+        "Variable / Field Name",
+        "Form Name",
+        "Section Header",
+        "Field Type",
+        "Field Label",
+        "Choices, Calculations, OR Slider Labels",
+        "Field Note",
+        "Text Validation Type OR Show Slider Number",
+        "Text Validation Min",
+        "Text Validation Max",
+        "Identifier?",
+        "Branching Logic (Show field only if...)",
+        "Required Field?",
+        "Custom Alignment",
+        "Question Number (surveys only)",
+        "Matrix Group Name",
+        "Matrix Ranking?",
+        "Field Annotation"
     ]
 
     # Writing to the CSV file
     with open(output_csv_filename, "w", newline="", encoding="utf-8") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=headers)
-        writer.writeheader()
+
+        # Map the data from your format to REDCap format
+        redcap_data = []
         for row in csv_data:
+            redcap_row = {
+                "Variable / Field Name": row["var_name"],
+                "Form Name": row["activity"],
+                "Section Header": "",  # Update this if your data includes section headers
+                "Field Type": row["field_type"],
+                "Field Label": row["field_label"],
+                "Choices, Calculations, OR Slider Labels": row["choices"],
+                "Field Note": row["field_notes"],
+                "Text Validation Type OR Show Slider Number": row.get("val_type_OR_slider", ""),
+                "Text Validation Min": row["val_min"],
+                "Text Validation Max": row["val_max"],
+                # Add other fields as necessary based on your data
+            }
+            redcap_data.append(redcap_row)
+
+        writer.writeheader()
+        for row in redcap_data:
             writer.writerow(row)
 
     print("The CSV file was written successfully")
