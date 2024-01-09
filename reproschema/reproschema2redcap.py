@@ -35,47 +35,37 @@ def fetch_choices_from_url(url):
         return ""
     
 def find_Ftype_and_colH(item_json, row_data):
-    """
-    Find the field type and column header based on the given item_json.
-
-    Args:
-        item_json (dict): The JSON object containing the item information.
-        row_data (dict): The row data dictionary.
-
-    Returns:
-        dict: The updated row data dictionary with field type and column header.
-
-    """
     # Extract the input type from the item_json
     f_type = item_json.get("ui", {}).get("inputType", "")
     col_h = ""
 
-    # Check the input type and update the field type and column header accordingly
     if f_type in ["text", "textarea", "email"]:
         f_type = "text"
     elif f_type == "integer":
         f_type = "text"
         col_h = "integer"
-    elif f_type == "number" or f_type == "float":
+    elif f_type in ["number", "float"]:
         f_type = "text"
         col_h = "number"
     elif f_type == "date":
         f_type = "text"
         col_h = "date_mdy"
-    elif f_type in ["radio", "checkbox", "dropdown", "file"]:
-        # No change needed, these are valid REDCap field types
-        pass
     elif f_type == "select":
         multiple_choice = item_json.get("responseOptions", {}).get("multipleChoice", False)
-        f_type = "checkbox" if multiple_choice else "radio"
+        f_type = "checkbox" if multiple_choice else "dropdown"
+    elif f_type.startswith("select"):
+        # Adjusting for selectCountry, selectLanguage, selectState types
+        f_type = "radio"
+        choices_url = item_json.get("responseOptions", {}).get("choices", "")
+        if choices_url and isinstance(choices_url, str):
+            choices_data = fetch_choices_from_url(choices_url)
+            if choices_data:
+                row_data["choices"] = choices_data
     else:
-        # Fallback for unsupported types
         f_type = "text"
 
-    # Update the row_data dictionary with the field type
     row_data["field_type"] = f_type.lower()
 
-    # Update the row_data dictionary with the column header if available
     if col_h:
         row_data["val_type_OR_slider"] = col_h.lower()
 
