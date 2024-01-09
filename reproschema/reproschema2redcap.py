@@ -30,24 +30,32 @@ def find_Ftype_and_colH(item_json, row_data):
     col_h = ""
 
     # Check the input type and update the field type and column header accordingly
-    if f_type == "integer":
+    if f_type in ["text", "textarea", "email"]:
+        f_type = "text"
+    elif f_type == "integer":
+        f_type = "text"
+        col_h = "integer"
+    elif f_type == "number" or f_type == "float":
         f_type = "text"
         col_h = "number"
-    elif f_type == "select":
-        f_type = "dropdown"
     elif f_type == "date":
         f_type = "text"
-        col_h = "ddate_mdy"
+        col_h = "date_mdy"
+    elif f_type in ["radio", "checkbox", "dropdown", "file"]:
+        # No change needed, these are valid REDCap field types
+        pass
+    else:
+        # Fallback for unsupported types
+        f_type = "text"
 
     # Update the row_data dictionary with the field type
-    row_data["field_type"] = f_type
+    row_data["field_type"] = f_type.lower()
 
     # Update the row_data dictionary with the column header if available
     if col_h:
-        row_data["val_type_OR_slider"] = col_h
+        row_data["val_type_OR_slider"] = col_h.lower()
 
     return row_data
-
 
 def process_item(item_json, activity_name):
     """
