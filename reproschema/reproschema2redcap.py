@@ -18,18 +18,16 @@ def fetch_choices_from_url(url):
         response.raise_for_status()
         data = response.json()
 
-        # Check if the data is a list or a dictionary and process accordingly
         if isinstance(data, list):
-            # Assuming each item in the list is a dictionary with one key-value pair
             choices = [list(item.values())[0] for item in data if isinstance(item, dict) and item]
         elif isinstance(data, dict):
-            # Extracting the values from the dictionary
             choices = list(data.values())
         else:
-            # If data is neither a list nor a dictionary, return an empty string
             return ""
 
-        return " | ".join(str(choice) for choice in choices)
+        # Format choices as 'code, description'
+        formatted_choices = [f"{idx}, {choice}" for idx, choice in enumerate(choices)]
+        return " | ".join(formatted_choices)
     except Exception as e:
         print(f"Error fetching choices from {url}: {e}")
         return ""
