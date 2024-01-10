@@ -59,6 +59,8 @@ def find_Ftype_and_colH(item_json, row_data):
             choices_data = fetch_choices_from_url(choices_url)
             if choices_data:
                 row_data["choices"] = choices_data
+    elif f_type.startswith(("audio", "video", "image", "document")):
+        f_type = "file"
     else:
         f_type = "text"
 
