@@ -53,15 +53,22 @@ def parse_field_type_and_value(data, input_type_map):
 
     return input_type, value_type
 
-
 def process_choices(choices_str):
     choices = []
     for choice in choices_str.split("|"):
         parts = choice.split(", ")
-        choice_obj = {"schema:value": int(parts[0]), "schema:name": parts[1]}
+        # Try to convert the first part to an integer, if it fails, keep it as a string
+        try:
+            value = int(parts[0])
+        except ValueError:
+            value = parts[0]
+
+        choice_obj = {"schema:value": value, "schema:name": parts[1]}
+
         if len(parts) == 3:
             # TODO: handle image url
             choice_obj["schema:image"] = f"{parts[2]}.png"
+
         choices.append(choice_obj)
     return choices
 
