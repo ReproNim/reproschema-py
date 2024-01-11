@@ -4,6 +4,7 @@ import csv
 from pathlib import Path
 import requests
 
+
 def read_json_file(file_path):
     try:
         with open(file_path, "r", encoding="utf-8") as file:
@@ -12,6 +13,7 @@ def read_json_file(file_path):
         print(f"Error reading file {file_path}: {e}")
         return None
 
+
 def fetch_choices_from_url(url):
     try:
         response = requests.get(url)
@@ -19,7 +21,11 @@ def fetch_choices_from_url(url):
         data = response.json()
 
         if isinstance(data, list):
-            choices = [list(item.values())[0] for item in data if isinstance(item, dict) and item]
+            choices = [
+                list(item.values())[0]
+                for item in data
+                if isinstance(item, dict) and item
+            ]
         elif isinstance(data, dict):
             choices = list(data.values())
         else:
@@ -31,7 +37,8 @@ def fetch_choices_from_url(url):
     except Exception as e:
         print(f"Error fetching choices from {url}: {e}")
         return ""
-    
+
+
 def find_Ftype_and_colH(item_json, row_data):
     # Extract the input type from the item_json
     f_type = item_json.get("ui", {}).get("inputType", "")
@@ -49,7 +56,9 @@ def find_Ftype_and_colH(item_json, row_data):
         f_type = "text"
         col_h = "date_mdy"
     elif f_type == "select":
-        multiple_choice = item_json.get("responseOptions", {}).get("multipleChoice", False)
+        multiple_choice = item_json.get("responseOptions", {}).get(
+            "multipleChoice", False
+        )
         f_type = "checkbox" if multiple_choice else "dropdown"
     elif f_type.startswith("select"):
         # Adjusting for selectCountry, selectLanguage, selectState types
@@ -70,6 +79,7 @@ def find_Ftype_and_colH(item_json, row_data):
         row_data["val_type_OR_slider"] = col_h.lower()
 
     return row_data
+
 
 def process_item(item_json, activity_name):
     """
@@ -181,7 +191,7 @@ def write_to_csv(csv_data, output_csv_filename):
         "Question Number (surveys only)",
         "Matrix Group Name",
         "Matrix Ranking?",
-        "Field Annotation"
+        "Field Annotation",
     ]
 
     # Writing to the CSV file
@@ -199,7 +209,9 @@ def write_to_csv(csv_data, output_csv_filename):
                 "Field Label": row["field_label"],
                 "Choices, Calculations, OR Slider Labels": row["choices"],
                 "Field Note": row["field_notes"],
-                "Text Validation Type OR Show Slider Number": row.get("val_type_OR_slider", ""),
+                "Text Validation Type OR Show Slider Number": row.get(
+                    "val_type_OR_slider", ""
+                ),
                 "Text Validation Min": row["val_min"],
                 "Text Validation Max": row["val_max"],
                 # Add other fields as necessary based on your data
