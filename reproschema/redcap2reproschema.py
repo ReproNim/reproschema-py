@@ -158,9 +158,11 @@ def process_row(
             rowData.setdefault("responseOptions", {}).update({schema_map[key]: value})
 
         elif schema_map.get(key) == "choices" and value:
+            # Pass both field_type and value to process_choices
             rowData.setdefault("responseOptions", {}).update(
-                {"choices": process_choices(value)}
+                {"choices": process_choices(field_type, value)}
             )
+
 
         elif schema_map.get(key) == "scoringLogic" and value:
             condition = normalize_condition(value)
