@@ -144,7 +144,6 @@ def process_row(
         }
 
     for key, value in field.items():
-        print(f"Schema Map Key: {schema_map.get(key)}, Original Key: {key}, Value: {value}")
         if schema_map.get(key) == "allow" and value:
             rowData.setdefault("ui", {}).update({schema_map[key]: value.split(", ")})
 
@@ -181,7 +180,7 @@ def process_row(
                 {"variableName": field["Variable / Field Name"], "isVis": condition}
             )
 
-        elif key in ["question", "schema:description", "preamble"] and value:
+        elif schema_map.get(key) in ["question", "schema:description", "preamble"] and value:
             rowData.update({schema_map[key]: parse_html(value)})
 
         elif key == "Identifier?" and value:
