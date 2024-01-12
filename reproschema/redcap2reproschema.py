@@ -100,10 +100,10 @@ def parse_html(input_string, default_language="en"):
             text = element.get_text(strip=True)
             if text:
                 result[lang] = text
-        if not result:
+        if not result:  # If no text was extracted
             result[default_language] = soup.get_text(strip=True)
     else:
-        result[default_language] = input_string
+        result[default_language] = soup.get_text(strip=True)  # Use the entire text as default language text
 
     return result
 
