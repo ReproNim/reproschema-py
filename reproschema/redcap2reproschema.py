@@ -181,6 +181,7 @@ def process_row(
             )
 
         elif key in ["question", "schema:description", "preamble"] and value:
+            print(key, value)
             rowData.update({schema_map[key]: parse_html(value)})
 
         elif key == "Identifier?" and value:
