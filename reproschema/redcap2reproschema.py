@@ -144,6 +144,7 @@ def process_row(
         }
 
     for key, value in field.items():
+        print(f"Key: {key}, Value: {value}")
         if schema_map.get(key) == "allow" and value:
             rowData.setdefault("ui", {}).update({schema_map[key]: value.split(", ")})
 
@@ -181,7 +182,6 @@ def process_row(
             )
 
         elif key in ["question", "schema:description", "preamble"] and value:
-            print(key, value)
             rowData.update({schema_map[key]: parse_html(value)})
 
         elif key == "Identifier?" and value:
