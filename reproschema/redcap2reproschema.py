@@ -144,7 +144,10 @@ def process_row(
         }
 
     for key, value in field.items():
-        if schema_map.get(key) == "allow" and value:
+        if schema_map.get(key) in ["question", "schema:description", "preamble"] and value:
+            rowData.update({schema_map[key]: parse_html(value)})
+        
+        elif schema_map.get(key) == "allow" and value:
             rowData.setdefault("ui", {}).update({schema_map[key]: value.split(", ")})
 
         elif key in ui_list and value:
@@ -179,9 +182,6 @@ def process_row(
             rowData.setdefault("visibility", []).append(
                 {"variableName": field["Variable / Field Name"], "isVis": condition}
             )
-
-        elif schema_map.get(key) in ["question", "schema:description", "preamble"] and value:
-            rowData.update({schema_map[key]: parse_html(value)})
 
         elif key == "Identifier?" and value:
             identifier_val = value.lower() == "y"
