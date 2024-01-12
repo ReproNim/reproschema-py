@@ -144,7 +144,7 @@ def process_row(
         }
 
     for key, value in field.items():
-        print(f"Key: {key}, Value: {value}")
+        print(f"Schema Map Key: {schema_map.get(key)}, Original Key: {key}, Value: {value}")
         if schema_map.get(key) == "allow" and value:
             rowData.setdefault("ui", {}).update({schema_map[key]: value.split(", ")})
 
