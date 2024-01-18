@@ -8,6 +8,9 @@ from bs4 import BeautifulSoup
 
 matrix_group_count = {}
 
+def clean_header(header):
+    return {k.lstrip('\ufeff'): v for k, v in header.items()}
+
 def normalize_condition(condition_str):
     re_parentheses = re.compile(r"\(([0-9]*)\)")
     re_non_gt_lt_equal = re.compile(r"([^>|<])=")
@@ -345,6 +348,7 @@ def process_csv(
     with open(csv_file, mode="r", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
+            row = clean_header(row)
             form_name = row["Form Name"]
             if form_name not in datas:
                 datas[form_name] = []
@@ -359,7 +363,6 @@ def process_csv(
                 languages = parse_language_iso_codes(row["Field Label"])
 
             for field in datas[form_name]:
-                print(f"process_csv-field: {field}")
                 field_name = field["Variable / Field Name"]
                 order[form_name].append(f"items/{field_name}")
                 process_row(
