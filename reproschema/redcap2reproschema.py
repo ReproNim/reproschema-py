@@ -120,12 +120,14 @@ def process_row(
     response_list,
     additional_notes_list,
 ):
-    matrix_group_name = field.get("Matrix Group Name")
+    global matrix_group_count
+    
+    matrix_group_name = field.get("Matrix Group Name", "")
     if matrix_group_name:
         matrix_group_count[matrix_group_name] = matrix_group_count.get(matrix_group_name, 0) + 1
         item_id = f"{matrix_group_name}_{matrix_group_count[matrix_group_name]}"
     else:
-        item_id = field["Variable / Field Name"]
+        item_id = field.get("Variable / Field Name", "")
 
     rowData = {
         "@context": schema_context_url,
@@ -155,6 +157,7 @@ def process_row(
         }
 
     for key, value in field.items():
+        print(key, value, filed)
         if schema_map.get(key) in ["question", "schema:description", "preamble"] and value:
             rowData.update({schema_map[key]: parse_html(value)})
         
