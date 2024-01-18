@@ -363,6 +363,7 @@ def process_csv(
                 languages = parse_language_iso_codes(row["Field Label"])
 
             for field in datas[form_name]:
+                print(f"process_csv-field: {field}, datas: {datas}")
                 field_name = field["Variable / Field Name"]
                 order[form_name].append(f"items/{field_name}")
                 process_row(
