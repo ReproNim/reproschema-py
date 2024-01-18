@@ -37,8 +37,9 @@ def process_visibility(data):
     }
     return visibility_obj
 
-def parse_field_type_and_value(data, input_type_map):
-    field_type = data.get("Field Type", "")
+def parse_field_type_and_value(field, input_type_map):
+    print(f"parse_field_type_and_value-field: {field}")
+    field_type = field.get("Field Type", "")
 
     input_type = input_type_map.get(field_type, field_type)
 
@@ -50,7 +51,7 @@ def parse_field_type_and_value(data, input_type_map):
         "email": "email",
         "phone": "phone",
     }
-    validation_type = data.get("Text Validation Type OR Show Slider Number", "")
+    validation_type = field.get("Text Validation Type OR Show Slider Number", "")
 
     value_type = value_type_map.get(validation_type, "xsd:string")
 
@@ -124,9 +125,7 @@ def process_row(
     additional_notes_list,
 ):
     global matrix_group_count
-    print(f"process_row-field-before: {field}")
     matrix_group_name = field.get("Matrix Group Name", "")
-    print(f"process_row-field-after: {field}")
     if matrix_group_name:
         matrix_group_count[matrix_group_name] = matrix_group_count.get(matrix_group_name, 0) + 1
         item_id = f"{matrix_group_name}_{matrix_group_count[matrix_group_name]}"
@@ -161,7 +160,6 @@ def process_row(
         }
 
     for key, value in field.items():
-        print(key, value, filed)
         if schema_map.get(key) in ["question", "schema:description", "preamble"] and value:
             rowData.update({schema_map[key]: parse_html(value)})
         
