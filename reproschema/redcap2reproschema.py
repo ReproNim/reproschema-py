@@ -359,6 +359,7 @@ def process_csv(
                 languages = parse_language_iso_codes(row["Field Label"])
 
             for field in datas[form_name]:
+                print(f"process_csv-field: {field}")
                 field_name = field["Variable / Field Name"]
                 order[form_name].append(f"items/{field_name}")
                 process_row(
@@ -518,6 +519,7 @@ def main():
     parser.add_argument("csv_file", help="Path to the REDCap data dictionary CSV file.")
     parser.add_argument("yaml_file", help="Path to the Reproschema protocol YAML file.")
     args = parser.parse_args()
+    print("Start processing")
 
     # Call the main conversion function
     redcap2reproschema(args.csv_file, args.yaml_file)
