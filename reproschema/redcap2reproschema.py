@@ -6,6 +6,7 @@ import re
 import yaml
 from bs4 import BeautifulSoup
 
+matrix_group_count = {}
 
 def normalize_condition(condition_str):
     re_parentheses = re.compile(r"\(([0-9]*)\)")
@@ -119,9 +120,19 @@ def process_row(
     response_list,
     additional_notes_list,
 ):
+    matrix_group_name = field.get("Matrix Group Name")
+    if matrix_group_name:
+        matrix_group_count[matrix_group_name] = matrix_group_count.get(matrix_group_name, 0) + 1
+        item_id = f"{matrix_group_name}_{matrix_group_count[matrix_group_name]}"
+    else:
+        item_id = field["Variable / Field Name"]
+
     rowData = {
         "@context": schema_context_url,
         "@type": "reproschema:Field",
+        "@id": item_id,
+        "prefLabel": item_id,
+        "description": f"{item_id} of {form_name}"
     }
 
     field_type = field.get("Field Type", "")
