@@ -124,8 +124,9 @@ def process_row(
     additional_notes_list,
 ):
     global matrix_group_count
-    
+    print(f"process_row-field-before: {field}")
     matrix_group_name = field.get("Matrix Group Name", "")
+    print(f"process_row-field-after: {field}")
     if matrix_group_name:
         matrix_group_count[matrix_group_name] = matrix_group_count.get(matrix_group_name, 0) + 1
         item_id = f"{matrix_group_name}_{matrix_group_count[matrix_group_name]}"
