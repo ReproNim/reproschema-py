@@ -38,22 +38,31 @@ def process_visibility(data):
     return visibility_obj
 
 def parse_field_type_and_value(field, input_type_map):
-    print(f"parse_field_type_and_value-field: {field}")
     field_type = field.get("Field Type", "")
-
     input_type = input_type_map.get(field_type, field_type)
 
-    value_type_map = {
-        "number": "xsd:int",
-        "date_": "xsd:date",
-        "datetime_": "datetime",
-        "time_": "xsd:date",
-        "email": "email",
-        "phone": "phone",
-    }
-    validation_type = field.get("Text Validation Type OR Show Slider Number", "")
+    # Initialize the default value type as string
+    value_type = "xsd:string"
 
-    value_type = value_type_map.get(validation_type, "xsd:string")
+    # Map certain field types directly to xsd types
+    value_type_map = {
+        "text": "xsd:string",
+        "date_": "xsd:date",
+        "datetime_": "xsd:dateTime",
+        "time_": "xsd:time",
+        "email": "xsd:string",
+        "phone": "xsd:string",
+    } # todo: input_type="signature"
+
+    # Get the validation type from the field, if available
+    validation_type = field.get("Text Validation Type OR Show Slider Number", "").strip()
+
+    if validation_type:
+        # Map the validation type to an XSD type if it's in the map
+        value_type = value_type_map.get(validation_type, "xsd:string")
+    elif field_type in ["radio", "dropdown"]:
+        # If there's no validation type, but the field type is radio or dropdown, use xsd:integer
+        value_type = "xsd:integer"
 
     return input_type, value_type
 
@@ -74,7 +83,7 @@ def process_choices(field_type, choices_str):
         except ValueError:
             value = parts[0]
 
-        choice_obj = {"schema:value": value, "schema:name": parts[1]}
+        choice_obj = {"name": parts[1], "value": value}
         if len(parts) == 3:
             # Handle image url
             choice_obj["schema:image"] = f"{parts[2]}.png"
@@ -154,8 +163,8 @@ def process_row(
         rowData["responseOptions"] = {
             "valueType": "xsd:boolean",
             "choices": [
-                {"schema:value": 1, "schema:name": "Yes"},
-                {"schema:value": 0, "schema:name": "No"}
+                {"name": "Yes", "value": 1},
+                {"name": "No", "value": 0}
             ]
         }
 
@@ -362,7 +371,6 @@ def process_csv(
                 languages = parse_language_iso_codes(row["Field Label"])
 
             for field in datas[form_name]:
-                print(f"process_csv-field: {field}, datas: {datas}")
                 field_name = field["Variable / Field Name"]
                 order[form_name].append(f"items/{field_name}")
                 process_row(
@@ -522,9 +530,7 @@ def main():
     parser.add_argument("csv_file", help="Path to the REDCap data dictionary CSV file.")
     parser.add_argument("yaml_file", help="Path to the Reproschema protocol YAML file.")
     args = parser.parse_args()
-    print("Start processing")
 
-    # Call the main conversion function
     redcap2reproschema(args.csv_file, args.yaml_file)
 
 
