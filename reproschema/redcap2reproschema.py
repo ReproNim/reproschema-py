@@ -8,8 +8,10 @@ from bs4 import BeautifulSoup
 
 matrix_group_count = {}
 
+
 def clean_header(header):
-    return {k.lstrip('\ufeff'): v for k, v in header.items()}
+    return {k.lstrip("\ufeff"): v for k, v in header.items()}
+
 
 def normalize_condition(condition_str):
     re_parentheses = re.compile(r"\(([0-9]*)\)")
@@ -37,6 +39,7 @@ def process_visibility(data):
     }
     return visibility_obj
 
+
 def parse_field_type_and_value(field, input_type_map):
     field_type = field.get("Field Type", "")
     input_type = input_type_map.get(field_type, field_type)
@@ -52,10 +55,12 @@ def parse_field_type_and_value(field, input_type_map):
         "time_": "xsd:time",
         "email": "xsd:string",
         "phone": "xsd:string",
-    } # todo: input_type="signature"
+    }  # todo: input_type="signature"
 
     # Get the validation type from the field, if available
-    validation_type = field.get("Text Validation Type OR Show Slider Number", "").strip()
+    validation_type = field.get(
+        "Text Validation Type OR Show Slider Number", ""
+    ).strip()
 
     if validation_type:
         # Map the validation type to an XSD type if it's in the map
@@ -66,15 +71,18 @@ def parse_field_type_and_value(field, input_type_map):
 
     return input_type, value_type
 
+
 def process_choices(field_type, choices_str):
-    if field_type not in ['radio', 'dropdown']:  # Handle only radio and dropdown types
+    if field_type not in ["radio", "dropdown"]:  # Handle only radio and dropdown types
         return None
 
     choices = []
     for choice in choices_str.split("|"):
         parts = choice.split(", ")
         if len(parts) < 2:
-            print(f"Warning: Skipping invalid choice format '{choice}' in a {field_type} field")
+            print(
+                f"Warning: Skipping invalid choice format '{choice}' in a {field_type} field"
+            )
             continue
 
         # Try to convert the first part to an integer, if it fails, keep it as a string
@@ -89,6 +97,7 @@ def process_choices(field_type, choices_str):
             choice_obj["schema:image"] = f"{parts[2]}.png"
         choices.append(choice_obj)
     return choices
+
 
 def write_to_file(abs_folder_path, form_name, field_name, rowData):
     file_path = os.path.join(
@@ -117,7 +126,9 @@ def parse_html(input_string, default_language="en"):
         if not result:  # If no text was extracted
             result[default_language] = soup.get_text(strip=True)
     else:
-        result[default_language] = soup.get_text(strip=True)  # Use the entire text as default language text
+        result[default_language] = soup.get_text(
+            strip=True
+        )  # Use the entire text as default language text
 
     return result
 
@@ -136,7 +147,9 @@ def process_row(
     global matrix_group_count
     matrix_group_name = field.get("Matrix Group Name", "")
     if matrix_group_name:
-        matrix_group_count[matrix_group_name] = matrix_group_count.get(matrix_group_name, 0) + 1
+        matrix_group_count[matrix_group_name] = (
+            matrix_group_count.get(matrix_group_name, 0) + 1
+        )
         item_id = f"{matrix_group_name}_{matrix_group_count[matrix_group_name]}"
     else:
         item_id = field.get("Variable / Field Name", "")
@@ -146,7 +159,7 @@ def process_row(
         "@type": "reproschema:Field",
         "@id": item_id,
         "prefLabel": item_id,
-        "description": f"{item_id} of {form_name}"
+        "description": f"{item_id} of {form_name}",
     }
 
     field_type = field.get("Field Type", "")
@@ -162,16 +175,16 @@ def process_row(
     if field_type == "yesno":
         rowData["responseOptions"] = {
             "valueType": "xsd:boolean",
-            "choices": [
-                {"name": "Yes", "value": 1},
-                {"name": "No", "value": 0}
-            ]
+            "choices": [{"name": "Yes", "value": 1}, {"name": "No", "value": 0}],
         }
 
     for key, value in field.items():
-        if schema_map.get(key) in ["question", "schema:description", "preamble"] and value:
+        if (
+            schema_map.get(key) in ["question", "schema:description", "preamble"]
+            and value
+        ):
             rowData.update({schema_map[key]: parse_html(value)})
-        
+
         elif schema_map.get(key) == "allow" and value:
             rowData.setdefault("ui", {}).update({schema_map[key]: value.split(", ")})
 
@@ -190,7 +203,6 @@ def process_row(
             rowData.setdefault("responseOptions", {}).update(
                 {"choices": process_choices(field_type, value)}
             )
-
 
         elif schema_map.get(key) == "scoringLogic" and value:
             condition = normalize_condition(value)
