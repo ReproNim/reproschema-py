@@ -248,6 +248,10 @@ def create_form_schema(
     matrix_list,
     scores_list,
 ):
+
+    # Use a set to track unique items and preserve order
+    unique_order = list(dict.fromkeys(order.get(form_name, [])))
+
     # Construct the JSON-LD structure
     json_ld = {
         "@context": schema_context_url,
@@ -258,7 +262,7 @@ def create_form_schema(
         "schemaVersion": "1.0.0-rc4",
         "version": "0.0.1",
         "ui": {
-            "order": order.get(form_name, []),
+            "order": unique_order,
             "addProperties": bl_list,
             "shuffle": False,
         },
