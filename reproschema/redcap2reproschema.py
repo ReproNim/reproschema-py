@@ -248,7 +248,6 @@ def create_form_schema(
     matrix_list,
     scores_list,
 ):
-
     # Use a set to track unique items and preserve order
     unique_order = list(dict.fromkeys(order.get(form_name, [])))
 
