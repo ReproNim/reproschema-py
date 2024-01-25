@@ -376,9 +376,7 @@ def process_csv(
     with open(csv_file, mode="r", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            print(f"process_csv: {row}")
             row = clean_header(row)
-            print(f"process_csv: {row} - after")
             form_name = row["Form Name"]
             if form_name not in datas:
                 datas[form_name] = []
