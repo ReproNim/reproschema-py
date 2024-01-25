@@ -10,7 +10,12 @@ matrix_group_count = {}
 
 
 def clean_header(header):
-    return {k.lstrip("\ufeff"): v for k, v in header.items()}
+    cleaned_header = {}
+    for k, v in header.items():
+        # Strip BOM, whitespace, and enclosing quotation marks if present
+        cleaned_key = k.lstrip('\ufeff').strip().strip('"')
+        cleaned_header[cleaned_key] = v
+    return cleaned_header
 
 
 def normalize_condition(condition_str):
