@@ -342,7 +342,7 @@ def create_protocol_schema(
 
     # Populate addProperties list
     for activity in protocol_order:
-        full_path = f"../activities/{activity_name}/{activity_name}_schema"
+        full_path = f"../activities/{activity}/{activity}_schema"
         add_property = {
             "isAbout": full_path,
             "variableName": f"{activity}_schema",
