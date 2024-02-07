@@ -55,7 +55,11 @@ def process_visibility(data):
 
 def parse_field_type_and_value(field, input_type_map):
     field_type = field.get("Field Type", "")
-    input_type = input_type_map.get(field_type, field_type)
+    # Check if field_type is 'yesno' and directly assign 'radio' as the input type
+    if field_type == "yesno":
+        input_type = "radio"  # Directly set to 'radio' for 'yesno' fields
+    else:
+        input_type = input_type_map.get(field_type, field_type)  # Original logic
 
     # Initialize the default value type as string
     value_type = "xsd:string"
@@ -68,7 +72,8 @@ def parse_field_type_and_value(field, input_type_map):
         "time_": "xsd:time",
         "email": "xsd:string",
         "phone": "xsd:string",
-    }  # todo: input_type="signature"
+        # No change needed here for 'yesno', as it's handled above
+    }
 
     # Get the validation type from the field, if available
     validation_type = field.get(
@@ -83,6 +88,7 @@ def parse_field_type_and_value(field, input_type_map):
         value_type = "xsd:integer"
 
     return input_type, value_type
+
 
 
 def process_choices(field_type, choices_str):
