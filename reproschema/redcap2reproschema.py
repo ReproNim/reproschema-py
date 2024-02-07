@@ -19,16 +19,24 @@ def clean_header(header):
 
 
 def normalize_condition(condition_str):
+    # Regular expressions for various pattern replacements
     re_parentheses = re.compile(r"\(([0-9]*)\)")
     re_non_gt_lt_equal = re.compile(r"([^>|<])=")
     re_brackets = re.compile(r"\[([^\]]*)\]")
+    re_extra_spaces = re.compile(r"\s+")
+    re_double_quotes = re.compile(r'"')
 
+    # Apply regex replacements
     condition_str = re_parentheses.sub(r"___\1", condition_str)
     condition_str = re_non_gt_lt_equal.sub(r"\1 ==", condition_str)
     condition_str = condition_str.replace(" and ", " && ").replace(" or ", " || ")
     condition_str = re_brackets.sub(r" \1 ", condition_str)
-    return condition_str
 
+    # Trim extra spaces and replace double quotes with single quotes
+    condition_str = re_extra_spaces.sub(' ', condition_str)  # Reduce multiple spaces to a single space
+    condition_str = re_double_quotes.sub("'", condition_str)  # Replace double quotes with single quotes
+
+    return condition_str.strip() 
 
 def process_visibility(data):
     condition = data.get("Branching Logic (Show field only if...)")
@@ -245,6 +253,7 @@ def process_row(
 def create_form_schema(
     abs_folder_path,
     schema_context_url,
+    redcap_version,
     form_name,
     activity_display_name,
     activity_description,
@@ -264,7 +273,7 @@ def create_form_schema(
         "prefLabel": activity_display_name,
         "description": activity_description,
         "schemaVersion": "1.0.0-rc4",
-        "version": "0.0.1",
+        "version": redcap_version,
         "ui": {
             "order": unique_order,
             "addProperties": bl_list,
@@ -301,6 +310,7 @@ def process_activities(activity_name, protocol_visibility_obj, protocol_order):
 def create_protocol_schema(
     abs_folder_path,
     schema_context_url,
+    redcap_version,
     protocol_name,
     protocol_display_name,
     protocol_description,
@@ -316,27 +326,27 @@ def create_protocol_schema(
         "skos:altLabel": f"{protocol_name}_schema",
         "schema:description": protocol_description,
         "schema:schemaVersion": "1.0.0-rc4",
-        "schema:version": "0.0.1",
+        "schema:version": redcap_version,
         "ui": {
             "addProperties": [],
-            "order": protocol_order,
+            "order": [],
             "shuffle": False,
         },
     }
 
     # Populate addProperties list
     for activity in protocol_order:
+        full_path = f"../activities/{activity_name}/{activity_name}_schema"
         add_property = {
-            "isAbout": f"../activities/{activity}/{activity}_schema",
+            "isAbout": full_path,
             "variableName": f"{activity}_schema",
             # Assuming activity name as prefLabel, update as needed
             "prefLabel": activity.replace("_", " ").title(),
+            "isVis": protocol_visibility_obj.get(activity, True),  # Default to True if not specified
         }
         protocol_schema["ui"]["addProperties"].append(add_property)
-
-    # Add visibility if needed
-    if protocol_visibility_obj:
-        protocol_schema["ui"]["visibility"] = protocol_visibility_obj
+        # Add the full path to the order list
+        protocol_schema["ui"]["order"].append(full_path)
 
     protocol_dir = f"{abs_folder_path}/{protocol_name}"
     schema_file = f"{protocol_name}_schema"
@@ -425,6 +435,7 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
     protocol_name = protocol.get("protocol_name")
     protocol_display_name = protocol.get("protocol_display_name")
     protocol_description = protocol.get("protocol_description")
+    redcap_version = protocol.get("redcap_version")
 
     if not protocol_name:
         raise ValueError("Protocol name not specified in the YAML file.")
@@ -520,6 +531,7 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
         create_form_schema(
             abs_folder_path,
             schema_context_url,
+            redcap_version,
             form_name,
             activity_display_name,
             activity_description,
@@ -535,6 +547,7 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
     create_protocol_schema(
         abs_folder_path,
         schema_context_url,
+        redcap_version,
         protocol_name,
         protocol_display_name,
         protocol_description,
