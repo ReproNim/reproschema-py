@@ -25,15 +25,21 @@ def normalize_condition(condition_str):
     re_brackets = re.compile(r"\[([^\]]*)\]")
     re_extra_spaces = re.compile(r"\s+")
     re_double_quotes = re.compile(r'"')
+    re_or = re.compile(r'\bor\b')  # Match 'or' as whole word
 
     # Apply regex replacements
     condition_str = re_parentheses.sub(r"___\1", condition_str)
     condition_str = re_non_gt_lt_equal.sub(r"\1 ==", condition_str)
-    condition_str = condition_str.replace(" and ", " && ").replace(" or ", " || ")
     condition_str = re_brackets.sub(r" \1 ", condition_str)
 
+    # Replace 'or' with '||', ensuring not to replace '||'
+    condition_str = re_or.sub('||', condition_str)
+
+    # Replace 'and' with '&&'
+    condition_str = condition_str.replace(" and ", " && ")
+
     # Trim extra spaces and replace double quotes with single quotes
-    condition_str = re_extra_spaces.sub(' ', condition_str)  # Reduce multiple spaces to a single space
+    condition_str = re_extra_spaces.sub(' ', condition_str).strip()  # Reduce multiple spaces to a single space
     condition_str = re_double_quotes.sub("'", condition_str)  # Replace double quotes with single quotes
 
     return condition_str.strip() 
@@ -175,7 +181,7 @@ def process_row(
 
     rowData = {
         "@context": schema_context_url,
-        "@type": "reproschema:Field",
+        "@type": "reproschema:Item",
         "@id": item_id,
         "prefLabel": item_id,
         "description": f"{item_id} of {form_name}",
@@ -456,7 +462,7 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
     abs_folder_path = os.path.abspath(protocol_name)
 
     if schema_context_url is None:
-        schema_context_url = "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic"
+        schema_context_url = "https://raw.githubusercontent.com/ReproNim/reproschema/efb74e155c09e13aa009ea04609ba4f1152fcbc6/contexts/reproschema_new"
 
     # Initialize variables
     schema_map = {
