@@ -119,7 +119,7 @@ def process_choices(field_type, choices_str):
         choice_obj = {"name": parts[1], "value": value}
         if len(parts) == 3:
             # Handle image url
-            choice_obj["schema:image"] = f"{parts[2]}.png"
+            choice_obj["image"] = f"{parts[2]}.png"
         choices.append(choice_obj)
     return choices
 
@@ -205,7 +205,7 @@ def process_row(
 
     for key, value in field.items():
         if (
-            schema_map.get(key) in ["question", "schema:description", "preamble"]
+            schema_map.get(key) in ["question", "description", "preamble"]
             and value
         ):
             rowData.update({schema_map[key]: parse_html(value)})
@@ -334,11 +334,11 @@ def create_protocol_schema(
         "@context": schema_context_url,
         "@type": "reproschema:Protocol",
         "@id": f"{protocol_name}_schema",
-        "skos:prefLabel": protocol_display_name,
-        "skos:altLabel": f"{protocol_name}_schema",
-        "schema:description": protocol_description,
-        "schema:schemaVersion": "1.0.0-rc4",
-        "schema:version": redcap_version,
+        "prefLabel": protocol_display_name,
+        # "altLabel": f"{protocol_name}_schema",
+        "description": protocol_description,
+        "schemaVersion": "1.0.0-rc4",
+        "version": redcap_version,
         "ui": {
             "addProperties": [],
             "order": [],
