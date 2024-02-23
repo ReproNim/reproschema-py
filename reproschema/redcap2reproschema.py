@@ -239,12 +239,6 @@ def process_row(
                 }
             )
 
-        elif schema_map.get(key) == "visibility" and value:
-            condition = normalize_condition(value)
-            rowData.setdefault("visibility", []).append(
-                {"variableName": field["Variable / Field Name"], "isVis": condition}
-            )
-
         elif key == "Identifier?" and value:
             identifier_val = value.lower() == "y"
             rowData.update(
@@ -293,8 +287,9 @@ def create_form_schema(
         },
     }
 
-    if matrix_list:
-        json_ld["matrixInfo"] = matrix_list
+    # remove matrixInfo to pass validataion
+    # if matrix_list:
+    #     json_ld["matrixInfo"] = matrix_list
     if scores_list:
         json_ld["scoringLogic"] = scores_list
 
@@ -335,7 +330,7 @@ def create_protocol_schema(
         "@type": "reproschema:Protocol",
         "@id": f"{protocol_name}_schema",
         "prefLabel": protocol_display_name,
-        # "altLabel": f"{protocol_name}_schema",
+        "altLabel": f"{protocol_name}_schema",
         "description": protocol_description,
         "schemaVersion": "1.0.0-rc4",
         "version": redcap_version,
