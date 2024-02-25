@@ -116,10 +116,11 @@ def process_choices(field_type, choices_str):
         except ValueError:
             value = parts[0]
 
-        choice_obj = {"name": parts[1], "value": value}
-        if len(parts) == 3:
-            # Handle image url
-            choice_obj["image"] = f"{parts[2]}.png"
+        choice_obj = {"name": " ".join(parts[1:]), "value": value}
+        # remove image for now 
+        # if len(parts) == 3:
+        #     # Handle image url
+        #     choice_obj["image"] = f"{parts[2]}.png"
         choices.append(choice_obj)
     return choices
 
