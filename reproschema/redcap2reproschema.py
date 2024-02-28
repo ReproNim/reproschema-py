@@ -240,15 +240,15 @@ def process_row(
                 }
             )
 
-        elif key == "Identifier?" and value:
-            identifier_val = value.lower() == "y"
-            rowData.update(
-                {
-                    schema_map[key]: [
-                        {"legalStandard": "unknown", "isIdentifier": identifier_val}
-                    ]
-                }
-            )
+        # elif key == "Identifier?" and value:
+        #     identifier_val = value.lower() == "y"
+        #     rowData.update(
+        #         {
+        #             schema_map[key]: [
+        #                 {"legalStandard": "unknown", "isIdentifier": identifier_val}
+        #             ]
+        #         }
+        #     )
 
         elif key in additional_notes_list and value:
             notes_obj = {"source": "redcap", "column": key, "value": value}
@@ -475,7 +475,7 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
         "Choices, Calculations, OR Slider Labels": "choices",  # column F
         "Branching Logic (Show field only if...)": "visibility",  # column L
         "Custom Alignment": "customAlignment",  # column N
-        "Identifier?": "identifiable",  # column K
+        # "Identifier?": "identifiable",  # column K
         "multipleChoice": "multipleChoice",
         "responseType": "@type",
     }
