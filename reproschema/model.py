@@ -31,6 +31,8 @@ class ConfiguredBaseModel(BaseModel):
 
 
 class AllowedType(str, Enum):
+    # Indicates (by boolean) if alternate responses are allowed or not.
+    AllowAltResponse = "reproschema:AllowAltResponse"
     # Indicates (by boolean) if data can be exported or not.
     AllowExport = "reproschema:AllowExport"
     # Indicates (by boolean) if items can be replayed or not.
@@ -69,7 +71,9 @@ class AdditionalNoteObj(ConfiguredBaseModel):
         title="source",
         description="""An element to define the source (eg. RedCap, NDA) where the note was taken from.""",
     )
-    value: Optional[Union[Decimal, Dict[str, str], StructuredValue, bool, str]] = Field(
+    value: Optional[
+        Union[Decimal, Dict[str, str], MissingType, StructuredValue, bool, str]
+    ] = Field(
         None,
         title="value",
         description="""The value for each option in choices or in additionalNotesObj""",
@@ -144,12 +148,14 @@ class Choice(ConfiguredBaseModel):
     """
 
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
-    image: Optional[ImageObject] = Field(
+    image: Optional[Union[ImageObject, str]] = Field(
         None,
         title="image",
         description="""An image of the item. This can be a <a class=\"localLink\" href=\"http://schema.org/URL\">URL</a> or a fully described <a class=\"localLink\" href=\"http://schema.org/ImageObject\">ImageObject</a>.""",
     )
-    value: Optional[Union[Decimal, Dict[str, str], StructuredValue, bool, str]] = Field(
+    value: Optional[
+        Union[Decimal, Dict[str, str], MissingType, StructuredValue, bool, str]
+    ] = Field(
         None,
         title="value",
         description="""The value for each option in choices or in additionalNotesObj""",
@@ -206,7 +212,7 @@ class Activity(CreativeWork):
         None, title="cronTable", description="""TODO not described in reproschema"""
     )
     description: Optional[Dict[str, str]] = Field(default_factory=dict)
-    image: Optional[ImageObject] = Field(
+    image: Optional[Union[ImageObject, str]] = Field(
         None,
         title="image",
         description="""An image of the item. This can be a <a class=\"localLink\" href=\"http://schema.org/URL\">URL</a> or a fully described <a class=\"localLink\" href=\"http://schema.org/ImageObject\">ImageObject</a>.""",
@@ -264,7 +270,7 @@ class Item(CreativeWork):
         None, title="audio", description="""TODO"""
     )
     description: Optional[Dict[str, str]] = Field(default_factory=dict)
-    image: Optional[ImageObject] = Field(
+    image: Optional[Union[ImageObject, str]] = Field(
         None,
         title="image",
         description="""An image of the item. This can be a <a class=\"localLink\" href=\"http://schema.org/URL\">URL</a> or a fully described <a class=\"localLink\" href=\"http://schema.org/ImageObject\">ImageObject</a>.""",
@@ -471,7 +477,9 @@ class Response(CreativeWork):
         title="isAbout",
         description="""A pointer to the node describing the item.""",
     )
-    value: Optional[Union[Decimal, Dict[str, str], StructuredValue, bool, str]] = Field(
+    value: Optional[
+        Union[Decimal, Dict[str, str], MissingType, StructuredValue, bool, str]
+    ] = Field(
         None,
         title="value",
         description="""The value for each option in choices or in additionalNotesObj""",
@@ -496,7 +504,7 @@ class ResponseActivity(CreativeWork):
     category: Optional[str] = Field(None)
 
 
-class ResponseOption(ConfiguredBaseModel):
+class ResponseOption(CreativeWork):
     """
     An element (object or by URL)to describe the properties of response of the Item.
     """
@@ -523,11 +531,13 @@ class ResponseOption(ConfiguredBaseModel):
         title="unitOptions",
         description="""A list of objects to represent a human displayable name alongside the more formal value for units.""",
     )
-    valueType: Optional[str] = Field(
-        None,
+    valueType: Optional[List[str]] = Field(
+        default_factory=list,
         title="The type of the response",
         description="""The type of the response of an item. For example, string, integer, etc.""",
     )
+    id: Optional[str] = Field(None)
+    category: Optional[str] = Field(None)
 
 
 class SoftwareAgent(ConfiguredBaseModel):
