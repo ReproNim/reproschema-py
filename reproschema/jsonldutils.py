@@ -1,8 +1,10 @@
 from pyld import jsonld
-from pyshacl import validate as shacl_validate
 import json
 import os
-from .utils import start_server, stop_server, lgr
+from pathlib import Path
+from copy import deepcopy
+from .utils import start_server, stop_server, lgr, fixing_old_schema
+from .models import Item, Activity, Protocol, ResponseOption
 
 
 def load_file(path_or_url, started=False, http_kwargs={}):
@@ -41,37 +43,47 @@ def load_file(path_or_url, started=False, http_kwargs={}):
     return data
 
 
-def validate_data(data, shape_file_path):
-    """Validate an expanded jsonld document against a shape.
+def validate_data(data):
+    """Validate an expanded jsonld document against the pydantic model.
 
     Parameters
     ----------
     data : dict
         Python dictionary containing JSONLD object
-    shape_file_path : str
-        SHACL file for the document
 
     Returns
     -------
     conforms: bool
         Whether the document is conformant with the shape
     v_text: str
-        Validation information returned by PySHACL
+        Validation errors if any returned by pydantic
 
     """
-    kwargs = {"algorithm": "URDNA2015", "format": "application/n-quads"}
-    normalized = jsonld.normalize(data, kwargs)
-    data_file_format = "nquads"
-    shape_file_format = "turtle"
-    conforms, v_graph, v_text = shacl_validate(
-        normalized,
-        shacl_graph=shape_file_path,
-        data_graph_format=data_file_format,
-        shacl_graph_format=shape_file_format,
-        inference="rdfs",
-        debug=False,
-        serialize_report_graph=True,
-    )
+    # do we need it?
+    # kwargs = {"algorithm": "URDNA2015", "format": "application/n-quads"}
+    # normalized = jsonld.normalize(data, kwargs)
+    if data[0]["@type"][0] == "http://schema.repronim.org/Field":
+        obj_type = Item
+    elif data[0]["@type"][0] == "http://schema.repronim.org/ResponseOption":
+        obj_type = ResponseOption
+    elif data[0]["@type"][0] == "http://schema.repronim.org/Activity":
+        obj_type = Activity
+    else:
+        raise ValueError("Unknown type")
+    data_fixed = [fixing_old_schema(data[0], copy_data=True)]
+    # TODO: where should we load the context from?
+    contexfile = Path(__file__).resolve().parent / "models/reproschema"
+    with open(contexfile) as fp:
+        context = json.load(fp)
+    data_fixed_comp = jsonld.compact(data_fixed, context)
+    del data_fixed_comp["@context"]
+    conforms = False
+    v_text = ""
+    try:
+        obj_type(**data_fixed_comp)
+        conforms = True
+    except Exception as e:
+        v_text = str(e)
     return conforms, v_text
 
 

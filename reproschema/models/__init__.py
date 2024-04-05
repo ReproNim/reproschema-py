@@ -1,3 +1,1 @@
-from .protocol import Protocol
-from .activity import Activity
-from .item import Item
+from .model import Activity, Item, Protocol, ResponseOption

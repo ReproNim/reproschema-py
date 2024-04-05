@@ -1,7 +1,8 @@
 import json
-from . import Protocol, Activity, Item
+from .model import Protocol, Activity, Item, ResponseOption
 
 
+# TODO: where can we be used?
 def load_schema(filepath):
     with open(filepath) as fp:
         data = json.load(fp)
