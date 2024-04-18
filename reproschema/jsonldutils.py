@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from copy import deepcopy
 from .utils import start_server, stop_server, lgr, fixing_old_schema
-from .models import Item, Activity, Protocol, ResponseOption
+from .models import Item, Activity, Protocol, ResponseOption, ResponseActivity, Response
 
 
 def load_file(path_or_url, started=False, http_kwargs={}):
@@ -68,6 +68,12 @@ def validate_data(data):
         obj_type = ResponseOption
     elif data[0]["@type"][0] == "http://schema.repronim.org/Activity":
         obj_type = Activity
+    elif data[0]["@type"][0] == "http://schema.repronim.org/Protocol":
+        obj_type = Protocol
+    elif data[0]["@type"][0] == "http://schema.repronim.org/ResponseActivity":
+        obj_type = ResponseActivity
+    elif data[0]["@type"][0] == "http://schema.repronim.org/Response":
+        obj_type = Response
     else:
         raise ValueError("Unknown type")
     data_fixed = [fixing_old_schema(data[0], copy_data=True)]

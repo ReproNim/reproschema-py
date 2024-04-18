@@ -1,21 +1,19 @@
 from __future__ import annotations
 from datetime import datetime, date
-from enum import Enum
-
 from decimal import Decimal
-from typing import List, Dict, Optional, Any, Union
-from pydantic import BaseModel as BaseModel, ConfigDict, Field, field_validator
+from enum import Enum
 import re
 import sys
+from typing import Any, List, Literal, Dict, Optional, Union
+from pydantic.version import VERSION as PYDANTIC_VERSION
 
-if sys.version_info >= (3, 8):
-    from typing import Literal
+if int(PYDANTIC_VERSION[0]) >= 2:
+    from pydantic import BaseModel, ConfigDict, Field, field_validator
 else:
-    from typing_extensions import Literal
-
+    from pydantic import BaseModel, Field, validator
 
 metamodel_version = "None"
-version = "None"
+version = "1.0.0"
 
 
 class ConfiguredBaseModel(BaseModel):
@@ -25,8 +23,8 @@ class ConfiguredBaseModel(BaseModel):
         extra="forbid",
         arbitrary_types_allowed=True,
         use_enum_values=True,
+        strict=False,
     )
-
     pass
 
 
@@ -56,132 +54,13 @@ class MissingType(str, Enum):
     TimedOut = "reproschema:TimedOut"
 
 
-class AdditionalNoteObj(ConfiguredBaseModel):
-    """
-    A set of objects to define notes in a Item. For example, most Redcap and NDA data dictionaries have notes for each item which needs to be captured in reproschema
-    """
-
-    column: Optional[str] = Field(
-        None,
-        title="column",
-        description="""An element to define the column name where the note was taken from.""",
-    )
-    source: Optional[str] = Field(
-        None,
-        title="source",
-        description="""An element to define the source (eg. RedCap, NDA) where the note was taken from.""",
-    )
-    value: Optional[
-        Union[Decimal, Dict[str, str], MissingType, StructuredValue, bool, str]
-    ] = Field(
-        None,
-        title="value",
-        description="""The value for each option in choices or in additionalNotesObj""",
-    )
-
-
-class AdditionalProperty(ConfiguredBaseModel):
-    """
-    An object to describe the various properties added to assessments and Items.
-    """
-
-    allow: Optional[List[AllowedType]] = Field(
-        default_factory=list,
-        title="allow",
-        description="""An array of items indicating properties allowed on an activity or protocol.""",
-    )
-    isAbout: Optional[Union[Activity, Item, str]] = Field(
-        None,
-        title="isAbout",
-        description="""A pointer to the node describing the item.""",
-    )
-    isVis: Optional[Union[bool, str]] = Field(
-        None,
-        title="visibility",
-        description="""An element to describe (by boolean or conditional statement) visibility conditions of items in an assessment.""",
-    )
-    limit: Optional[str] = Field(
-        None,
-        title="limit",
-        description="""An element to limit the duration (uses ISO 8601) this activity is allowed to be completed by once activity is available.""",
-    )
-    maxRetakes: Optional[Decimal] = Field(
-        None,
-        title="maxRetakes",
-        description="""Defines number of times the item is allowed to be redone.""",
-    )
-    prefLabel: Optional[Dict[str, str]] = Field(
-        default_factory=dict,
-        title="preferred label",
-        description="""The preferred label.""",
-    )
-    randomMaxDelay: Optional[str] = Field(
-        None,
-        title="randomMaxDelay",
-        description="""Present activity/item within some random offset of activity available time up to the maximum specified by this ISO 8601 duration""",
-    )
-    schedule: Optional[str] = Field(
-        None,
-        title="Schedule",
-        description="""An element to set make activity available/repeat info using ISO 8601 repeating interval format.""",
-    )
-    valueRequired: Optional[bool] = Field(None)
-    variableName: Optional[str] = Field(
-        None,
-        title="variableName",
-        description="""The name used to represent an item.""",
-    )
-    ui: Optional[UI] = Field(
-        None,
-        title="UI",
-        description="""An element to control UI specifications. Originally @nest in jsonld, but using a class in the model.""",
-    )
-
-
 class Agent(ConfiguredBaseModel):
-    None
-
-
-class Choice(ConfiguredBaseModel):
-    """
-    An object to describe a response option.
-    """
-
-    name: Optional[Dict[str, str]] = Field(default_factory=dict)
-    image: Optional[Union[ImageObject, str]] = Field(
-        None,
-        title="image",
-        description="""An image of the item. This can be a <a class=\"localLink\" href=\"http://schema.org/URL\">URL</a> or a fully described <a class=\"localLink\" href=\"http://schema.org/ImageObject\">ImageObject</a>.""",
-    )
-    value: Optional[
-        Union[Decimal, Dict[str, str], MissingType, StructuredValue, bool, str]
-    ] = Field(
-        None,
-        title="value",
-        description="""The value for each option in choices or in additionalNotesObj""",
-    )
-
-
-class ComputeSpecification(ConfiguredBaseModel):
-    """
-    An object to define computations in an activity or protocol.
-    """
-
-    jsExpression: Optional[str] = Field(
-        None,
-        title="JavaScript Expression",
-        description="""A JavaScript expression for computations. A JavaScript expression to compute a score from other variables.""",
-    )
-    variableName: Optional[str] = Field(
-        None,
-        title="variableName",
-        description="""The name used to represent an item.""",
-    )
+    pass
 
 
 class CreativeWork(ConfiguredBaseModel):
-    id: Optional[str] = Field(None)
-    category: Optional[str] = Field(None)
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
 
 
 class Activity(CreativeWork):
@@ -239,8 +118,135 @@ class Activity(CreativeWork):
         description="""An element to control UI specifications. Originally @nest in jsonld, but using a class in the model.""",
     )
     version: Optional[str] = Field(None)
-    id: Optional[str] = Field(None)
-    category: Optional[str] = Field(None)
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
+
+
+class AdditionalNoteObj(CreativeWork):
+    """
+    A set of objects to define notes in a Item. For example, most Redcap and NDA data dictionaries have notes for each item which needs to be captured in reproschema
+    """
+
+    column: Optional[str] = Field(
+        None,
+        title="column",
+        description="""An element to define the column name where the note was taken from.""",
+    )
+    source: Optional[str] = Field(
+        None,
+        title="source",
+        description="""An element to define the source (eg. RedCap, NDA) where the note was taken from.""",
+    )
+    value: Optional[
+        Union[Decimal, Dict[str, str], MissingType, StructuredValue, bool, str]
+    ] = Field(
+        None,
+        title="value",
+        description="""The value for each option in choices or in additionalNotesObj""",
+    )
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
+
+
+class AdditionalProperty(CreativeWork):
+    """
+    An object to describe the various properties added to assessments and Items.
+    """
+
+    allow: Optional[List[AllowedType]] = Field(
+        default_factory=list,
+        title="allow",
+        description="""An array of items indicating properties allowed on an activity or protocol.""",
+    )
+    isAbout: Optional[Union[Activity, Item, str]] = Field(
+        None,
+        title="isAbout",
+        description="""A pointer to the node describing the item.""",
+    )
+    isVis: Optional[Union[bool, str]] = Field(
+        None,
+        title="visibility",
+        description="""An element to describe (by boolean or conditional statement) visibility conditions of items in an assessment.""",
+    )
+    limit: Optional[str] = Field(
+        None,
+        title="limit",
+        description="""An element to limit the duration (uses ISO 8601) this activity is allowed to be completed by once activity is available.""",
+    )
+    maxRetakes: Optional[Decimal] = Field(
+        None,
+        title="maxRetakes",
+        description="""Defines number of times the item is allowed to be redone.""",
+    )
+    prefLabel: Optional[Dict[str, str]] = Field(
+        default_factory=dict,
+        title="preferred label",
+        description="""The preferred label.""",
+    )
+    randomMaxDelay: Optional[str] = Field(
+        None,
+        title="randomMaxDelay",
+        description="""Present activity/item within some random offset of activity available time up to the maximum specified by this ISO 8601 duration""",
+    )
+    schedule: Optional[str] = Field(
+        None,
+        title="Schedule",
+        description="""An element to set make activity available/repeat info using ISO 8601 repeating interval format.""",
+    )
+    valueRequired: Optional[bool] = Field(None)
+    variableName: Optional[str] = Field(
+        None,
+        title="variableName",
+        description="""The name used to represent an item.""",
+    )
+    ui: Optional[UI] = Field(
+        None,
+        title="UI",
+        description="""An element to control UI specifications. Originally @nest in jsonld, but using a class in the model.""",
+    )
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
+
+
+class Choice(CreativeWork):
+    """
+    An object to describe a response option.
+    """
+
+    name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    image: Optional[Union[ImageObject, str]] = Field(
+        None,
+        title="image",
+        description="""An image of the item. This can be a <a class=\"localLink\" href=\"http://schema.org/URL\">URL</a> or a fully described <a class=\"localLink\" href=\"http://schema.org/ImageObject\">ImageObject</a>.""",
+    )
+    value: Optional[
+        Union[Decimal, Dict[str, str], MissingType, StructuredValue, bool, str]
+    ] = Field(
+        None,
+        title="value",
+        description="""The value for each option in choices or in additionalNotesObj""",
+    )
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
+
+
+class ComputeSpecification(CreativeWork):
+    """
+    An object to define computations in an activity or protocol.
+    """
+
+    jsExpression: Optional[str] = Field(
+        None,
+        title="JavaScript Expression",
+        description="""A JavaScript expression for computations. A JavaScript expression to compute a score from other variables.""",
+    )
+    variableName: Optional[str] = Field(
+        None,
+        title="variableName",
+        description="""The name used to represent an item.""",
+    )
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
 
 
 class Item(CreativeWork):
@@ -303,17 +309,18 @@ class Item(CreativeWork):
     )
     version: Optional[str] = Field(None)
     video: Optional[VideoObject] = Field(None)
-    id: Optional[str] = Field(None)
-    category: Optional[str] = Field(None)
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
 
 
-class LandingPage(ConfiguredBaseModel):
+class LandingPage(CreativeWork):
     """
     An object to define the landing page of a protocol.
     """
 
     inLanguage: Optional[str] = Field(None)
-    id: Optional[str] = Field(None)
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
 
 
 class MediaObject(CreativeWork):
@@ -323,25 +330,25 @@ class MediaObject(CreativeWork):
 
     contentUrl: str = Field(...)
     inLanguage: Optional[str] = Field(None)
-    id: Optional[str] = Field(None)
-    category: Optional[str] = Field(None)
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
 
 
 class AudioObject(MediaObject):
     contentUrl: str = Field(...)
     inLanguage: Optional[str] = Field(None)
-    id: Optional[str] = Field(None)
-    category: Optional[str] = Field(None)
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
 
 
 class ImageObject(MediaObject):
     contentUrl: str = Field(...)
     inLanguage: Optional[str] = Field(None)
-    id: Optional[str] = Field(None)
-    category: Optional[str] = Field(None)
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
 
 
-class MessageSpecification(ConfiguredBaseModel):
+class MessageSpecification(CreativeWork):
     """
     An object to define messages in an activity or protocol.
     """
@@ -356,9 +363,11 @@ class MessageSpecification(ConfiguredBaseModel):
         title="Message",
         description="""The message to be conditionally displayed for an item.""",
     )
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
 
 
-class OverrideProperty(ConfiguredBaseModel):
+class OverrideProperty(CreativeWork):
     """
     An object to override the various properties added to assessments and Items.
     """
@@ -404,6 +413,8 @@ class OverrideProperty(ConfiguredBaseModel):
         title="variableName",
         description="""The name used to represent an item.""",
     )
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
 
 
 class Participant(Agent):
@@ -411,6 +422,7 @@ class Participant(Agent):
     An Agent describing characteristics associated with a participant.
     """
 
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
     subject_id: Optional[str] = Field(None)
 
 
@@ -463,8 +475,8 @@ class Protocol(CreativeWork):
         description="""An element to control UI specifications. Originally @nest in jsonld, but using a class in the model.""",
     )
     version: Optional[str] = Field(None)
-    id: Optional[str] = Field(None)
-    category: Optional[str] = Field(None)
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
 
 
 class Response(CreativeWork):
@@ -485,8 +497,8 @@ class Response(CreativeWork):
         description="""The value for each option in choices or in additionalNotesObj""",
     )
     wasAttributedTo: Optional[Participant] = Field(None)
-    id: Optional[str] = Field(None)
-    category: Optional[str] = Field(None)
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
 
 
 class ResponseActivity(CreativeWork):
@@ -500,8 +512,8 @@ class ResponseActivity(CreativeWork):
     startedAtTime: Optional[datetime] = Field(None)
     used: Optional[List[str]] = Field(default_factory=list)
     wasAssociatedWith: Optional[SoftwareAgent] = Field(None)
-    id: Optional[str] = Field(None)
-    category: Optional[str] = Field(None)
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
 
 
 class ResponseOption(CreativeWork):
@@ -536,26 +548,24 @@ class ResponseOption(CreativeWork):
         title="The type of the response",
         description="""The type of the response of an item. For example, string, integer, etc.""",
     )
-    id: Optional[str] = Field(None)
-    category: Optional[str] = Field(None)
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
 
 
-class SoftwareAgent(ConfiguredBaseModel):
+class SoftwareAgent(CreativeWork):
     """
     Captures information about some action that took place. It also links to information (entities) that were used during the activity
     """
 
     version: Optional[str] = Field(None)
     url: Optional[str] = Field(None)
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
 
 
 class StructuredValue(CreativeWork):
-    id: Optional[str] = Field(None)
-    category: Optional[str] = Field(None)
-
-
-class Thing(ConfiguredBaseModel):
-    None
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
 
 
 class UI(ConfiguredBaseModel):
@@ -596,7 +606,7 @@ class UI(ConfiguredBaseModel):
     readonlyValue: Optional[bool] = Field(None)
 
 
-class UnitOption(ConfiguredBaseModel):
+class UnitOption(CreativeWork):
     """
     An object to represent a human displayable name alongside the more formal value for units.
     """
@@ -611,24 +621,26 @@ class UnitOption(ConfiguredBaseModel):
         title="value",
         description="""The value for each option in choices or in additionalNotesObj""",
     )
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
 
 
 class VideoObject(MediaObject):
     contentUrl: str = Field(...)
     inLanguage: Optional[str] = Field(None)
-    id: Optional[str] = Field(None)
-    category: Optional[str] = Field(None)
+    id: Optional[str] = Field(None, description="""A unique identifier for an item.""")
+    category: Optional[str] = Field(None, description="""A specific type of class.""")
 
 
 # Model rebuild
 # see https://pydantic-docs.helpmanual.io/usage/models/#rebuilding-a-model
-AdditionalNoteObj.model_rebuild()
-AdditionalProperty.model_rebuild()
 Agent.model_rebuild()
-Choice.model_rebuild()
-ComputeSpecification.model_rebuild()
 CreativeWork.model_rebuild()
 Activity.model_rebuild()
+AdditionalNoteObj.model_rebuild()
+AdditionalProperty.model_rebuild()
+Choice.model_rebuild()
+ComputeSpecification.model_rebuild()
 Item.model_rebuild()
 LandingPage.model_rebuild()
 MediaObject.model_rebuild()
@@ -643,7 +655,6 @@ ResponseActivity.model_rebuild()
 ResponseOption.model_rebuild()
 SoftwareAgent.model_rebuild()
 StructuredValue.model_rebuild()
-Thing.model_rebuild()
 UI.model_rebuild()
 UnitOption.model_rebuild()
 VideoObject.model_rebuild()

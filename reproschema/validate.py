@@ -25,6 +25,9 @@ def validate_dir(directory, started=False, http_kwargs={}):
         if any document is non-conformant.
 
     """
+    if not os.path.isdir(directory):
+        raise Exception(f"{directory} is not a directory")
+    print(f"Validating directory {directory}")
     stop = None
     if not started:
         stop, port = start_server(**http_kwargs)
@@ -39,6 +42,7 @@ def validate_dir(directory, started=False, http_kwargs={}):
                 data = load_file(full_file_name, started=True, http_kwargs=http_kwargs)
                 if len(data) == 0:
                     raise ValueError("Empty data graph")
+                print(f"Validating {full_file_name}")
                 conforms, vtext = validate_data(data)
             except (ValueError,):
                 if stop is not None:

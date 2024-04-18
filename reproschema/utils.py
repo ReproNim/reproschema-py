@@ -93,7 +93,7 @@ def _lang_fix(data_el):
 
 def _image_fix(data_el):
     if isinstance(data_el, dict):
-        if "@id" not in data_el:
+        if "@id" not in data_el and "@value" in data_el:
             data_el["@id"] = data_el.pop("@value")
             data_el.pop("@language", None)
     elif isinstance(data_el, list) and len(data_el) == 1:
