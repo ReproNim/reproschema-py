@@ -14,14 +14,12 @@ YAML_TEST_FILE = os.path.join(
     os.path.dirname(__file__), "test_redcap2rs_data", YAML_FILE_NAME
 )
 
-def test_redcap2reproschema_success(tmpdir):
+def test_redcap2reproschema(tmpdir):
     runner = CliRunner()
 
-    # Define the paths to the CSV and YAML files in the temporary directory
     temp_csv_file = tmpdir.join(CSV_FILE_NAME)
     temp_yaml_file = tmpdir.join(YAML_FILE_NAME)
 
-    # Copy the test files to the temporary directory
     shutil.copy(CSV_TEST_FILE, str(temp_csv_file))  # Convert to string
     shutil.copy(YAML_TEST_FILE, str(temp_yaml_file))  # Convert to string
 
@@ -32,12 +30,9 @@ def test_redcap2reproschema_success(tmpdir):
             protocol = yaml.safe_load(file)
         protocol_name = protocol.get("protocol_name", "").replace(" ", "_")
 
-        # Run the command with the path arguments pointing to the temp directory files
         result = runner.invoke(
             main, ["redcap2reproschema", str(temp_csv_file), str(temp_yaml_file)]  # Convert to string
         )
 
-        # Assertions
         assert result.exit_code == 0, f"The command failed to execute successfully: {result.output}"
         assert os.path.isdir(protocol_name), f"Expected output directory '{protocol_name}' does not exist"
-        print("Command output:", result.output)

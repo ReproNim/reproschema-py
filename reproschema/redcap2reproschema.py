@@ -16,6 +16,7 @@ def clean_header(header):
         cleaned_header[cleaned_key] = v
     return cleaned_header
 
+
 def normalize_condition(condition_str):
     # Regular expressions for various pattern replacements
     re_parentheses = re.compile(r"\(([0-9]*)\)")
@@ -41,6 +42,7 @@ def normalize_condition(condition_str):
     condition_str = re_double_quotes.sub("'", condition_str)  # Replace double quotes with single quotes
 
     return condition_str.strip() 
+
 
 def process_visibility(data):
     condition = data.get("Branching Logic (Show field only if...)")
@@ -92,7 +94,6 @@ def parse_field_type_and_value(field, input_type_map):
         value_type = "xsd:integer"
 
     return input_type, value_type
-
 
 
 def process_choices(field_type, choices_str):

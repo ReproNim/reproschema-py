@@ -164,7 +164,6 @@ def get_csv_data(dir_path):
                             if item_json:
                                 row_data = process_item(item_json, activity_path.stem)
                                 csv_data.append(row_data)
-                                print(f"Processed item {item_path}")
 
                 # Break after finding the first _schema file
                 break
