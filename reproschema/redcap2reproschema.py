@@ -8,11 +8,12 @@ from bs4 import BeautifulSoup
 
 matrix_group_count = {}
 
+
 def clean_header(header):
     cleaned_header = {}
     for k, v in header.items():
         # Strip BOM, whitespace, and enclosing quotation marks if present
-        cleaned_key = k.lstrip('\ufeff').strip().strip('"')
+        cleaned_key = k.lstrip("\ufeff").strip().strip('"')
         cleaned_header[cleaned_key] = v
     return cleaned_header
 
@@ -24,7 +25,7 @@ def normalize_condition(condition_str):
     re_brackets = re.compile(r"\[([^\]]*)\]")
     re_extra_spaces = re.compile(r"\s+")
     re_double_quotes = re.compile(r'"')
-    re_or = re.compile(r'\bor\b')  # Match 'or' as whole word
+    re_or = re.compile(r"\bor\b")  # Match 'or' as whole word
 
     # Apply regex replacements
     condition_str = re_parentheses.sub(r"___\1", condition_str)
@@ -32,16 +33,20 @@ def normalize_condition(condition_str):
     condition_str = re_brackets.sub(r" \1 ", condition_str)
 
     # Replace 'or' with '||', ensuring not to replace '||'
-    condition_str = re_or.sub('||', condition_str)
+    condition_str = re_or.sub("||", condition_str)
 
     # Replace 'and' with '&&'
     condition_str = condition_str.replace(" and ", " && ")
 
     # Trim extra spaces and replace double quotes with single quotes
-    condition_str = re_extra_spaces.sub(' ', condition_str).strip()  # Reduce multiple spaces to a single space
-    condition_str = re_double_quotes.sub("'", condition_str)  # Replace double quotes with single quotes
+    condition_str = re_extra_spaces.sub(
+        " ", condition_str
+    ).strip()  # Reduce multiple spaces to a single space
+    condition_str = re_double_quotes.sub(
+        "'", condition_str
+    )  # Replace double quotes with single quotes
 
-    return condition_str.strip() 
+    return condition_str.strip()
 
 
 def process_visibility(data):
@@ -116,7 +121,7 @@ def process_choices(field_type, choices_str):
             value = parts[0]
 
         choice_obj = {"name": " ".join(parts[1:]), "value": value}
-        # remove image for now 
+        # remove image for now
         # if len(parts) == 3:
         #     # Handle image url
         #     choice_obj["image"] = f"{parts[2]}.png"
@@ -204,10 +209,7 @@ def process_row(
         }
 
     for key, value in field.items():
-        if (
-            schema_map.get(key) in ["question", "description", "preamble"]
-            and value
-        ):
+        if schema_map.get(key) in ["question", "description", "preamble"] and value:
             rowData.update({schema_map[key]: parse_html(value)})
 
         elif schema_map.get(key) == "allow" and value:
@@ -349,7 +351,9 @@ def create_protocol_schema(
             "variableName": f"{activity}_schema",
             # Assuming activity name as prefLabel, update as needed
             "prefLabel": activity.replace("_", " ").title(),
-            "isVis": protocol_visibility_obj.get(activity, True),  # Default to True if not specified
+            "isVis": protocol_visibility_obj.get(
+                activity, True
+            ),  # Default to True if not specified
         }
         protocol_schema["ui"]["addProperties"].append(add_property)
         # Add the full path to the order list

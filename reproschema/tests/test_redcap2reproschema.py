@@ -3,7 +3,7 @@ import shutil
 import pytest
 import yaml
 from click.testing import CliRunner
-from ..cli import main 
+from ..cli import main
 
 CSV_FILE_NAME = "redcap_dict.csv"
 YAML_FILE_NAME = "redcap2rs.yaml"
@@ -13,6 +13,7 @@ CSV_TEST_FILE = os.path.join(
 YAML_TEST_FILE = os.path.join(
     os.path.dirname(__file__), "test_redcap2rs_data", YAML_FILE_NAME
 )
+
 
 def test_redcap2reproschema(tmpdir):
     runner = CliRunner()
@@ -26,13 +27,22 @@ def test_redcap2reproschema(tmpdir):
     # Change the current working directory to tmpdir
     with tmpdir.as_cwd():
         # Read YAML to find the expected output directory name
-        with open(str(temp_yaml_file), 'r') as file:  # Convert to string
+        with open(str(temp_yaml_file), "r") as file:  # Convert to string
             protocol = yaml.safe_load(file)
         protocol_name = protocol.get("protocol_name", "").replace(" ", "_")
 
         result = runner.invoke(
-            main, ["redcap2reproschema", str(temp_csv_file), str(temp_yaml_file)]  # Convert to string
+            main,
+            [
+                "redcap2reproschema",
+                str(temp_csv_file),
+                str(temp_yaml_file),
+            ],  # Convert to string
         )
 
-        assert result.exit_code == 0, f"The command failed to execute successfully: {result.output}"
-        assert os.path.isdir(protocol_name), f"Expected output directory '{protocol_name}' does not exist"
+        assert (
+            result.exit_code == 0
+        ), f"The command failed to execute successfully: {result.output}"
+        assert os.path.isdir(
+            protocol_name
+        ), f"Expected output directory '{protocol_name}' does not exist"

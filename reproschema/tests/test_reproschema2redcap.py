@@ -6,6 +6,7 @@ from shutil import copytree, rmtree
 from pathlib import Path
 import csv
 
+
 def test_reproschema2redcap(tmpdir):
     runner = CliRunner()
 
@@ -16,7 +17,7 @@ def test_reproschema2redcap(tmpdir):
         )
         copytree(original_data_dir, "input_data")
 
-        input_path = Path("input_data") 
+        input_path = Path("input_data")
         output_csv_path = os.path.join(tmpdir, "output.csv")
 
         result = runner.invoke(
@@ -33,7 +34,9 @@ def test_reproschema2redcap(tmpdir):
             reader = csv.reader(csv_file)
             csv_contents = list(reader)
 
-        assert len(csv_contents) > 1  # More than one row indicates content beyond headers
+        assert (
+            len(csv_contents) > 1
+        )  # More than one row indicates content beyond headers
 
         # Clean up temporary directory after use (optional)
         # rmtree(tmpdir)
