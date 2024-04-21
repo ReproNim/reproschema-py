@@ -1,0 +1,38 @@
+{
+    "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/efb74e155c09e13aa009ea04609ba4f1152fcbc6/contexts/reproschema_new",
+    "@type": "reproschema:Item",
+    "@id": "apsi_agressive",
+    "prefLabel": "apsi_agressive",
+    "description": "apsi_agressive of autism_parenting_stress_index_apsi",
+    "ui": {
+        "inputType": "radio"
+    },
+    "responseOptions": {
+        "valueType": "xsd:integer",
+        "choices": [
+            {
+                "name": "0 - Not stressful ",
+                "value": 0
+            },
+            {
+                "name": "1 - Sometimes creates stress ",
+                "value": 1
+            },
+            {
+                "name": "2 - Often creates stress ",
+                "value": 2
+            },
+            {
+                "name": "3 - Very stressful on a daily basis ",
+                "value": 3
+            },
+            {
+                "name": "5 - So stressful sometimes we feel we can't cope",
+                "value": 5
+            }
+        ]
+    },
+    "question": {
+        "en": "Aggressive behavior (siblings, peers)"
+    }
+}

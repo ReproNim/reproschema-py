@@ -8,7 +8,6 @@ from bs4 import BeautifulSoup
 
 matrix_group_count = {}
 
-
 def clean_header(header):
     cleaned_header = {}
     for k, v in header.items():
@@ -16,7 +15,6 @@ def clean_header(header):
         cleaned_key = k.lstrip('\ufeff').strip().strip('"')
         cleaned_header[cleaned_key] = v
     return cleaned_header
-
 
 def normalize_condition(condition_str):
     # Regular expressions for various pattern replacements
