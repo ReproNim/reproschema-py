@@ -45,3 +45,6 @@ except Exception as exc:
     lgr.warning(
         "Failed to check for a more recent version available with etelemetry: %s", exc
     )
+
+from . import _version
+__version__ = _version.get_versions()['version']
