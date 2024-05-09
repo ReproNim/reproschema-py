@@ -76,6 +76,76 @@ class Thing(ConfiguredBaseModel):
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
+
+
+class Activity(Thing):
+    """
+    An assessment in a protocol.
+    """
+
+    about: Optional[str] = Field(
+        None, description="""The subject matter of the Field."""
+    )
+    altLabel: Optional[Dict[str, str]] = Field(
+        default_factory=dict,
+        title="alternate label",
+        description="""The alternate label.""",
+    )
+    associatedMedia: Optional[str] = Field(
+        None,
+        title="associatedMedia",
+        description="""A media object that encodes this creative work. This property is a synonym for encoding.""",
+    )
+    citation: Optional[Dict[str, str]] = Field(default_factory=dict)
+    compute: Optional[List[ComputeSpecification]] = Field(
+        default_factory=list,
+        title="computation",
+        description="""An array of objects indicating computations in an activity or protocol and maps it to the corresponding Item. scoring logic is a subset of all computations that could be performed and not all computations will be scoring. For example, one may want to do conversion from one unit to another.""",
+    )
+    cronTable: Optional[str] = Field(
+        None, title="cronTable", description="""TODO not described in reproschema"""
+    )
+    description: Optional[Dict[str, str]] = Field(default_factory=dict)
+    image: Optional[Union[ImageObject, str]] = Field(
+        None,
+        title="image",
+        description="""An image of the item. This can be a <a class=\"localLink\" href=\"http://schema.org/URL\">URL</a> or a fully described <a class=\"localLink\" href=\"http://schema.org/ImageObject\">ImageObject</a>.""",
+    )
+    messages: Optional[List[MessageSpecification]] = Field(
+        default_factory=list,
+        title="messages",
+        description="""An array of objects to define conditional messages in an activity or protocol.""",
+    )
+    preamble: Optional[Dict[str, str]] = Field(
+        default_factory=dict,
+        title="Preamble",
+        description="""The preamble for an assessment""",
+    )
+    prefLabel: Optional[Dict[str, str]] = Field(
+        default_factory=dict,
+        title="preferred label",
+        description="""The preferred label.""",
+    )
+    schemaVersion: Optional[str] = Field(None)
+    ui: Optional[UI] = Field(
+        None,
+        title="UI",
+        description="""An element to control UI specifications. Originally @nest in jsonld, but using a class in the model.""",
+    )
+    version: Optional[str] = Field(None)
+    id: Optional[str] = Field(
+        None,
+        description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
+    )
+    name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
 
 
 class AdditionalNoteObj(Thing):
@@ -105,6 +175,10 @@ class AdditionalNoteObj(Thing):
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
 
 
 class AdditionalProperty(Thing):
@@ -168,6 +242,10 @@ class AdditionalProperty(Thing):
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
 
 
 class Choice(Thing):
@@ -192,89 +270,13 @@ class Choice(Thing):
         None,
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
-
-
-class CreativeWork(Thing):
     category: Optional[str] = Field(
         None,
         description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
     )
-    contentUrl: Optional[str] = Field(None)
-    id: Optional[str] = Field(
-        None,
-        description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
-    )
-    name: Optional[Dict[str, str]] = Field(default_factory=dict)
 
 
-class Activity(CreativeWork):
-    """
-    An assessment in a protocol.
-    """
-
-    about: Optional[str] = Field(
-        None, description="""The subject matter of the Field."""
-    )
-    altLabel: Optional[Dict[str, str]] = Field(
-        default_factory=dict,
-        title="alternate label",
-        description="""The alternate label.""",
-    )
-    associatedMedia: Optional[str] = Field(
-        None,
-        title="associatedMedia",
-        description="""A media object that encodes this CreativeWork. This property is a synonym for encoding.""",
-    )
-    citation: Optional[Dict[str, str]] = Field(default_factory=dict)
-    compute: Optional[List[ComputeSpecification]] = Field(
-        default_factory=list,
-        title="computation",
-        description="""An array of objects indicating computations in an activity or protocol and maps it to the corresponding Item. scoring logic is a subset of all computations that could be performed and not all computations will be scoring. For example, one may want to do conversion from one unit to another.""",
-    )
-    cronTable: Optional[str] = Field(
-        None, title="cronTable", description="""TODO not described in reproschema"""
-    )
-    description: Optional[Dict[str, str]] = Field(default_factory=dict)
-    image: Optional[Union[ImageObject, str]] = Field(
-        None,
-        title="image",
-        description="""An image of the item. This can be a <a class=\"localLink\" href=\"http://schema.org/URL\">URL</a> or a fully described <a class=\"localLink\" href=\"http://schema.org/ImageObject\">ImageObject</a>.""",
-    )
-    messages: Optional[List[MessageSpecification]] = Field(
-        default_factory=list,
-        title="messages",
-        description="""An array of objects to define conditional messages in an activity or protocol.""",
-    )
-    preamble: Optional[Dict[str, str]] = Field(
-        default_factory=dict,
-        title="Preamble",
-        description="""The preamble for an assessment""",
-    )
-    prefLabel: Optional[Dict[str, str]] = Field(
-        default_factory=dict,
-        title="preferred label",
-        description="""The preferred label.""",
-    )
-    schemaVersion: Optional[str] = Field(None)
-    ui: Optional[UI] = Field(
-        None,
-        title="UI",
-        description="""An element to control UI specifications. Originally @nest in jsonld, but using a class in the model.""",
-    )
-    version: Optional[str] = Field(None)
-    category: Optional[str] = Field(
-        None,
-        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
-    )
-    contentUrl: Optional[str] = Field(None)
-    id: Optional[str] = Field(
-        None,
-        description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
-    )
-    name: Optional[Dict[str, str]] = Field(default_factory=dict)
-
-
-class ComputeSpecification(CreativeWork):
+class ComputeSpecification(Thing):
     """
     An object to define computations in an activity or protocol.
     """
@@ -289,19 +291,18 @@ class ComputeSpecification(CreativeWork):
         title="variableName",
         description="""The name used to represent an item.""",
     )
-    category: Optional[str] = Field(
-        None,
-        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
-    )
-    contentUrl: Optional[str] = Field(None)
     id: Optional[str] = Field(
         None,
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
 
 
-class Item(CreativeWork):
+class Item(Thing):
     """
     An item in an assessment.
     """
@@ -322,7 +323,7 @@ class Item(CreativeWork):
     associatedMedia: Optional[str] = Field(
         None,
         title="associatedMedia",
-        description="""A media object that encodes this CreativeWork. This property is a synonym for encoding.""",
+        description="""A media object that encodes this creative work. This property is a synonym for encoding.""",
     )
     audio: Optional[Union[AudioObject, str]] = Field(
         None, title="audio", description="""TODO"""
@@ -332,9 +333,6 @@ class Item(CreativeWork):
         None,
         title="image",
         description="""An image of the item. This can be a <a class=\"localLink\" href=\"http://schema.org/URL\">URL</a> or a fully described <a class=\"localLink\" href=\"http://schema.org/ImageObject\">ImageObject</a>.""",
-    )
-    imageUrl: Optional[str] = Field(
-        None, title="imageUrl", description="""An image url."""
     )
     isPartOf: Optional[Activity] = Field(None)
     preamble: Optional[Dict[str, str]] = Field(
@@ -360,84 +358,82 @@ class Item(CreativeWork):
         description="""An element to control UI specifications. Originally @nest in jsonld, but using a class in the model.""",
     )
     version: Optional[str] = Field(None)
-    video: Optional[VideoObject] = Field(None)
-    category: Optional[str] = Field(
-        None,
-        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
-    )
-    contentUrl: Optional[str] = Field(None)
+    video: Optional[Union[VideoObject, str]] = Field(None)
     id: Optional[str] = Field(
         None,
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
 
 
-class LandingPage(CreativeWork):
+class LandingPage(Thing):
     """
     An object to define the landing page of a protocol.
     """
 
     inLanguage: Optional[str] = Field(None)
-    category: Optional[str] = Field(
-        None,
-        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
-    )
-    contentUrl: Optional[str] = Field(None)
     id: Optional[str] = Field(
         None,
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
 
 
-class MediaObject(CreativeWork):
+class MediaObject(Thing):
     """
     Add description
     """
 
     inLanguage: Optional[str] = Field(None)
-    category: Optional[str] = Field(
-        None,
-        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
-    )
     contentUrl: str = Field(...)
     id: Optional[str] = Field(
         None,
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
 
 
 class AudioObject(MediaObject):
     inLanguage: Optional[str] = Field(None)
-    category: Optional[str] = Field(
-        None,
-        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
-    )
     contentUrl: str = Field(...)
     id: Optional[str] = Field(
         None,
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
 
 
 class ImageObject(MediaObject):
     inLanguage: Optional[str] = Field(None)
-    category: Optional[str] = Field(
-        None,
-        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
-    )
     contentUrl: str = Field(...)
     id: Optional[str] = Field(
         None,
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
 
 
-class MessageSpecification(CreativeWork):
+class MessageSpecification(Thing):
     """
     An object to define messages in an activity or protocol.
     """
@@ -452,16 +448,15 @@ class MessageSpecification(CreativeWork):
         title="Message",
         description="""The message to be conditionally displayed for an item.""",
     )
-    category: Optional[str] = Field(
-        None,
-        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
-    )
-    contentUrl: Optional[str] = Field(None)
     id: Optional[str] = Field(
         None,
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
 
 
 class OverrideProperty(Thing):
@@ -515,9 +510,13 @@ class OverrideProperty(Thing):
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
 
 
-class Protocol(CreativeWork):
+class Protocol(Thing):
     """
     A representation of a study which comprises one or more assessments.
     """
@@ -533,7 +532,7 @@ class Protocol(CreativeWork):
     associatedMedia: Optional[str] = Field(
         None,
         title="associatedMedia",
-        description="""A media object that encodes this CreativeWork. This property is a synonym for encoding.""",
+        description="""A media object that encodes this creative work. This property is a synonym for encoding.""",
     )
     compute: Optional[List[ComputeSpecification]] = Field(
         default_factory=list,
@@ -566,19 +565,18 @@ class Protocol(CreativeWork):
         description="""An element to control UI specifications. Originally @nest in jsonld, but using a class in the model.""",
     )
     version: Optional[str] = Field(None)
-    category: Optional[str] = Field(
-        None,
-        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
-    )
-    contentUrl: Optional[str] = Field(None)
     id: Optional[str] = Field(
         None,
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
 
 
-class Response(CreativeWork):
+class Response(Thing):
     """
     Describes the response of an item.
     """
@@ -596,19 +594,18 @@ class Response(CreativeWork):
         description="""The value for each option in choices or in additionalNotesObj""",
     )
     wasAttributedTo: Optional[Participant] = Field(None)
-    category: Optional[str] = Field(
-        None,
-        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
-    )
-    contentUrl: Optional[str] = Field(None)
     id: Optional[str] = Field(
         None,
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
 
 
-class ResponseActivity(CreativeWork):
+class ResponseActivity(Thing):
     """
     Captures information about some action that took place. It also links to information (entities) that were used during the activity
     """
@@ -619,19 +616,18 @@ class ResponseActivity(CreativeWork):
     startedAtTime: Optional[datetime] = Field(None)
     used: Optional[List[str]] = Field(default_factory=list)
     wasAssociatedWith: Optional[SoftwareAgent] = Field(None)
-    category: Optional[str] = Field(
-        None,
-        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
-    )
-    contentUrl: Optional[str] = Field(None)
     id: Optional[str] = Field(
         None,
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
 
 
-class ResponseOption(CreativeWork):
+class ResponseOption(Thing):
     """
     An element (object or by URL)to describe the properties of response of the Item.
     """
@@ -663,16 +659,15 @@ class ResponseOption(CreativeWork):
         title="The type of the response",
         description="""The type of the response of an item. For example, string, integer, etc.""",
     )
-    category: Optional[str] = Field(
-        None,
-        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
-    )
-    contentUrl: Optional[str] = Field(None)
     id: Optional[str] = Field(
         None,
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
 
 
 class SoftwareAgent(Thing):
@@ -687,6 +682,10 @@ class SoftwareAgent(Thing):
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
 
 
 class StructuredValue(Thing):
@@ -695,6 +694,10 @@ class StructuredValue(Thing):
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
 
 
 class UI(ConfiguredBaseModel):
@@ -755,20 +758,24 @@ class UnitOption(Thing):
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
-
-
-class VideoObject(MediaObject):
-    inLanguage: Optional[str] = Field(None)
     category: Optional[str] = Field(
         None,
         description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
     )
+
+
+class VideoObject(MediaObject):
+    inLanguage: Optional[str] = Field(None)
     contentUrl: str = Field(...)
     id: Optional[str] = Field(
         None,
         description="""A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.""",
     )
     name: Optional[Dict[str, str]] = Field(default_factory=dict)
+    category: Optional[str] = Field(
+        None,
+        description="""Name of the high level ontology class in which this entity is categorized. Corresponds to the label for the biolink entity type class. In an RDF database it should be a model class URI. This field is multi-valued.""",
+    )
 
 
 # Model rebuild
@@ -776,11 +783,10 @@ class VideoObject(MediaObject):
 Agent.model_rebuild()
 Participant.model_rebuild()
 Thing.model_rebuild()
+Activity.model_rebuild()
 AdditionalNoteObj.model_rebuild()
 AdditionalProperty.model_rebuild()
 Choice.model_rebuild()
-CreativeWork.model_rebuild()
-Activity.model_rebuild()
 ComputeSpecification.model_rebuild()
 Item.model_rebuild()
 LandingPage.model_rebuild()
