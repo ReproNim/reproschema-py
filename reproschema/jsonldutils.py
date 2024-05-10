@@ -3,43 +3,60 @@ import json
 import os
 from pathlib import Path
 from copy import deepcopy
+from urllib.parse import urlparse
 from .utils import start_server, stop_server, lgr, fixing_old_schema
 from .models import Item, Activity, Protocol, ResponseOption, ResponseActivity, Response
 
 
+def _is_url(path):
+    """
+    Determine whether the given path is a URL.
+    """
+    parsed = urlparse(path)
+    return parsed.scheme in ("http", "https", "ftp", "ftps")
+
+
+def _is_file(path):
+    """
+    Determine whether the given path is a valid file path.
+    """
+    return os.path.isfile(path)
+
+
 def load_file(path_or_url, started=False, http_kwargs={}):
-    try:
+    """Load a file or URL and return the expanded JSON-LD data."""
+    path_or_url = str(path_or_url)
+    if _is_url(path_or_url):
         data = jsonld.expand(path_or_url)
         if len(data) == 1:
-            if "@id" not in data[0]:
+            if "@id" not in data[0] and "id" not in data[0]:
                 data[0]["@id"] = path_or_url
-    except jsonld.JsonLdError as e:
-        if 'only "http" and "https"' in str(e):
-            lgr.debug("Reloading with local server")
-            root = os.path.dirname(path_or_url)
-            if not started:
-                stop, port = start_server(**http_kwargs)
-            else:
-                if "port" not in http_kwargs:
-                    raise KeyError("port key missing in http_kwargs")
-                port = http_kwargs["port"]
-            base_url = f"http://localhost:{port}/"
-            if root:
-                base_url += f"{root}/"
-            with open(path_or_url) as json_file:
-                data = json.load(json_file)
-            try:
-                data = jsonld.expand(data, options={"base": base_url})
-            except:
-                raise
-            finally:
-                if not started:
-                    stop_server(stop)
-            if len(data) == 1:
-                if "@id" not in data[0]:
-                    data[0]["@id"] = base_url + os.path.basename(path_or_url)
+    elif _is_file(path_or_url):
+        lgr.debug("Reloading with local server")
+        root = os.path.dirname(path_or_url)
+        if not started:
+            stop, port = start_server(**http_kwargs)
         else:
+            if "port" not in http_kwargs:
+                raise KeyError("port key missing in http_kwargs")
+            port = http_kwargs["port"]
+        base_url = f"http://localhost:{port}/"
+        if root:
+            base_url += f"{root}/"
+        with open(path_or_url) as json_file:
+            data = json.load(json_file)
+        try:
+            data = jsonld.expand(data, options={"base": base_url})
+        except:
             raise
+        finally:
+            if not started:
+                stop_server(stop)
+        if len(data) == 1:
+            if "@id" not in data[0] and "id" not in data[0]:
+                data[0]["@id"] = base_url + os.path.basename(path_or_url)
+    else:
+        raise Exception(f"{path_or_url} is not a valid URL or file path")
     return data
 
 

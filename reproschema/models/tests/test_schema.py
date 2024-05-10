@@ -1,5 +1,30 @@
 from .. import Protocol, Activity, Item, ResponseOption
+from ..utils import write_obj_jsonld
+from ...utils import start_server, stop_server
+from ...jsonldutils import load_file
+
+from pyld import jsonld
+import json, os
+from pathlib import Path
+
 import pytest
+
+
+@pytest.fixture
+def server_http_kwargs(request):
+    http_kwargs = {}
+    stop, port = start_server()
+    http_kwargs["port"] = port
+
+    olddir = os.getcwd()
+    os.chdir(os.path.dirname(__file__))
+
+    def stoping_server():
+        stop_server(stop)
+        os.chdir(olddir)
+
+    request.addfinalizer(stoping_server)
+    return http_kwargs
 
 
 @pytest.mark.parametrize("model_class", [Protocol, Activity, Item, ResponseOption])
@@ -9,8 +34,10 @@ def test_constructors(model_class):
     assert hasattr(ob, "category")
 
 
-def test_protocol():
-    """check if protocol is created correctly for a simple example"""
+def test_protocol(tmp_path, server_http_kwargs):
+    """check if protocol is created correctly for a simple example
+    and if it can be written to the file as jsonld.
+    """
     protocol_dict = {
         "category": "reproschema:Protocol",
         "id": "protocol1.jsonld",
@@ -27,11 +54,18 @@ def test_protocol():
             }
         ],
     }
-    Protocol(**protocol_dict)
+    protocol_obj = Protocol(**protocol_dict)
+
+    file_path = tmp_path / "protocol1.jsonld"
+    write_obj_jsonld(protocol_obj, file_path)
+    data = load_file(file_path, started=True, http_kwargs=server_http_kwargs)
+    expanded = jsonld.expand(data)
+    assert len(expanded) > 0
 
 
-def test_activity():
-    """check if activity is created correctly for a simple example"""
+def test_activity(tmp_path, server_http_kwargs):
+    """check if activity is created correctly for a simple example
+    and if it can be written to the file as jsonld."""
     activity_dict = {
         "category": "reproschema:Activity",
         "id": "activity1.jsonld",
@@ -51,41 +85,55 @@ def test_activity():
             {"variableName": "activity1_total_score", "jsExpression": "item1 + item2"}
         ],
     }
-    Activity(**activity_dict)
+    activity_obj = Activity(**activity_dict)
+
+    file_path = tmp_path / "activity1.jsonld"
+    write_obj_jsonld(activity_obj, file_path)
+    data = load_file(file_path, started=True, http_kwargs=server_http_kwargs)
+    expanded = jsonld.expand(data)
+    assert len(expanded) > 0
 
 
-def test_item():
-    """check if item is created correctly for a simple example"""
+def test_item(tmp_path, server_http_kwargs):
+    """check if item is created correctly for a simple example"
+    and if it can be written to the file as jsonld."""
 
     item_dict = {
         "category": "reproschema:Field",
         "id": "item1.jsonld",
-        "prefLabel": "item1",
-        "altLabel": "item1_alt",
-        "description": "Q1 of example 1",
+        "prefLabel": {"en": "item1"},
+        "altLabel": {"en": "item1_alt"},
+        "description": {"en": "Q1 of example 1"},
         "schemaVersion": "1.0.0-rc4",
         "version": "0.0.1",
         "audio": {
-            "@type": "AudioObject",
+            "category": "AudioObject",
             "contentUrl": "http://media.freesound.org/sample-file.mp4",
         },
         "image": {
-            "@type": "ImageObject",
+            "category": "ImageObject",
             "contentUrl": "http://example.com/sample-image.jpg",
         },
         "question": {
             "en": "Little interest or pleasure in doing things",
             "es": "Poco interés o placer en hacer cosas",
         },
-        "ui": {"inputType": "radio"},
+        # "ui": {"inputType": "radio"},
         "responseOptions": {
-            "valueType": "xsd:integer",
             "minValue": 0,
             "maxValue": 3,
             "multipleChoice": False,
             "choices": [
-                {"name": {"en": "Not at all", "es": "Para nada"}, "value": 0},
-                {"name": {"en": "Several days", "es": "Varios días"}, "value": "a"},
+                {"name": {"en": "Not at all", "es": "Para nada"}, "value": "a"},
+                {"name": {"en": "Several days", "es": "Varios días"}, "value": "b"},
             ],
         },
     }
+
+    item_obj = Item(**item_dict)
+
+    file_path = tmp_path / "item1.jsonld"
+    write_obj_jsonld(item_obj, file_path)
+    data = load_file(file_path, started=True, http_kwargs=server_http_kwargs)
+    expanded = jsonld.expand(data)
+    assert len(expanded) > 0
