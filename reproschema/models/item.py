@@ -30,7 +30,7 @@ class Item(SchemaBase):
         video: Optional[Union[str, Dict[str, str]]] = None,
         preamble: Optional[str] = None,
         additionalNotesObj: List[Dict[str, Any]] = None,
-        visible: Optional[bool] = True,
+        visible: bool | str = True,
         required: Optional[bool] = False,
         skippable: Optional[bool] = True,
         read_only: Optional[bool] = None,

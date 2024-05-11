@@ -201,10 +201,7 @@ class AdditionalProperty(SchemaUtils):
     )
     #: An element to describe (by boolean or conditional statement)
     # visibility conditions of items in an assessment.
-    isVis: Optional[bool] = field(
-        default=None,
-        validator=optional(instance_of(bool)),
-    )
+    isVis: Optional[Union[str, bool]] = field(default=None, validator=optional(instance_of((bool, str))))
     #: Whether the property must be filled in to complete the action.
     requiredValue: Optional[bool] = field(
         default=None,

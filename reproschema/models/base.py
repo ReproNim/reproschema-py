@@ -261,11 +261,10 @@ class SchemaBase(SchemaUtils):
         default=UI(at_type="reproschema:Field"),
         validator=optional(instance_of(UI)),
     )
-
-    visible: Optional[bool] = field(
+    visible: bool | str | None = field(
         factory=(bool),
         converter=default_if_none(default=True),  # type: ignore
-        validator=optional(instance_of(bool)),
+        validator=optional(instance_of((bool, str))),
     )
     required: Optional[bool] = field(
         factory=(bool),

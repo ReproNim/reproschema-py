@@ -68,6 +68,7 @@ class Protocol(SchemaBase):
         )
         super().set_defaults()
         self.ui.shuffle = False
+        self.ui.update()
         self.update()
 
     def append_activity(self, activity: Activity):
