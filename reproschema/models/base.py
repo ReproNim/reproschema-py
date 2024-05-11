@@ -105,7 +105,6 @@ class Message(SchemaUtils):
 
 @define(kw_only=True)
 class SchemaBase(SchemaUtils):
-
     """
     Schema based attributes: REQUIRED
     """

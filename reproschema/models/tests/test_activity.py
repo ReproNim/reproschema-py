@@ -12,7 +12,6 @@ activity_dir = output_dir("activities")
 
 
 def test_default():
-
     """
     FYI: The default activity does not conform to the schema
     so  `reproschema validate` will complain if you run it on this

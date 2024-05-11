@@ -13,7 +13,6 @@ protocol_dir = output_dir("protocols")
 
 
 def test_default():
-
     """
     FYI: The default protocol does not conform to the schema
     so  `reproschema validate` will complain if you run it in this
