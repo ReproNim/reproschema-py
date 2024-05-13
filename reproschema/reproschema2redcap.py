@@ -142,6 +142,7 @@ def get_csv_data(dir_path):
         if protocol_dir.is_dir():
             # Check for a _schema file in each directory
             schema_file = next(protocol_dir.glob("*_schema"), None)
+            print(f"Found schema file: {schema_file}")
             if schema_file:
                 # Process the found _schema file
                 parsed_protocol_json = read_json_file(schema_file)
@@ -152,8 +153,14 @@ def get_csv_data(dir_path):
                     normalized_relative_path = Path(
                         relative_activity_path.lstrip("../")
                     )
-                    activity_path = dir_path / normalized_relative_path
-                    print(f"Processing activity {activity_path}")
+
+                    activity_path = (
+                        dir_path
+                        / "activities"
+                        / normalized_relative_path
+                        / (normalized_relative_path.name + "_schema")
+                    )
+
                     parsed_activity_json = read_json_file(activity_path)
 
                     if parsed_activity_json:

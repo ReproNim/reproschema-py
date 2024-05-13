@@ -42,14 +42,15 @@ def main(log_level):
 
 
 @main.command()
-@click.option("--shapefile", default=None, type=click.Path(exists=True, dir_okay=False))
 @click.argument("path", nargs=1, type=str)
-def validate(shapefile, path):
+def validate(path):
     if not (path.startswith("http") or os.path.exists(path)):
         raise ValueError(f"{path} must be a URL or an existing file or directory")
     from .validate import validate
 
-    validate(shapefile, path)
+    result = validate(path)
+    if result:
+        click.echo("Validation successful")
 
 
 @main.command()
