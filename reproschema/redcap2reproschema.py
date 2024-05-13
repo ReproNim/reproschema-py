@@ -5,6 +5,7 @@ import json
 import re
 import yaml
 from bs4 import BeautifulSoup
+from .models import Activity, Item, Protocol, write_obj_jsonld
 
 matrix_group_count = {}
 
@@ -120,26 +121,13 @@ def process_choices(field_type, choices_str):
         except ValueError:
             value = parts[0]
 
-        choice_obj = {"name": " ".join(parts[1:]), "value": value}
+        choice_obj = {"name": {"en": " ".join(parts[1:])}, "value": value}
         # remove image for now
         # if len(parts) == 3:
         #     # Handle image url
         #     choice_obj["image"] = f"{parts[2]}.png"
         choices.append(choice_obj)
     return choices
-
-
-def write_to_file(abs_folder_path, form_name, field_name, rowData):
-    file_path = os.path.join(
-        f"{abs_folder_path}", "activities", form_name, "items", f"{field_name}"
-    )
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-    try:
-        with open(file_path, "w") as file:
-            json.dump(rowData, file, indent=4)
-        print(f"Item schema for {form_name} written successfully.")
-    except Exception as e:
-        print(f"Error in writing item schema for {form_name}: {e}")
 
 
 def parse_html(input_string, default_language="en"):
@@ -174,6 +162,7 @@ def process_row(
     response_list,
     additional_notes_list,
 ):
+    """Process a row of the REDCap data and generate the jsonld file for the item."""
     global matrix_group_count
     matrix_group_name = field.get("Matrix Group Name", "")
     if matrix_group_name:
@@ -185,11 +174,10 @@ def process_row(
         item_id = field.get("Variable / Field Name", "")
 
     rowData = {
-        "@context": schema_context_url,
-        "@type": "reproschema:Item",
-        "@id": item_id,
-        "prefLabel": item_id,
-        "description": f"{item_id} of {form_name}",
+        "category": "reproschema:Item",
+        "id": item_id,
+        "prefLabel": {"en": item_id},
+        "description": {"en": f"{item_id} of {form_name}"},
     }
 
     field_type = field.get("Field Type", "")
@@ -255,7 +243,15 @@ def process_row(
             notes_obj = {"source": "redcap", "column": key, "value": value}
             rowData.setdefault("additionalNotesObj", []).append(notes_obj)
 
-    write_to_file(abs_folder_path, form_name, field["Variable / Field Name"], rowData)
+    it = Item(**rowData)
+    file_path_item = os.path.join(
+        f"{abs_folder_path}",
+        "activities",
+        form_name,
+        "items",
+        f'{field["Variable / Field Name"]}',
+    )
+    write_obj_jsonld(it, file_path_item)
 
 
 def create_form_schema(
@@ -270,16 +266,16 @@ def create_form_schema(
     matrix_list,
     scores_list,
 ):
+    """Create the JSON-LD schema for the Activity."""
     # Use a set to track unique items and preserve order
     unique_order = list(dict.fromkeys(order.get(form_name, [])))
 
     # Construct the JSON-LD structure
     json_ld = {
-        "@context": schema_context_url,
-        "@type": "reproschema:Activity",
-        "@id": f"{form_name}_schema",
-        "prefLabel": activity_display_name,
-        "description": activity_description,
+        "category": "reproschema:Activity",
+        "id": f"{form_name}_schema",
+        "prefLabel": {"en": activity_display_name},
+        "description": {"en": activity_description},
         "schemaVersion": "1.0.0-rc4",
         "version": redcap_version,
         "ui": {
@@ -288,7 +284,7 @@ def create_form_schema(
             "shuffle": False,
         },
     }
-
+    act = Activity(**json_ld)
     # remove matrixInfo to pass validataion
     # if matrix_list:
     #     json_ld["matrixInfo"] = matrix_list
@@ -296,17 +292,11 @@ def create_form_schema(
         json_ld["scoringLogic"] = scores_list
 
     path = os.path.join(f"{abs_folder_path}", "activities", form_name)
+    os.makedirs(path, exist_ok=True)
     filename = f"{form_name}_schema"
     file_path = os.path.join(path, filename)
-    try:
-        os.makedirs(path, exist_ok=True)
-        with open(file_path, "w") as file:
-            json.dump(json_ld, file, indent=4)
-        print(f"{form_name} Instrument schema created")
-    except OSError as e:
-        print(f"Error creating directory {path}: {e}")
-    except IOError as e:
-        print(f"Error writing to file {file_path}: {e}")
+    write_obj_jsonld(act, file_path)
+    print(f"{form_name} Instrument schema created")
 
 
 def process_activities(activity_name, protocol_visibility_obj, protocol_order):
@@ -328,12 +318,11 @@ def create_protocol_schema(
 ):
     # Construct the protocol schema
     protocol_schema = {
-        "@context": schema_context_url,
-        "@type": "reproschema:Protocol",
-        "@id": f"{protocol_name}_schema",
-        "prefLabel": protocol_display_name,
-        "altLabel": f"{protocol_name}_schema",
-        "description": protocol_description,
+        "category": "reproschema:Protocol",
+        "id": f"{protocol_name}_schema",
+        "prefLabel": {"en": protocol_display_name},
+        "altLabel": {"en": f"{protocol_name}_schema"},
+        "description": {"en": protocol_description},
         "schemaVersion": "1.0.0-rc4",
         "version": redcap_version,
         "ui": {
@@ -350,7 +339,7 @@ def create_protocol_schema(
             "isAbout": full_path,
             "variableName": f"{activity}_schema",
             # Assuming activity name as prefLabel, update as needed
-            "prefLabel": activity.replace("_", " ").title(),
+            "prefLabel": {"en": activity.replace("_", " ").title()},
             "isVis": protocol_visibility_obj.get(
                 activity, True
             ),  # Default to True if not specified
@@ -359,19 +348,14 @@ def create_protocol_schema(
         # Add the full path to the order list
         protocol_schema["ui"]["order"].append(full_path)
 
+    prot = Protocol(**protocol_schema)
+    # Write the protocol schema to file
     protocol_dir = f"{abs_folder_path}/{protocol_name}"
+    os.makedirs(protocol_dir, exist_ok=True)
     schema_file = f"{protocol_name}_schema"
     file_path = os.path.join(protocol_dir, schema_file)
-
-    try:
-        os.makedirs(protocol_dir, exist_ok=True)
-        with open(file_path, "w") as file:
-            json.dump(protocol_schema, file, indent=4)
-        print("Protocol schema created")
-    except OSError as e:
-        print(f"Error creating directory {protocol_dir}: {e}")
-    except IOError as e:
-        print(f"Error writing to file {file_path}: {e}")
+    write_obj_jsonld(prot, file_path)
+    print("Protocol schema created")
 
 
 def parse_language_iso_codes(input_string):
@@ -414,6 +398,7 @@ def process_csv(
             for field in datas[form_name]:
                 field_name = field["Variable / Field Name"]
                 order[form_name].append(f"items/{field_name}")
+                print("Processing field: ", field_name, " in form: ", form_name)
                 process_row(
                     abs_folder_path,
                     schema_context_url,
@@ -447,6 +432,7 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
     protocol_display_name = protocol.get("protocol_display_name")
     protocol_description = protocol.get("protocol_description")
     redcap_version = protocol.get("redcap_version")
+    # we can add reproschema version here (or automatically extract)
 
     if not protocol_name:
         raise ValueError("Protocol name not specified in the YAML file.")

@@ -23,7 +23,7 @@ def test_redcap2reproschema(tmpdir):
 
     shutil.copy(CSV_TEST_FILE, str(temp_csv_file))  # Convert to string
     shutil.copy(YAML_TEST_FILE, str(temp_yaml_file))  # Convert to string
-
+    print("tmpdir: ", tmpdir)
     # Change the current working directory to tmpdir
     with tmpdir.as_cwd():
         # Read YAML to find the expected output directory name

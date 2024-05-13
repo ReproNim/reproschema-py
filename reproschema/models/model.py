@@ -260,7 +260,9 @@ class Choice(Thing):
         description="""An image of the item. This can be a <a class=\"localLink\" href=\"http://schema.org/URL\">URL</a> or a fully described <a class=\"localLink\" href=\"http://schema.org/ImageObject\">ImageObject</a>.""",
     )
     value: Optional[
-        Union[Decimal, Dict[str, str], MissingType, StructuredValue, bool, str]
+        Union[
+            float, int, Decimal, Dict[str, str], MissingType, StructuredValue, bool, str
+        ]
     ] = Field(
         None,
         title="value",
@@ -654,7 +656,7 @@ class ResponseOption(Thing):
         title="unitOptions",
         description="""A list of objects to represent a human displayable name alongside the more formal value for units.""",
     )
-    valueType: Optional[List[str]] = Field(
+    valueType: Optional[Union[str, List[str]]] = Field(
         default_factory=list,
         title="The type of the response",
         description="""The type of the response of an item. For example, string, integer, etc.""",
