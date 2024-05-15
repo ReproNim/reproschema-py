@@ -59,17 +59,18 @@ def load_file(path_or_url, started=False, http_kwargs={}):
         raise Exception(f"{path_or_url} is not a valid URL or file path")
     return data
 
+
 # def load_directory(path_or_url, load_file=load_file):
 #     """Creates a dictionary mirroring a directory containing only directories and
 #     JSON-LD files at the specified path."""
 
 """
-#start the server 
+#start the server
 
 #stop the server
 Base URL
 directory = {
-    
+
 }
 
 """
@@ -99,21 +100,22 @@ directory = {
 #             directory_structure.update(subdirs)
 #             directory_structure.update(jsonld_files)
 
+
 #     return directory_structure
 def load_directory_structure(base_path, started=False, http_kwargs={}):
     """
     Recursively iterates over a directory structure and constructs a dictionary.
-    
+
     Args:
     - base_path (str): The base directory path to start iterating from.
     - load_jsonld_function (function): A function that takes a file path and returns the loaded JSON-LD data.
-    
+
     Returns:
     - dict: A dictionary with directory names as keys and subdirectory names or loaded JSON-LD as values.
     """
 
     if not started:
-        stop_server(stop) 
+        stop_server(stop)
         stop, port = start_server(**http_kwargs)
         started = True
 
@@ -121,8 +123,8 @@ def load_directory_structure(base_path, started=False, http_kwargs={}):
 
     for root, dirs, files in os.walk(base_path):
         relative_root = os.path.relpath(root, base_path)
-        if relative_root == '.':
-            relative_root = ''
+        if relative_root == ".":
+            relative_root = ""
 
         subdirs = {}
         for subdir in dirs:
@@ -132,14 +134,18 @@ def load_directory_structure(base_path, started=False, http_kwargs={}):
         jsonld_files = {}
         for file in files:
             file_path = os.path.join(root, file)
-            jsonld_files[file] = load_file(file_path, started=True, http_kwargs={"port":port})
+            jsonld_files[file] = load_file(
+                file_path, started=True, http_kwargs={"port": port}
+            )
 
         if relative_root:
-            directory_structure[relative_root] = {'subdirs': subdirs, 'jsonld_files': jsonld_files}
+            directory_structure[relative_root] = {
+                "subdirs": subdirs,
+                "jsonld_files": jsonld_files,
+            }
         else:
             directory_structure.update(subdirs)
             directory_structure.update(jsonld_files)
-
 
     stop_server(stop)
 

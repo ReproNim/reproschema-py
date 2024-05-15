@@ -2,12 +2,13 @@ import sys
 import os
 
 # Add the parent directory of reproschema to the sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 # print(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 # sys.path.append('/Users/isaacbevers/sensein/reproschema-wrapper/reproschema-py')
 
 
 from reproschema.jsonldutils import load_file, load_directory_structure
+
 # from jsonldutils import load_file
 
 import json
@@ -16,9 +17,10 @@ import json
 def printj(dict_like_file):
     print(json.dumps(dict_like_file, indent=4, ensure_ascii=False))
 
+
 def subset_items(child_activity_path, parent_activity_path):
     """
-    Lexically matches the questions in the child activity to 
+    Lexically matches the questions in the child activity to
     those in the parent activity. Updates the references in the child
     schema to refer to those in the parent schema. Deletes the overlapping
     items in the child activity.
