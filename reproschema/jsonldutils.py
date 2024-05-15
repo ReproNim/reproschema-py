@@ -1,77 +1,112 @@
 from pyld import jsonld
-from pyshacl import validate as shacl_validate
 import json
 import os
-from .utils import start_server, stop_server, lgr
+from pathlib import Path
+from copy import deepcopy
+from urllib.parse import urlparse
+from .utils import start_server, stop_server, lgr, fixing_old_schema
+from .models import Item, Activity, Protocol, ResponseOption, ResponseActivity, Response
+
+
+def _is_url(path):
+    """
+    Determine whether the given path is a URL.
+    """
+    parsed = urlparse(path)
+    return parsed.scheme in ("http", "https", "ftp", "ftps")
+
+
+def _is_file(path):
+    """
+    Determine whether the given path is a valid file path.
+    """
+    return os.path.isfile(path)
 
 
 def load_file(path_or_url, started=False, http_kwargs={}):
-    try:
+    """Load a file or URL and return the expanded JSON-LD data."""
+    path_or_url = str(path_or_url)
+    if _is_url(path_or_url):
         data = jsonld.expand(path_or_url)
         if len(data) == 1:
-            if "@id" not in data[0]:
+            if "@id" not in data[0] and "id" not in data[0]:
                 data[0]["@id"] = path_or_url
-    except jsonld.JsonLdError as e:
-        if 'only "http" and "https"' in str(e):
-            lgr.debug("Reloading with local server")
-            root = os.path.dirname(path_or_url)
-            if not started:
-                stop, port = start_server(**http_kwargs)
-            else:
-                if "port" not in http_kwargs:
-                    raise KeyError("port key missing in http_kwargs")
-                port = http_kwargs["port"]
-            base_url = f"http://localhost:{port}/"
-            if root:
-                base_url += f"{root}/"
-            with open(path_or_url) as json_file:
-                data = json.load(json_file)
-            try:
-                data = jsonld.expand(data, options={"base": base_url})
-            except:
-                raise
-            finally:
-                if not started:
-                    stop_server(stop)
-            if len(data) == 1:
-                if "@id" not in data[0]:
-                    data[0]["@id"] = base_url + os.path.basename(path_or_url)
+    elif _is_file(path_or_url):
+        lgr.debug("Reloading with local server")
+        root = os.path.dirname(path_or_url)
+        if not started:
+            stop, port = start_server(**http_kwargs)
         else:
+            if "port" not in http_kwargs:
+                raise KeyError("port key missing in http_kwargs")
+            port = http_kwargs["port"]
+        base_url = f"http://localhost:{port}/"
+        if root:
+            base_url += f"{root}/"
+        with open(path_or_url) as json_file:
+            data = json.load(json_file)
+        try:
+            data = jsonld.expand(data, options={"base": base_url})
+        except:
             raise
+        finally:
+            if not started:
+                stop_server(stop)
+        if len(data) == 1:
+            if "@id" not in data[0] and "id" not in data[0]:
+                data[0]["@id"] = base_url + os.path.basename(path_or_url)
+    else:
+        raise Exception(f"{path_or_url} is not a valid URL or file path")
     return data
 
 
-def validate_data(data, shape_file_path):
-    """Validate an expanded jsonld document against a shape.
+def validate_data(data):
+    """Validate an expanded jsonld document against the pydantic model.
 
     Parameters
     ----------
     data : dict
         Python dictionary containing JSONLD object
-    shape_file_path : str
-        SHACL file for the document
 
     Returns
     -------
     conforms: bool
         Whether the document is conformant with the shape
     v_text: str
-        Validation information returned by PySHACL
+        Validation errors if any returned by pydantic
 
     """
-    kwargs = {"algorithm": "URDNA2015", "format": "application/n-quads"}
-    normalized = jsonld.normalize(data, kwargs)
-    data_file_format = "nquads"
-    shape_file_format = "turtle"
-    conforms, v_graph, v_text = shacl_validate(
-        normalized,
-        shacl_graph=shape_file_path,
-        data_graph_format=data_file_format,
-        shacl_graph_format=shape_file_format,
-        inference="rdfs",
-        debug=False,
-        serialize_report_graph=True,
-    )
+    # do we need it?
+    # kwargs = {"algorithm": "URDNA2015", "format": "application/n-quads"}
+    # normalized = jsonld.normalize(data, kwargs)
+    if data[0]["@type"][0] == "http://schema.repronim.org/Field":
+        obj_type = Item
+    elif data[0]["@type"][0] == "http://schema.repronim.org/ResponseOption":
+        obj_type = ResponseOption
+    elif data[0]["@type"][0] == "http://schema.repronim.org/Activity":
+        obj_type = Activity
+    elif data[0]["@type"][0] == "http://schema.repronim.org/Protocol":
+        obj_type = Protocol
+    elif data[0]["@type"][0] == "http://schema.repronim.org/ResponseActivity":
+        obj_type = ResponseActivity
+    elif data[0]["@type"][0] == "http://schema.repronim.org/Response":
+        obj_type = Response
+    else:
+        raise ValueError("Unknown type")
+    data_fixed = [fixing_old_schema(data[0], copy_data=True)]
+    # TODO: where should we load the context from?
+    contexfile = Path(__file__).resolve().parent / "models/reproschema"
+    with open(contexfile) as fp:
+        context = json.load(fp)
+    data_fixed_comp = jsonld.compact(data_fixed, context)
+    del data_fixed_comp["@context"]
+    conforms = False
+    v_text = ""
+    try:
+        obj_type(**data_fixed_comp)
+        conforms = True
+    except Exception as e:
+        v_text = str(e)
     return conforms, v_text
 
 
