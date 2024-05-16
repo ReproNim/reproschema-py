@@ -105,17 +105,17 @@ directory = {
 # def load_directory_structure(base_path, started=False, http_kwargs={}):
 #     """
 #     Recursively iterates over a directory structure and constructs a dictionary.
-    
+
 #     Args:
 #     - base_path (str): The base directory path to start iterating from.
 #     - load_jsonld_function (function): A function that takes a file path and returns the loaded JSON-LD data.
-    
+
 #     Returns:
 #     - dict: A dictionary with directory names as keys and subdirectory names or loaded JSON-LD as values.
 #     """
 
 #     if not started:
-#         stop_server(stop) 
+#         stop_server(stop)
 #         stop, port = start_server(**http_kwargs)
 #         started = True
 
@@ -147,6 +147,7 @@ directory = {
 #     stop_server(stop)
 
 #     return directory_structure
+
 
 def validate_data(data):
     """Validate an expanded jsonld document against the pydantic model.

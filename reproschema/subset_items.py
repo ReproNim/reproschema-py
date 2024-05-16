@@ -16,6 +16,7 @@ import json
 def printj(dict_like_file):
     print(json.dumps(dict_like_file, indent=4, ensure_ascii=False))
 
+
 def subset_items_dorota(child_activity_path, parent_activity_path):
     """
     Lexically matches the questions in the child activity to
@@ -27,13 +28,16 @@ def subset_items_dorota(child_activity_path, parent_activity_path):
     # parent_activity = load_file(parent_activity_path)
     return child_activity
 
+
 def load_items(activity_path):
     items_path = activity_path + "items"
     items = {}
     for filename in os.listdir(items_path):
         # print(filename)
-        with open(items_path + "/" + filename, 'r', encoding='utf-8') as file: #replace with load file eventually
-            data = json.load(file) 
+        with open(
+            items_path + "/" + filename, "r", encoding="utf-8"
+        ) as file:  # replace with load file eventually
+            data = json.load(file)
         items[filename] = data
     return items
 
@@ -44,8 +48,10 @@ def get_question(item_dict):
     else:
         return item_dict["question"]
 
+
 def clean_sentence(sentence):
-    return ''.join(char.lower() for char in sentence if char.isalnum())
+    return "".join(char.lower() for char in sentence if char.isalnum())
+
 
 def create_item_mapping(child_activity_path, parent_activity_path):
     child_items = load_items(child_activity_path)
@@ -60,14 +66,10 @@ def create_item_mapping(child_activity_path, parent_activity_path):
     print(item_mapping)
     return item_mapping
 
-
-
     # child_items = []
     # for filename in os.listdir(child_activity_path + "items"):
     #     with open(file_path, 'r', encoding='utf-8') as file: #replace with load file eventually
     #         data = json.load(file)
-
-
 
 
 # def subset_items_old():
