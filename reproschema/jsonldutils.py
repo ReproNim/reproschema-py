@@ -100,51 +100,50 @@ directory = {
 #             directory_structure.update(jsonld_files)
 
 #     return directory_structure
-def load_directory_structure(base_path, started=False, http_kwargs={}):
-    """
-    Recursively iterates over a directory structure and constructs a dictionary.
+# def load_directory_structure(base_path, started=False, http_kwargs={}):
+#     """
+#     Recursively iterates over a directory structure and constructs a dictionary.
     
-    Args:
-    - base_path (str): The base directory path to start iterating from.
-    - load_jsonld_function (function): A function that takes a file path and returns the loaded JSON-LD data.
+#     Args:
+#     - base_path (str): The base directory path to start iterating from.
+#     - load_jsonld_function (function): A function that takes a file path and returns the loaded JSON-LD data.
     
-    Returns:
-    - dict: A dictionary with directory names as keys and subdirectory names or loaded JSON-LD as values.
-    """
+#     Returns:
+#     - dict: A dictionary with directory names as keys and subdirectory names or loaded JSON-LD as values.
+#     """
 
-    if not started:
-        stop_server(stop) 
-        stop, port = start_server(**http_kwargs)
-        started = True
+#     if not started:
+#         stop_server(stop) 
+#         stop, port = start_server(**http_kwargs)
+#         started = True
 
-    directory_structure = {}
+#     directory_structure = {}
 
-    for root, dirs, files in os.walk(base_path):
-        relative_root = os.path.relpath(root, base_path)
-        if relative_root == '.':
-            relative_root = ''
+#     for root, dirs, files in os.walk(base_path):
+#         relative_root = os.path.relpath(root, base_path)
+#         if relative_root == '.':
+#             relative_root = ''
 
-        subdirs = {}
-        for subdir in dirs:
-            subdir_path = os.path.join(root, subdir)
-            subdirs[subdir] = load_directory_structure(subdir_path)
+#         subdirs = {}
+#         for subdir in dirs:
+#             subdir_path = os.path.join(root, subdir)
+#             subdirs[subdir] = load_directory_structure(subdir_path)
 
-        jsonld_files = {}
-        for file in files:
-            file_path = os.path.join(root, file)
-            jsonld_files[file] = load_file(file_path, started=True, http_kwargs={"port":port})
+#         jsonld_files = {}
+#         for file in files:
+#             file_path = os.path.join(root, file)
+#             jsonld_files[file] = load_file(file_path, started=True, http_kwargs={"port":port})
 
-        if relative_root:
-            directory_structure[relative_root] = {'subdirs': subdirs, 'jsonld_files': jsonld_files}
-        else:
-            directory_structure.update(subdirs)
-            directory_structure.update(jsonld_files)
+#         if relative_root:
+#             directory_structure[relative_root] = {'subdirs': subdirs, 'jsonld_files': jsonld_files}
+#         else:
+#             directory_structure.update(subdirs)
+#             directory_structure.update(jsonld_files)
 
 
-    stop_server(stop)
+#     stop_server(stop)
 
-    return directory_structure
-
+#     return directory_structure
 
 def validate_data(data):
     """Validate an expanded jsonld document against the pydantic model.
