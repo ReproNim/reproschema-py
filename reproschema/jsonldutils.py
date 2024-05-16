@@ -59,17 +59,18 @@ def load_file(path_or_url, started=False, http_kwargs={}):
         raise Exception(f"{path_or_url} is not a valid URL or file path")
     return data
 
+
 # def load_directory(path_or_url, load_file=load_file):
 #     """Creates a dictionary mirroring a directory containing only directories and
 #     JSON-LD files at the specified path."""
 
 """
-#start the server 
+#start the server
 
 #stop the server
 Base URL
 directory = {
-    
+
 }
 
 """
@@ -99,6 +100,7 @@ directory = {
 #             directory_structure.update(subdirs)
 #             directory_structure.update(jsonld_files)
 
+
 #     return directory_structure
 # def load_directory_structure(base_path, started=False, http_kwargs={}):
 #     """
@@ -123,6 +125,7 @@ directory = {
 #         relative_root = os.path.relpath(root, base_path)
 #         if relative_root == '.':
 #             relative_root = ''
+
 
 #         subdirs = {}
 #         for subdir in dirs:
