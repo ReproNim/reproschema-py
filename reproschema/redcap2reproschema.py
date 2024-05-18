@@ -193,7 +193,10 @@ def process_row(
     if field_type == "yesno":
         rowData["responseOptions"] = {
             "valueType": "xsd:boolean",
-            "choices": [{"name": "Yes", "value": 1}, {"name": "No", "value": 0}],
+            "choices": [
+                {"name": {"en": "Yes"}, "value": 1},
+                {"name": {"en": "No"}, "value": 0},
+            ],
         }
 
     for key, value in field.items():
