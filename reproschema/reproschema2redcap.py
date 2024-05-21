@@ -3,15 +3,19 @@ import json
 import csv
 from pathlib import Path
 import requests
+from pyld import jsonld
 
-
-def read_json_file(file_path):
-    try:
-        with open(file_path, "r", encoding="utf-8") as file:
-            return json.load(file)
-    except Exception as e:
-        print(f"Error reading file {file_path}: {e}")
-        return None
+from .models import (
+    Item,
+    Activity,
+    Protocol,
+    ResponseOption,
+    ResponseActivity,
+    Response,
+    write_obj_jsonld,
+)
+from .utils import fixing_old_schema, start_server, stop_server
+from .jsonldutils import load_file
 
 
 def fetch_choices_from_url(url):
@@ -39,9 +43,9 @@ def fetch_choices_from_url(url):
         return ""
 
 
-def find_Ftype_and_colH(item_json, row_data):
+def find_Ftype_and_colH(item, row_data):
     # Extract the input type from the item_json
-    f_type = item_json.get("ui", {}).get("inputType", "")
+    f_type = item.ui.inputType
     col_h = ""
 
     if f_type in ["text", "textarea", "email"]:
@@ -56,14 +60,13 @@ def find_Ftype_and_colH(item_json, row_data):
         f_type = "text"
         col_h = "date_mdy"
     elif f_type == "select":
-        multiple_choice = item_json.get("responseOptions", {}).get(
-            "multipleChoice", False
-        )
+        multiple_choice = item.responseOptions.multipleChoice
+        print("mult", multiple_choice)
         f_type = "checkbox" if multiple_choice else "dropdown"
     elif f_type.startswith("select"):
         # Adjusting for selectCountry, selectLanguage, selectState types
         f_type = "radio"
-        choices_url = item_json.get("responseOptions", {}).get("choices", "")
+        choices_url = item.responseOptions.choices
         if choices_url and isinstance(choices_url, str):
             choices_data = fetch_choices_from_url(choices_url)
             if choices_data:
@@ -81,7 +84,7 @@ def find_Ftype_and_colH(item_json, row_data):
     return row_data
 
 
-def process_item(item_json, activity_name):
+def process_item(item, activity_name):
     """
     Process an item in JSON format and extract relevant information into a dictionary.
 
@@ -104,37 +107,34 @@ def process_item(item_json, activity_name):
     }
 
     # Extract min and max values from response options, if available
-    response_options = item_json.get("responseOptions", {})
-    row_data["val_min"] = response_options.get("schema:minValue", "")
-    row_data["val_max"] = response_options.get("schema:maxValue", "")
+    response_options = item.responseOptions
+    row_data["val_min"] = response_options.minValue
+    row_data["val_max"] = response_options.maxValue
 
     # 'choices' processing is now handled in 'find_Ftype_and_colH' if it's a URL
-    choices = response_options.get("choices")
+    choices = response_options.choices
     if choices and not isinstance(choices, str):
         if isinstance(choices, list):
-            item_choices = [
-                f"{ch.get('schema:value', ch.get('value', ''))}, {ch.get('schema:name', ch.get('name', ''))}"
-                for ch in choices
-            ]
+            item_choices = [f"{ch.value}, {ch.name.get('en', '')}" for ch in choices]
             row_data["choices"] = " | ".join(item_choices)
 
-    row_data["required"] = response_options.get("requiredValue", "")
-    row_data["field_notes"] = item_json.get("skos:altLabel", "")
-    row_data["var_name"] = item_json.get("@id", "")
+    row_data["required"] = ""  # response_options.get("requiredValue", "")
+    row_data["field_notes"] = item.altLabel.get("en", "")
+    row_data["var_name"] = item.id
 
-    question = item_json.get("question")
+    question = item.question
     if isinstance(question, dict):
         row_data["field_label"] = question.get("en", "")
     elif isinstance(question, str):
         row_data["field_label"] = question
 
     # Call helper function to find field type and validation type (if any) and update row_data
-    row_data = find_Ftype_and_colH(item_json, row_data)
+    row_data = find_Ftype_and_colH(item, row_data)
 
     return row_data
 
 
-def get_csv_data(dir_path):
+def get_csv_data(dir_path, contextfile, http_kwargs):
     csv_data = []
 
     # Iterate over directories in dir_path
@@ -145,9 +145,19 @@ def get_csv_data(dir_path):
             print(f"Found schema file: {schema_file}")
             if schema_file:
                 # Process the found _schema file
-                parsed_protocol_json = read_json_file(schema_file)
+                parsed_protocol_json = load_file(
+                    schema_file,
+                    started=True,
+                    http_kwargs=http_kwargs,
+                    fixoldschema=True,
+                    compact=True,
+                    compact_context=contextfile,
+                )
 
-                activity_order = parsed_protocol_json.get("ui", {}).get("order", [])
+                del parsed_protocol_json["@context"]
+                prot = Protocol(**parsed_protocol_json)
+
+                activity_order = prot.ui.order
                 for relative_activity_path in activity_order:
                     # Normalize the relative path and construct the absolute path
                     normalized_relative_path = Path(
@@ -161,17 +171,34 @@ def get_csv_data(dir_path):
                         / (normalized_relative_path.name + "_schema")
                     )
 
-                    parsed_activity_json = read_json_file(activity_path)
+                    parsed_activity_json = load_file(
+                        activity_path,
+                        started=True,
+                        http_kwargs=http_kwargs,
+                        fixoldschema=True,
+                        compact=True,
+                        compact_context=contextfile,
+                    )
+                    del parsed_activity_json["@context"]
+                    act = Activity(**parsed_activity_json)
 
                     if parsed_activity_json:
-                        item_order = parsed_activity_json.get("ui", {}).get("order", [])
+                        item_order = act.ui.order
                         for item in item_order:
                             item_path = activity_path.parent / item
-                            item_json = read_json_file(item_path)
+                            item_json = load_file(
+                                item_path,
+                                started=True,
+                                http_kwargs=http_kwargs,
+                                fixoldschema=True,
+                                compact=True,
+                                compact_context=contextfile,
+                            )
+                            del item_json["@context"]
+                            itm = Item(**item_json)
                             if item_json:
-                                row_data = process_item(item_json, activity_path.stem)
+                                row_data = process_item(itm, activity_path.stem)
                                 csv_data.append(row_data)
-
                 # Break after finding the first _schema file
                 break
 
@@ -233,7 +260,18 @@ def write_to_csv(csv_data, output_csv_filename):
 
 
 def main(input_dir_path, output_csv_filename):
-    csv_data = get_csv_data(input_dir_path)
+    contextfile = (
+        Path(__file__).resolve().parent / "models/reproschema"
+    )  # todo, give an option
+    http_kwargs = {}
+    stop, port = start_server()
+    http_kwargs["port"] = port
+    try:
+        csv_data = get_csv_data(input_dir_path, contextfile, http_kwargs)
+    except:
+        raise
+    finally:
+        stop_server(stop)
     write_to_csv(csv_data, output_csv_filename)
 
 

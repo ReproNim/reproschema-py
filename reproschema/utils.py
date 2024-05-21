@@ -141,7 +141,7 @@ def fixing_old_schema(data, copy_data=False):
         elif isinstance(val, (str, bool, int, float)):
             pass
         elif isinstance(val, dict):
-            fix_rec(val)
+            fixing_old_schema(val)
         elif isinstance(val, list):
             for el in val:
                 if isinstance(el, (str, bool, int, float)):

@@ -23,7 +23,8 @@ def test_reproschema2redcap(tmpdir):
         result = runner.invoke(
             main, ["reproschema2redcap", str(input_path), output_csv_path]
         )
-
+        print("input", original_data_dir)
+        print("output", output_csv_path)
         print(result.output)
 
         assert result.exit_code == 0
