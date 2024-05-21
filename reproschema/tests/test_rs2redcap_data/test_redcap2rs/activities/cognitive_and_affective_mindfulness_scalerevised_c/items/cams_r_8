@@ -8,20 +8,20 @@
         "valueType": "xsd:string",
         "choices": [
             {
-                "schema:value": 1,
-                "schema:name": "1 - Rarely/Not at all "
+                "value": 1,
+                "name": "1 - Rarely/Not at all "
             },
             {
-                "schema:value": 2,
-                "schema:name": "2 - Sometimes "
+                "value": 2,
+                "name": "2 - Sometimes "
             },
             {
-                "schema:value": 3,
-                "schema:name": "3 - Often "
+                "value": 3,
+                "name": "3 - Often "
             },
             {
-                "schema:value": 4,
-                "schema:name": "4 - Almost Always"
+                "value": 4,
+                "name": "4 - Almost Always"
             }
         ]
     }
