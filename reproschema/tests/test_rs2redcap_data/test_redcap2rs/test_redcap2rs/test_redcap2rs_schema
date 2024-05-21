@@ -2,11 +2,11 @@
     "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
     "@type": "reproschema:Protocol",
     "@id": "test_redcap2rs_schema",
-    "skos:prefLabel": "redcap protocols",
-    "skos:altLabel": "test_redcap2rs_schema",
-    "schema:description": "testing",
-    "schema:schemaVersion": "1.0.0-rc4",
-    "schema:version": "0.0.1",
+    "prefLabel": "redcap protocols",
+    "altLabel": "test_redcap2rs_schema",
+    "description": "testing",
+    "schemaVersion": "1.0.0-rc4",
+    "version": "0.0.1",
     "ui": {
         "addProperties": [
             {
