@@ -23,7 +23,14 @@ def _is_file(path):
     return os.path.isfile(path)
 
 
-def load_file(path_or_url, started=False, http_kwargs={}):
+def load_file(
+    path_or_url,
+    started=False,
+    http_kwargs={},
+    compact=False,
+    compact_context=None,
+    fixoldschema=False,
+):
     """Load a file or URL and return the expanded JSON-LD data."""
     path_or_url = str(path_or_url)
     if _is_url(path_or_url):
@@ -47,6 +54,15 @@ def load_file(path_or_url, started=False, http_kwargs={}):
             data = json.load(json_file)
         try:
             data = jsonld.expand(data, options={"base": base_url})
+            if fixoldschema:
+                data = fixing_old_schema(data[0], copy_data=True)
+            if compact:
+                if compact_context:
+                    with open(compact_context) as fp:
+                        compact_context = json.load(fp)
+                data = jsonld.compact(
+                    data, ctx=compact_context, options={"base": base_url}
+                )
         except:
             raise
         finally:
