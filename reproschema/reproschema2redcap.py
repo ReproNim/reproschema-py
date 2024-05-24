@@ -159,18 +159,7 @@ def get_csv_data(dir_path, contextfile, http_kwargs):
 
                 activity_order = prot.ui.order
                 for relative_activity_path in activity_order:
-                    # Normalize the relative path and construct the absolute path
-                    normalized_relative_path = Path(
-                        relative_activity_path.lstrip("../")
-                    )
-
-                    activity_path = (
-                        dir_path
-                        / "activities"
-                        / normalized_relative_path
-                        / (normalized_relative_path.name + "_schema")
-                    )
-
+                    activity_path = protocol_dir / relative_activity_path
                     parsed_activity_json = load_file(
                         activity_path,
                         started=True,

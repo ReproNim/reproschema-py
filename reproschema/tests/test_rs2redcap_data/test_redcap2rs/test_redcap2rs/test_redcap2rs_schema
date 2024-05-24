@@ -21,8 +21,8 @@
             }
         ],
         "order": [
-            "autism_parenting_stress_index_apsi",
-            "cognitive_and_affective_mindfulness_scalerevised_c"
+            "../activities/autism_parenting_stress_index_apsi/autism_parenting_stress_index_apsi_schema",
+            "../activities/cognitive_and_affective_mindfulness_scalerevised_c/cognitive_and_affective_mindfulness_scalerevised_c_schema"
         ],
         "shuffle": false,
         "visibility": {
