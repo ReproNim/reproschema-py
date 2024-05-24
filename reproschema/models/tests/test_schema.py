@@ -9,6 +9,8 @@ from pathlib import Path
 
 import pytest
 
+contextfile_url = "https://raw.githubusercontent.com/ReproNim/reproschema/ref/linkml/contexts/reproschema"
+
 
 @pytest.fixture
 def server_http_kwargs(request):
@@ -39,7 +41,7 @@ def test_protocol(tmp_path, server_http_kwargs):
     and if it can be written to the file as jsonld.
     """
     protocol_dict = {
-        "category": "reproschema:Protocol",
+        "category": "Protocol",
         "id": "protocol1.jsonld",
         "prefLabel": {"en": "Protocol1", "es": "Protocol1_es"},
         "description": {"en": "example Protocol"},
@@ -56,18 +58,27 @@ def test_protocol(tmp_path, server_http_kwargs):
     }
     protocol_obj = Protocol(**protocol_dict)
 
+    # writing to the file
     file_path = tmp_path / "protocol1.jsonld"
-    write_obj_jsonld(protocol_obj, file_path)
-    data = load_file(file_path, started=True, http_kwargs=server_http_kwargs)
-    expanded = jsonld.expand(data)
-    assert len(expanded) > 0
+    write_obj_jsonld(protocol_obj, file_path, contextfile_url)
+
+    # loading data from the file and checking if this is the same as initial dictionary
+    data_comp = load_file(
+        file_path,
+        started=True,
+        http_kwargs=server_http_kwargs,
+        compact=True,
+        compact_context=contextfile_url,
+    )
+    del data_comp["@context"]
+    assert protocol_dict == data_comp
 
 
 def test_activity(tmp_path, server_http_kwargs):
     """check if activity is created correctly for a simple example
     and if it can be written to the file as jsonld."""
     activity_dict = {
-        "category": "reproschema:Activity",
+        "category": "Activity",
         "id": "activity1.jsonld",
         "prefLabel": {"en": "Example 1"},
         "description": {"en": "Activity example 1"},
@@ -88,10 +99,18 @@ def test_activity(tmp_path, server_http_kwargs):
     activity_obj = Activity(**activity_dict)
 
     file_path = tmp_path / "activity1.jsonld"
-    write_obj_jsonld(activity_obj, file_path)
-    data = load_file(file_path, started=True, http_kwargs=server_http_kwargs)
-    expanded = jsonld.expand(data)
-    assert len(expanded) > 0
+    write_obj_jsonld(activity_obj, file_path, contextfile_url)
+
+    # loading data from the file and checking if this is the same as initial dictionary
+    data_comp = load_file(
+        file_path,
+        started=True,
+        http_kwargs=server_http_kwargs,
+        compact=True,
+        compact_context=contextfile_url,
+    )
+    del data_comp["@context"]
+    assert activity_dict == data_comp
 
 
 def test_item(tmp_path, server_http_kwargs):
@@ -99,7 +118,7 @@ def test_item(tmp_path, server_http_kwargs):
     and if it can be written to the file as jsonld."""
 
     item_dict = {
-        "category": "reproschema:Field",
+        "category": "Field",
         "id": "item1.jsonld",
         "prefLabel": {"en": "item1"},
         "altLabel": {"en": "item1_alt"},
@@ -133,7 +152,15 @@ def test_item(tmp_path, server_http_kwargs):
     item_obj = Item(**item_dict)
 
     file_path = tmp_path / "item1.jsonld"
-    write_obj_jsonld(item_obj, file_path)
-    data = load_file(file_path, started=True, http_kwargs=server_http_kwargs)
-    expanded = jsonld.expand(data)
-    assert len(expanded) > 0
+    write_obj_jsonld(item_obj, file_path, contextfile_url)
+
+    # loading data from the file and checking if this is the same as initial dictionary
+    data_comp = load_file(
+        file_path,
+        started=True,
+        http_kwargs=server_http_kwargs,
+        compact=True,
+        compact_context=contextfile_url,
+    )
+    del data_comp["@context"]
+    assert item_dict == data_comp

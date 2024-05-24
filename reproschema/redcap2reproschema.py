@@ -9,6 +9,9 @@ from .models import Activity, Item, Protocol, write_obj_jsonld
 
 matrix_group_count = {}
 
+# todo: move it somewhere
+contextfile_url = "https://raw.githubusercontent.com/ReproNim/reproschema/ref/linkml/contexts/reproschema"
+
 
 def clean_header(header):
     cleaned_header = {}
@@ -254,7 +257,8 @@ def process_row(
         "items",
         f'{field["Variable / Field Name"]}',
     )
-    write_obj_jsonld(it, file_path_item)
+
+    write_obj_jsonld(it, file_path_item, contextfile_url)
 
 
 def create_form_schema(

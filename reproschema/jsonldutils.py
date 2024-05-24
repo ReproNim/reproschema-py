@@ -3,9 +3,18 @@ import json
 import os
 from pathlib import Path
 from copy import deepcopy
+import requests
 from urllib.parse import urlparse
 from .utils import start_server, stop_server, lgr, fixing_old_schema
-from .models import Item, Activity, Protocol, ResponseOption, ResponseActivity, Response
+from .models import (
+    Item,
+    Activity,
+    Protocol,
+    ResponseOption,
+    ResponseActivity,
+    Response,
+    identify_model_class,
+)
 
 
 def _is_url(path):
@@ -21,6 +30,11 @@ def _is_file(path):
     Determine whether the given path is a valid file path.
     """
     return os.path.isfile(path)
+
+
+def _fetch_jsonld_context(url):
+    response = requests.get(url)
+    return response.json()
 
 
 def load_file(
@@ -58,11 +72,16 @@ def load_file(
                 data = fixing_old_schema(data[0], copy_data=True)
             if compact:
                 if compact_context:
-                    with open(compact_context) as fp:
-                        compact_context = json.load(fp)
-                data = jsonld.compact(
-                    data, ctx=compact_context, options={"base": base_url}
-                )
+                    if _is_file(compact_context):
+                        with open(compact_context) as fp:
+                            context = json.load(fp)
+                    elif _is_url(compact_context):
+                        context = _fetch_jsonld_context(compact_context)
+                    else:
+                        raise Exception(
+                            f"compact_context has tobe a file or url, but {compact_context} provided"
+                        )
+                data = jsonld.compact(data, ctx=context, options={"base": base_url})
         except:
             raise
         finally:
@@ -95,20 +114,7 @@ def validate_data(data):
     # do we need it?
     # kwargs = {"algorithm": "URDNA2015", "format": "application/n-quads"}
     # normalized = jsonld.normalize(data, kwargs)
-    if data[0]["@type"][0] == "http://schema.repronim.org/Field":
-        obj_type = Item
-    elif data[0]["@type"][0] == "http://schema.repronim.org/ResponseOption":
-        obj_type = ResponseOption
-    elif data[0]["@type"][0] == "http://schema.repronim.org/Activity":
-        obj_type = Activity
-    elif data[0]["@type"][0] == "http://schema.repronim.org/Protocol":
-        obj_type = Protocol
-    elif data[0]["@type"][0] == "http://schema.repronim.org/ResponseActivity":
-        obj_type = ResponseActivity
-    elif data[0]["@type"][0] == "http://schema.repronim.org/Response":
-        obj_type = Response
-    else:
-        raise ValueError("Unknown type")
+    obj_type = identify_model_class(data[0]["@type"][0])
     data_fixed = [fixing_old_schema(data[0], copy_data=True)]
     # TODO: where should we load the context from?
     contexfile = Path(__file__).resolve().parent / "models/reproschema"
