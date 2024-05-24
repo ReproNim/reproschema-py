@@ -14,7 +14,7 @@ from .models import (
     Response,
     write_obj_jsonld,
 )
-from .utils import fixing_old_schema, start_server, stop_server
+from .utils import fixing_old_schema, start_server, stop_server, CONTEXTFILE_URL
 from .jsonldutils import load_file
 
 
@@ -120,6 +120,7 @@ def process_item(item, activity_name):
 
     row_data["required"] = ""  # response_options.get("requiredValue", "")
     row_data["field_notes"] = item.altLabel.get("en", "")
+    row_data["preamble"] = item.preamble.get("en", "")
     row_data["var_name"] = item.id
 
     question = item.question
@@ -227,7 +228,9 @@ def write_to_csv(csv_data, output_csv_filename):
             redcap_row = {
                 "Variable / Field Name": row["var_name"],
                 "Form Name": row["activity"],
-                "Section Header": "",  # Update this if your data includes section headers
+                "Section Header": row[
+                    "preamble"
+                ],  # Update this if your data includes section headers
                 "Field Type": row["field_type"],
                 "Field Label": row["field_label"],
                 "Choices, Calculations, OR Slider Labels": row["choices"],
@@ -249,9 +252,7 @@ def write_to_csv(csv_data, output_csv_filename):
 
 
 def main(input_dir_path, output_csv_filename):
-    contextfile = (
-        Path(__file__).resolve().parent / "models/reproschema"
-    )  # todo, give an option
+    contextfile = CONTEXTFILE_URL  # todo, give an option
     http_kwargs = {}
     stop, port = start_server()
     http_kwargs["port"] = port

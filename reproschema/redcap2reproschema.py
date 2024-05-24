@@ -6,11 +6,9 @@ import re
 import yaml
 from bs4 import BeautifulSoup
 from .models import Activity, Item, Protocol, write_obj_jsonld
+from .utils import CONTEXTFILE_URL
 
 matrix_group_count = {}
-
-# todo: move it somewhere
-contextfile_url = "https://raw.githubusercontent.com/ReproNim/reproschema/ref/linkml/contexts/reproschema"
 
 
 def clean_header(header):
@@ -258,7 +256,7 @@ def process_row(
         f'{field["Variable / Field Name"]}',
     )
 
-    write_obj_jsonld(it, file_path_item, contextfile_url)
+    write_obj_jsonld(it, file_path_item, contextfile_url=schema_context_url)
 
 
 def create_form_schema(
@@ -302,7 +300,7 @@ def create_form_schema(
     os.makedirs(path, exist_ok=True)
     filename = f"{form_name}_schema"
     file_path = os.path.join(path, filename)
-    write_obj_jsonld(act, file_path)
+    write_obj_jsonld(act, file_path, contextfile_url=schema_context_url)
     print(f"{form_name} Instrument schema created")
 
 
@@ -361,7 +359,7 @@ def create_protocol_schema(
     os.makedirs(protocol_dir, exist_ok=True)
     schema_file = f"{protocol_name}_schema"
     file_path = os.path.join(protocol_dir, schema_file)
-    write_obj_jsonld(prot, file_path)
+    write_obj_jsonld(prot, file_path, contextfile_url=schema_context_url)
     print("Protocol schema created")
 
 
@@ -454,7 +452,7 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
     abs_folder_path = os.path.abspath(protocol_name)
 
     if schema_context_url is None:
-        schema_context_url = "https://raw.githubusercontent.com/ReproNim/reproschema/efb74e155c09e13aa009ea04609ba4f1152fcbc6/contexts/reproschema_new"
+        schema_context_url = CONTEXTFILE_URL
 
     # Initialize variables
     schema_map = {

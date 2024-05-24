@@ -5,7 +5,7 @@ from pathlib import Path
 from copy import deepcopy
 import requests
 from urllib.parse import urlparse
-from .utils import start_server, stop_server, lgr, fixing_old_schema
+from .utils import start_server, stop_server, lgr, fixing_old_schema, CONTEXTFILE_URL
 from .models import (
     Item,
     Activity,
@@ -21,7 +21,7 @@ def _is_url(path):
     """
     Determine whether the given path is a URL.
     """
-    parsed = urlparse(path)
+    parsed = urlparse(str(path))
     return parsed.scheme in ("http", "https", "ftp", "ftps")
 
 
@@ -116,10 +116,7 @@ def validate_data(data):
     # normalized = jsonld.normalize(data, kwargs)
     obj_type = identify_model_class(data[0]["@type"][0])
     data_fixed = [fixing_old_schema(data[0], copy_data=True)]
-    # TODO: where should we load the context from?
-    contexfile = Path(__file__).resolve().parent / "models/reproschema"
-    with open(contexfile) as fp:
-        context = json.load(fp)
+    context = _fetch_jsonld_context(CONTEXTFILE_URL)
     data_fixed_comp = jsonld.compact(data_fixed, context)
     del data_fixed_comp["@context"]
     conforms = False
