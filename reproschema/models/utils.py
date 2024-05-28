@@ -3,7 +3,10 @@ from .model import Protocol, Activity, Item, ResponseOption, ResponseActivity, R
 
 
 def identify_model_class(category):
-    if category == "http://schema.repronim.org/Field":
+    if (
+        category == "http://schema.repronim.org/Field"
+        or category == "http://schema.repronim.org/Item"
+    ):
         model_class = Item
     elif category == "http://schema.repronim.org/ResponseOption":
         model_class = ResponseOption
@@ -16,7 +19,7 @@ def identify_model_class(category):
     elif category == "http://schema.repronim.org/Response":
         model_class = Response
     else:
-        raise ValueError("Unknown type")
+        raise ValueError(f"Unknown type: {category}")
     return model_class
 
 
