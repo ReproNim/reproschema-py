@@ -15,7 +15,7 @@ from .models import (
     write_obj_jsonld,
 )
 from .utils import fixing_old_schema, start_server, stop_server, CONTEXTFILE_URL
-from .jsonldutils import load_file
+from .jsonldutils import load_file, _is_file, _is_url
 
 
 def fetch_choices_from_url(url):
@@ -159,8 +159,9 @@ def get_csv_data(dir_path, contextfile, http_kwargs):
                 prot = Protocol(**parsed_protocol_json)
 
                 activity_order = prot.ui.order
-                for relative_activity_path in activity_order:
-                    activity_path = protocol_dir / relative_activity_path
+                for activity_path in activity_order:
+                    if not _is_url(activity_path):
+                        activity_path = protocol_dir / activity_path
                     parsed_activity_json = load_file(
                         activity_path,
                         started=True,
@@ -175,19 +176,27 @@ def get_csv_data(dir_path, contextfile, http_kwargs):
                     if parsed_activity_json:
                         item_order = act.ui.order
                         for item in item_order:
-                            item_path = activity_path.parent / item
+                            if not _is_url(item):
+                                item = activity_path.parent / item
                             item_json = load_file(
-                                item_path,
+                                item,
                                 started=True,
                                 http_kwargs=http_kwargs,
                                 fixoldschema=True,
                                 compact=True,
                                 compact_context=contextfile,
                             )
-                            del item_json["@context"]
+
+                            item_json.pop("@context", "")
                             itm = Item(**item_json)
                             if item_json:
-                                row_data = process_item(itm, activity_path.stem)
+                                if _is_url(activity_path):
+                                    activity_name = activity_path.split("/")[-1].split(
+                                        "."
+                                    )[0]
+                                else:
+                                    activity_name = activity_path.stem
+                                row_data = process_item(itm, activity_name)
                                 csv_data.append(row_data)
                 # Break after finding the first _schema file
                 break

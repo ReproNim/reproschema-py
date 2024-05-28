@@ -68,20 +68,6 @@ def load_file(
             data = json.load(json_file)
         try:
             data = jsonld.expand(data, options={"base": base_url})
-            if fixoldschema:
-                data = fixing_old_schema(data[0], copy_data=True)
-            if compact:
-                if compact_context:
-                    if _is_file(compact_context):
-                        with open(compact_context) as fp:
-                            context = json.load(fp)
-                    elif _is_url(compact_context):
-                        context = _fetch_jsonld_context(compact_context)
-                    else:
-                        raise Exception(
-                            f"compact_context has tobe a file or url, but {compact_context} provided"
-                        )
-                data = jsonld.compact(data, ctx=context, options={"base": base_url})
         except:
             raise
         finally:
@@ -92,6 +78,28 @@ def load_file(
                 data[0]["@id"] = base_url + os.path.basename(path_or_url)
     else:
         raise Exception(f"{path_or_url} is not a valid URL or file path")
+
+    if isinstance(data, list) and len(data) == 1:
+        data = data[0]
+
+    if fixoldschema:
+        data = fixing_old_schema(data, copy_data=True)
+    if compact:
+        if compact_context:
+            if _is_file(compact_context):
+                with open(compact_context) as fp:
+                    context = json.load(fp)
+            elif _is_url(compact_context):
+                context = _fetch_jsonld_context(compact_context)
+            else:
+                raise Exception(
+                    f"compact_context has tobe a file or url, but {compact_context} provided"
+                )
+        if _is_file(path_or_url):
+            data = jsonld.compact(data, ctx=context, options={"base": base_url})
+        else:
+            data = jsonld.compact(data, ctx=context)
+
     return data
 
 
@@ -114,8 +122,8 @@ def validate_data(data):
     # do we need it?
     # kwargs = {"algorithm": "URDNA2015", "format": "application/n-quads"}
     # normalized = jsonld.normalize(data, kwargs)
-    obj_type = identify_model_class(data[0]["@type"][0])
-    data_fixed = [fixing_old_schema(data[0], copy_data=True)]
+    obj_type = identify_model_class(data["@type"][0])
+    data_fixed = [fixing_old_schema(data, copy_data=True)]
     context = _fetch_jsonld_context(CONTEXTFILE_URL)
     data_fixed_comp = jsonld.compact(data_fixed, context)
     del data_fixed_comp["@context"]
