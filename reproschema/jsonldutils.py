@@ -65,7 +65,12 @@ def load_file(
         if root:
             base_url += f"{root}/"
         with open(path_or_url) as json_file:
-            data = json.load(json_file)
+            try:
+                data = json.load(json_file)
+            except json.JSONDecodeError as e:
+                raise json.JSONDecodeError(
+                    f"Error parsing JSON file {json_file}: {e.msg}", e.doc, e.pos
+                ) from e
         try:
             data = jsonld.expand(data, options={"base": base_url})
         except:

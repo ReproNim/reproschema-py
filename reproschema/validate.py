@@ -1,6 +1,7 @@
-import os
+import os, json
 from .utils import start_server, stop_server, lgr
 from .jsonldutils import load_file, validate_data
+from pathlib import Path
 
 
 def validate_dir(directory, started=False, http_kwargs={}):
@@ -35,16 +36,21 @@ def validate_dir(directory, started=False, http_kwargs={}):
     else:
         if "port" not in http_kwargs:
             raise KeyError(f"HTTP server started, but port key is missing")
-    for root, dirs, files in os.walk(directory):
-        for name in files:
-            full_file_name = os.path.join(root, name)
+    for full_file_name in Path(directory).rglob("*"):
+        # checking if the path is a file and if the file can be a jsonld file
+        if full_file_name.is_file() and full_file_name.suffix in [
+            "",
+            "js",
+            "json",
+            "jsonld",
+        ]:
             try:
                 data = load_file(full_file_name, started=True, http_kwargs=http_kwargs)
                 if len(data) == 0:
                     raise ValueError("Empty data graph")
                 print(f"Validating {full_file_name}")
                 conforms, vtext = validate_data(data)
-            except (ValueError,):
+            except (ValueError, json.JSONDecodeError):
                 if stop is not None:
                     stop_server(stop)
                 raise
