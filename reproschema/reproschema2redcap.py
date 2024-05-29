@@ -84,7 +84,7 @@ def find_Ftype_and_colH(item, row_data):
     return row_data
 
 
-def process_item(item, activity_name):
+def process_item(item, activity_name, contextfile, http_kwargs):
     """
     Process an item in JSON format and extract relevant information into a dictionary.
 
@@ -107,12 +107,30 @@ def process_item(item, activity_name):
     }
 
     # Extract min and max values from response options, if available
-    response_options = item.responseOptions
-    row_data["val_min"] = response_options.minValue
-    row_data["val_max"] = response_options.maxValue
+    # loading additional files if responseOptions is an url
+    if isinstance(item.responseOptions, str):
+        resp = load_file(
+            item.responseOptions,
+            started=True,
+            http_kwargs=http_kwargs,
+            fixoldschema=True,
+            compact=True,
+            compact_context=contextfile,
+        )
+        del resp["@context"]
+        if "ResponseOption" in resp["category"]:
+            response_options = ResponseOption(**resp)
+        else:
+            raise Exception(
+                f"Expected to have ResponseOption but got {resp['category']}"
+            )
+    else:
+        response_options = item.responseOptions
+    row_data["val_min"] = response_options.minValue if response_options else ""
+    row_data["val_max"] = response_options.maxValue if response_options else ""
 
     # 'choices' processing is now handled in 'find_Ftype_and_colH' if it's a URL
-    choices = response_options.choices
+    choices = response_options.choices if response_options else ""
     if choices and not isinstance(choices, str):
         if isinstance(choices, list):
             item_choices = [f"{ch.value}, {ch.name.get('en', '')}" for ch in choices]
@@ -196,7 +214,9 @@ def get_csv_data(dir_path, contextfile, http_kwargs):
                                     )[0]
                                 else:
                                     activity_name = activity_path.stem
-                                row_data = process_item(itm, activity_name)
+                                row_data = process_item(
+                                    itm, activity_name, contextfile, http_kwargs
+                                )
                                 csv_data.append(row_data)
                 # Break after finding the first _schema file
                 break
