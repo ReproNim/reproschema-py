@@ -10,6 +10,44 @@ from .utils import CONTEXTFILE_URL
 
 matrix_group_count = {}
 
+# All the mapping used in the code
+SCHEMA_MAP = {
+    "Variable / Field Name": "@id",  # column A
+    "Item Display Name": "prefLabel",
+    "Field Annotation": "description",  # column R
+    "Section Header": "preamble",  # column C (need double-check)
+    "Field Label": "question",  # column E
+    "Field Type": "inputType",  # column D
+    "Allow": "allow",
+    "Required Field?": "valueRequired",  # column M
+    "Text Validation Min": "minValue",  # column I
+    "Text Validation Max": "maxValue",  # column J
+    "Choices, Calculations, OR Slider Labels": "choices",  # column F
+    "Branching Logic (Show field only if...)": "visibility",  # column L
+    "Custom Alignment": "customAlignment",  # column N
+    # "Identifier?": "identifiable",  # column K # todo: should we remove the identifiers completely?
+    "multipleChoice": "multipleChoice",
+    "responseType": "@type",
+}
+
+INPUT_TYPE_MAP = {
+    "calc": "number",
+    "checkbox": "radio",
+    "descriptive": "static",
+    "dropdown": "select",
+    "notes": "text",
+}
+
+UI_LIST = ["inputType", "shuffle", "allow", "customAlignment"]
+RESPONSE_LIST = [
+    "valueType",
+    # TODO: minValue and maxValue can be strings???
+    # "minValue",
+    # "maxValue",
+    "multipleChoice",
+]
+ADDITIONAL_NOTES_LIST = ["Field Note", "Question Number (surveys only)"]
+
 
 def clean_header(header):
     cleaned_header = {}
@@ -51,28 +89,40 @@ def normalize_condition(condition_str):
     return condition_str.strip()
 
 
-def process_visibility(data):
+def process_field_properties(data):
+    """Getting information about the item that will be used in the Activity schema"""
     condition = data.get("Branching Logic (Show field only if...)")
     if condition:
+        # TODO: there are situations when both condition is set and Field Type is calc, what should be used in isVis?
+        # if data["Field Type"] == "calc": breakpoint()
         condition = normalize_condition(condition)
+    elif data["Field Type"] == "calc":
+        condition = False
     else:
         condition = True
 
-    visibility_obj = {
+    prop_obj = {
         "variableName": data["Variable / Field Name"],
         "isAbout": f"items/{data['Variable / Field Name']}",
         "isVis": condition,
     }
-    return visibility_obj
+    if data["Required Field?"]:
+        if data["Required Field?"] in "y":
+            prop_obj["valueRequired"] = True
+        else:
+            raise (
+                f"value {data['Required Field?']} not supported yet for redcap:Required Field?"
+            )
+    return prop_obj
 
 
-def parse_field_type_and_value(field, input_type_map):
+def parse_field_type_and_value(field):
     field_type = field.get("Field Type", "")
     # Check if field_type is 'yesno' and directly assign 'radio' as the input type
     if field_type == "yesno":
         input_type = "radio"  # Directly set to 'radio' for 'yesno' fields
     else:
-        input_type = input_type_map.get(field_type, field_type)  # Original logic
+        input_type = INPUT_TYPE_MAP.get(field_type, field_type)  # Original logic
 
     # Initialize the default value type as string
     value_type = "xsd:string"
@@ -157,11 +207,6 @@ def process_row(
     schema_context_url,
     form_name,
     field,
-    schema_map,
-    input_type_map,
-    ui_list,
-    response_list,
-    additional_notes_list,
 ):
     """Process a row of the REDCap data and generate the jsonld file for the item."""
     global matrix_group_count
@@ -182,11 +227,7 @@ def process_row(
     }
 
     field_type = field.get("Field Type", "")
-    schema_map["Choices, Calculations, OR Slider Labels"] = (
-        "scoringLogic" if field_type == "calc" else "choices"
-    )
-
-    input_type, value_type = parse_field_type_and_value(field, input_type_map)
+    input_type, value_type = parse_field_type_and_value(field)
     rowData["ui"] = {"inputType": input_type}
     if value_type:
         rowData["responseOptions"] = {"valueType": value_type}
@@ -201,37 +242,29 @@ def process_row(
         }
 
     for key, value in field.items():
-        if schema_map.get(key) in ["question", "description", "preamble"] and value:
-            rowData.update({schema_map[key]: parse_html(value)})
+        if SCHEMA_MAP.get(key) in ["question", "description", "preamble"] and value:
+            rowData.update({SCHEMA_MAP[key]: parse_html(value)})
 
-        elif schema_map.get(key) == "allow" and value:
-            rowData.setdefault("ui", {}).update({schema_map[key]: value.split(", ")})
+        elif SCHEMA_MAP.get(key) == "allow" and value:
+            rowData.setdefault("ui", {}).update({SCHEMA_MAP[key]: value.split(", ")})
 
-        elif key in ui_list and value:
+        elif key in UI_LIST and value:  # this is wrong
             rowData.setdefault("ui", {}).update(
-                {schema_map[key]: input_type_map.get(value, value)}
+                {SCHEMA_MAP[key]: INPUT_TYPE_MAP.get(value, value)}
             )
 
-        elif key in response_list and value:
+        elif SCHEMA_MAP.get(key) in RESPONSE_LIST and value:
             if key == "multipleChoice":
                 value = value == "1"
-            rowData.setdefault("responseOptions", {}).update({schema_map[key]: value})
+            rowData.setdefault("responseOptions", {}).update({SCHEMA_MAP[key]: value})
 
-        elif schema_map.get(key) == "choices" and value:
-            # Pass both field_type and value to process_choices
-            rowData.setdefault("responseOptions", {}).update(
-                {"choices": process_choices(field_type, value)}
-            )
-
-        elif schema_map.get(key) == "scoringLogic" and value:
-            condition = normalize_condition(value)
-            rowData.setdefault("ui", {}).update({"hidden": True})
-            rowData.setdefault("scoringLogic", []).append(
-                {
-                    "variableName": field["Variable / Field Name"],
-                    "jsExpression": condition,
-                }
-            )
+        elif SCHEMA_MAP.get(key) == "choices" and value:
+            # in case it's not choices but calc (used in score computing)
+            if field_type != "calc":
+                # Pass both field_type and value to process_choices
+                rowData.setdefault("responseOptions", {}).update(
+                    {"choices": process_choices(field_type, value)}
+                )
 
         # elif key == "Identifier?" and value:
         #     identifier_val = value.lower() == "y"
@@ -243,7 +276,7 @@ def process_row(
         #         }
         #     )
 
-        elif key in additional_notes_list and value:
+        elif key in ADDITIONAL_NOTES_LIST and value:
             notes_obj = {"source": "redcap", "column": key, "value": value}
             rowData.setdefault("additionalNotesObj", []).append(notes_obj)
 
@@ -259,6 +292,7 @@ def process_row(
     write_obj_jsonld(it, file_path_item, contextfile_url=schema_context_url)
 
 
+# create activity
 def create_form_schema(
     abs_folder_path,
     schema_context_url,
@@ -266,14 +300,14 @@ def create_form_schema(
     form_name,
     activity_display_name,
     activity_description,
-    order,
+    order,  # todo
     bl_list,
-    matrix_list,
-    scores_list,
+    matrix_list,  # TODO:
+    compute_list,
 ):
     """Create the JSON-LD schema for the Activity."""
     # Use a set to track unique items and preserve order
-    unique_order = list(dict.fromkeys(order.get(form_name, [])))
+    unique_order = list(dict.fromkeys(order))
 
     # Construct the JSON-LD structure
     json_ld = {
@@ -289,12 +323,15 @@ def create_form_schema(
             "shuffle": False,
         },
     }
+
+    if compute_list:
+        json_ld["compute"] = compute_list
+
     act = Activity(**json_ld)
+    # TODO: should we completely remove matrixInfo??
     # remove matrixInfo to pass validataion
     # if matrix_list:
     #     json_ld["matrixInfo"] = matrix_list
-    if scores_list:
-        json_ld["scoringLogic"] = scores_list
 
     path = os.path.join(f"{abs_folder_path}", "activities", form_name)
     os.makedirs(path, exist_ok=True)
@@ -360,7 +397,7 @@ def create_protocol_schema(
     schema_file = f"{protocol_name}_schema"
     file_path = os.path.join(protocol_dir, schema_file)
     write_obj_jsonld(prot, file_path, contextfile_url=schema_context_url)
-    print("Protocol schema created")
+    print(f"Protocol schema created in {file_path}")
 
 
 def parse_language_iso_codes(input_string):
@@ -372,15 +409,11 @@ def process_csv(
     csv_file,
     abs_folder_path,
     schema_context_url,
-    schema_map,
-    input_type_map,
-    ui_list,
-    response_list,
-    additional_notes_list,
     protocol_name,
 ):
     datas = {}
     order = {}
+    compute = {}
     languages = []
 
     with open(csv_file, mode="r", encoding="utf-8") as csvfile:
@@ -391,6 +424,7 @@ def process_csv(
             if form_name not in datas:
                 datas[form_name] = []
                 order[form_name] = []
+                compute[form_name] = []
                 os.makedirs(
                     f"{abs_folder_path}/activities/{form_name}/items", exist_ok=True
                 )
@@ -401,6 +435,16 @@ def process_csv(
                 languages = parse_language_iso_codes(row["Field Label"])
 
             for field in datas[form_name]:
+                if field.get("Field Type", "") == "calc":
+                    condition = normalize_condition(
+                        field["Choices, Calculations, OR Slider Labels"]
+                    )
+                    compute[form_name].append(
+                        {
+                            "variableName": field["Variable / Field Name"],
+                            "jsExpression": condition,
+                        }
+                    )
                 field_name = field["Variable / Field Name"]
                 order[form_name].append(f"items/{field_name}")
                 print("Processing field: ", field_name, " in form: ", form_name)
@@ -409,17 +453,13 @@ def process_csv(
                     schema_context_url,
                     form_name,
                     field,
-                    schema_map,
-                    input_type_map,
-                    ui_list,
-                    response_list,
-                    additional_notes_list,
                 )
 
     os.makedirs(f"{abs_folder_path}/{protocol_name}", exist_ok=True)
-    return datas, order, languages
+    return datas, order, compute, languages
 
 
+# todo adding output path
 def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
     """
     Convert a REDCap data dictionary to Reproschema format.
@@ -455,53 +495,12 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
         schema_context_url = CONTEXTFILE_URL
 
     # Initialize variables
-    schema_map = {
-        "Variable / Field Name": "@id",  # column A
-        "Item Display Name": "prefLabel",
-        "Field Annotation": "description",  # column R
-        "Section Header": "preamble",  # column C (need double-check)
-        "Field Label": "question",  # column E
-        "Field Type": "inputType",  # column D
-        "Allow": "allow",
-        "Required Field?": "requiredValue",  # column M
-        "Text Validation Min": "minValue",  # column I
-        "Text Validation Max": "maxValue",  # column J
-        "Choices, Calculations, OR Slider Labels": "choices",  # column F
-        "Branching Logic (Show field only if...)": "visibility",  # column L
-        "Custom Alignment": "customAlignment",  # column N
-        # "Identifier?": "identifiable",  # column K
-        "multipleChoice": "multipleChoice",
-        "responseType": "@type",
-    }
-
-    input_type_map = {
-        "calc": "number",
-        "checkbox": "radio",
-        "descriptive": "static",
-        "dropdown": "select",
-        "notes": "text",
-    }
-
-    ui_list = ["inputType", "shuffle", "allow", "customAlignment"]
-    response_list = [
-        "valueType",
-        "minValue",
-        "maxValue",
-        "requiredValue",
-        "multipleChoice",
-    ]
-    additional_notes_list = ["Field Note", "Question Number (surveys only)"]
 
     # Process the CSV file
-    datas, order, _ = process_csv(
+    datas, order, compute, _ = process_csv(
         csv_file,
         abs_folder_path,
         schema_context_url,
-        schema_map,
-        input_type_map,
-        ui_list,
-        response_list,
-        additional_notes_list,
         protocol_name,
     )
     # Initialize other variables for protocol context and schema
@@ -511,13 +510,12 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
     # Create form schemas and process activities
     for form_name, rows in datas.items():
         bl_list = []
-        scores_list = []
         matrix_list = []
 
         for field in rows:
-            visibility_obj = process_visibility(field)
-            bl_list.append(visibility_obj)
-
+            # TODO (future): this probably can be done in proces_csv so don't have to run the loop again
+            field_properties = process_field_properties(field)
+            bl_list.append(field_properties)
             if field.get("Matrix Group Name") or field.get("Matrix Ranking?"):
                 matrix_list.append(
                     {
@@ -537,10 +535,10 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
             form_name,
             activity_display_name,
             activity_description,
-            order,
+            order[form_name],
             bl_list,
             matrix_list,
-            scores_list,
+            compute[form_name],
         )
 
         process_activities(form_name, protocol_visibility_obj, protocol_order)
