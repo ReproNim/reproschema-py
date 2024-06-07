@@ -39,13 +39,11 @@ INPUT_TYPE_MAP = {
 }
 
 UI_LIST = ["inputType", "shuffle", "allow", "customAlignment"]
-RESPONSE_LIST = [
-    "valueType",
-    # TODO: minValue and maxValue can be strings???
-    # "minValue",
-    # "maxValue",
-    "multipleChoice",
-]
+RESPONSE_LIST = ["valueType", "multipleChoice"]
+
+# TODO: not used for now, should add validation
+RESPONSE_VALIDATION_LIST = ["minValue", "maxValue"]
+
 ADDITIONAL_NOTES_LIST = ["Field Note", "Question Number (surveys only)"]
 
 
@@ -93,11 +91,7 @@ def process_field_properties(data):
     """Getting information about the item that will be used in the Activity schema"""
     condition = data.get("Branching Logic (Show field only if...)")
     if condition:
-        # TODO: there are situations when both condition is set and Field Type is calc, what should be used in isVis?
-        # if data["Field Type"] == "calc": breakpoint()
         condition = normalize_condition(condition)
-    elif data["Field Type"] == "calc":
-        condition = False
     else:
         condition = True
 
@@ -300,9 +294,9 @@ def create_form_schema(
     form_name,
     activity_display_name,
     activity_description,
-    order,  # todo
+    order,
     bl_list,
-    matrix_list,  # TODO:
+    matrix_list,  # TODO: in the future
     compute_list,
 ):
     """Create the JSON-LD schema for the Activity."""
