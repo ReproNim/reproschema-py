@@ -425,29 +425,30 @@ def process_csv(
 
             datas[form_name].append(row)
 
-            if not languages:
-                languages = parse_language_iso_codes(row["Field Label"])
-
-            for field in datas[form_name]:
-                if field.get("Field Type", "") == "calc":
-                    condition = normalize_condition(
-                        field["Choices, Calculations, OR Slider Labels"]
-                    )
-                    compute[form_name].append(
-                        {
-                            "variableName": field["Variable / Field Name"],
-                            "jsExpression": condition,
-                        }
-                    )
-                field_name = field["Variable / Field Name"]
-                order[form_name].append(f"items/{field_name}")
-                print("Processing field: ", field_name, " in form: ", form_name)
-                process_row(
-                    abs_folder_path,
-                    schema_context_url,
-                    form_name,
-                    field,
+            # THIS IS WRONG  TODO
+            # if not languages:
+            #    languages = parse_language_iso_codes(row["Field Label"])
+            # if form_name == "pex_bm_apa": breakpoint()
+            # for ii, field in enumerate(datas[form_name]):
+            if row.get("Field Type", "") == "calc":
+                condition = normalize_condition(
+                    row["Choices, Calculations, OR Slider Labels"]
                 )
+                compute[form_name].append(
+                    {
+                        "variableName": row["Variable / Field Name"],
+                        "jsExpression": condition,
+                    }
+                )
+            field_name = row["Variable / Field Name"]
+            order[form_name].append(f"items/{field_name}")
+            print("Processing field: ", field_name, " in form: ", form_name)
+            process_row(
+                abs_folder_path,
+                schema_context_url,
+                form_name,
+                row,
+            )
 
     os.makedirs(f"{abs_folder_path}/{protocol_name}", exist_ok=True)
     return datas, order, compute, languages
