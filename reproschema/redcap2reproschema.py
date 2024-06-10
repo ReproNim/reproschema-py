@@ -14,11 +14,13 @@ matrix_group_count = {}
 SCHEMA_MAP = {
     "Variable / Field Name": "@id",  # column A
     "Item Display Name": "prefLabel",
-    "Field Annotation": "description",  # column R
+    # TODO: often "Field Annotation" has "@HIDDEN" and other markers
+    # TODO: not sure if this can be every treated as description
+    # "Field Annotation": "description",  # column R
     "Section Header": "preamble",  # column C (need double-check)
     "Field Label": "question",  # column E
     "Field Type": "inputType",  # column D
-    "Allow": "allow",
+    "Allow": "allow",  # TODO: I don't see this column in the examples
     "Required Field?": "valueRequired",  # column M
     "Text Validation Min": "minValue",  # column I
     "Text Validation Max": "maxValue",  # column J
@@ -32,18 +34,46 @@ SCHEMA_MAP = {
 
 INPUT_TYPE_MAP = {
     "calc": "number",
+    "sql": "number",
+    "yesno": "radio",
+    "radio": "radio",
     "checkbox": "radio",
     "descriptive": "static",
     "dropdown": "select",
+    "text": "text",
     "notes": "text",
+    "file": "documentUpload",
+    "slider": "slider",
 }
 
-UI_LIST = ["inputType", "shuffle", "allow", "customAlignment"]
-RESPONSE_LIST = ["valueType", "multipleChoice"]
+# Map certain field types directly to xsd types
+VALUE_TYPE_MAP = {
+    "text": "xsd:string",
+    "date_": "xsd:date",
+    "date_mdy": "xsd:string",  # ?? new one TODO: not sure what to do with it, it's not xsd:date
+    "datetime_seconds_mdy": "xsd:string",  # ?? new one TODO: not sure what to do with it, it's not xsd:date
+    "date_ymd": "xsd:date",  # new one
+    "datetime_": "xsd:dateTime",
+    "time_": "xsd:time",
+    "email": "xsd:string",
+    "phone": "xsd:string",
+    "number": "xsd:decimal",  # new oen
+    "float": "xsd:decimal",  # new oen
+    "integer": "xsd:integer",  # new one
+    "signature": "xsd: string",  # ?? new one
+    "zipcode": "xsd: string",  # new one
+    "autocomplete": "xsd: string",  # ?? new one
+}
 
-# TODO: not used for now, should add validation
-RESPONSE_VALIDATION_LIST = ["minValue", "maxValue"]
-
+# TODO: removing for now, since it's not used
+# TODO: inputType is treated separately,
+# TODO: I don't see allow and shuffle in the redcap csv
+# TODO: I don't know what to do with customAlignment
+# UI_LIST = ["shuffle", "allow", "customAlignment"]
+COMPUTE_LIST = ["calc", "sql"]  # field types that should be used as compute
+# TODO: for now the minValue and max Value is not used...
+# TODO: since sometimes is string and not sure what to do
+RESPONSE_LIST = ["multipleChoice"]  # , "minValue", "maxValue"]
 ADDITIONAL_NOTES_LIST = ["Field Note", "Question Number (surveys only)"]
 
 
@@ -56,7 +86,8 @@ def clean_header(header):
     return cleaned_header
 
 
-def normalize_condition(condition_str):
+# TODO: normalized condition should depend on the field type, e.g., for SQL
+def normalize_condition(condition_str, field_type=None):
     # Regular expressions for various pattern replacements
     re_parentheses = re.compile(r"\(([0-9]*)\)")
     re_non_gt_lt_equal = re.compile(r"([^>|<])=")
@@ -112,25 +143,12 @@ def process_field_properties(data):
 
 def parse_field_type_and_value(field):
     field_type = field.get("Field Type", "")
-    # Check if field_type is 'yesno' and directly assign 'radio' as the input type
-    if field_type == "yesno":
-        input_type = "radio"  # Directly set to 'radio' for 'yesno' fields
-    else:
-        input_type = INPUT_TYPE_MAP.get(field_type, field_type)  # Original logic
-
-    # Initialize the default value type as string
-    value_type = "xsd:string"
-
-    # Map certain field types directly to xsd types
-    value_type_map = {
-        "text": "xsd:string",
-        "date_": "xsd:date",
-        "datetime_": "xsd:dateTime",
-        "time_": "xsd:time",
-        "email": "xsd:string",
-        "phone": "xsd:string",
-        # No change needed here for 'yesno', as it's handled above
-    }
+    if field_type not in INPUT_TYPE_MAP:
+        raise Exception(
+            f"Field type {field_type} is not currently supported, "
+            f"supported types are {INPUT_TYPE_MAP.keys()}"
+        )
+    input_type = INPUT_TYPE_MAP.get(field_type)
 
     # Get the validation type from the field, if available
     validation_type = field.get(
@@ -138,25 +156,35 @@ def parse_field_type_and_value(field):
     ).strip()
 
     if validation_type:
-        # Map the validation type to an XSD type if it's in the map
-        value_type = value_type_map.get(validation_type, "xsd:string")
-    elif field_type in ["radio", "dropdown"]:
-        # If there's no validation type, but the field type is radio or dropdown, use xsd:integer
+        # Map the validation type to an XSD type
+        if validation_type not in VALUE_TYPE_MAP:
+            raise Exception(
+                f"Validation type {validation_type} is not currently supported, "
+                f"supported types are {VALUE_TYPE_MAP.keys()}"
+            )
+        value_type = VALUE_TYPE_MAP.get(validation_type)
+    elif field_type == "yesno":
+        value_type = "xsd:boolen"
+    elif field_type in COMPUTE_LIST:
         value_type = "xsd:integer"
-
+    elif input_type in ["radio", "dropdown"]:
+        # If there's no validation type, but the field type is radio or dropdown, use xsd:integer
+        value_type = "xsd:integer"  # TODO: ask
+    else:  # set the default value type as string (TODO: ask)
+        value_type = "xsd:string"
     return input_type, value_type
 
 
-def process_choices(field_type, choices_str):
-    if field_type not in ["radio", "dropdown"]:  # Handle only radio and dropdown types
-        return None
+def process_choices(input_type, choices_str):
+    if len(choices_str.split("|")) < 2:
+        print(f"WARNING: I found only one option for choice: {choices_str}")
 
     choices = []
     for choice in choices_str.split("|"):
         parts = choice.split(", ")
         if len(parts) < 2:
             print(
-                f"Warning: Skipping invalid choice format '{choice}' in a {field_type} field"
+                f"Warning: Skipping invalid choice format '{choice}' in a {input_type} field"
             )
             continue
 
@@ -223,42 +251,36 @@ def process_row(
     field_type = field.get("Field Type", "")
     input_type, value_type = parse_field_type_and_value(field)
     rowData["ui"] = {"inputType": input_type}
-    if value_type:
-        rowData["responseOptions"] = {"valueType": value_type}
+    rowData["responseOptions"] = {"valueType": value_type}
 
+    # setting additional fields for some field types
     if field_type == "yesno":
-        rowData["responseOptions"] = {
-            "valueType": "xsd:boolean",
-            "choices": [
-                {"name": {"en": "Yes"}, "value": 1},
-                {"name": {"en": "No"}, "value": 0},
-            ],
-        }
+        rowData["responseOptions"]["choices"] = [
+            {"name": {"en": "Yes"}, "value": 1},
+            {"name": {"en": "No"}, "value": 0},
+        ]
+    elif field_type in COMPUTE_LIST:
+        rowData["ui"]["readonlyValue"] = True
 
     for key, value in field.items():
         if SCHEMA_MAP.get(key) in ["question", "description", "preamble"] and value:
             rowData.update({SCHEMA_MAP[key]: parse_html(value)})
-
         elif SCHEMA_MAP.get(key) == "allow" and value:
-            rowData.setdefault("ui", {}).update({SCHEMA_MAP[key]: value.split(", ")})
-
-        elif key in UI_LIST and value:  # this is wrong
-            rowData.setdefault("ui", {}).update(
-                {SCHEMA_MAP[key]: INPUT_TYPE_MAP.get(value, value)}
-            )
-
+            rowData.setdefault("ui", {}).update({"allow": value.split(", ")})
         elif SCHEMA_MAP.get(key) in RESPONSE_LIST and value:
             if key == "multipleChoice":
                 value = value == "1"
             rowData.setdefault("responseOptions", {}).update({SCHEMA_MAP[key]: value})
-
-        elif SCHEMA_MAP.get(key) == "choices" and value:
-            # in case it's not choices but calc (used in score computing)
-            if field_type != "calc":
-                # Pass both field_type and value to process_choices
-                rowData.setdefault("responseOptions", {}).update(
-                    {"choices": process_choices(field_type, value)}
-                )
+        # choices are only for some input_types
+        elif (
+            SCHEMA_MAP.get(key) == "choices"
+            and value
+            and input_type in ["radio", "select", "slider"]
+        ):
+            # Pass both input_type and value to process_choices
+            rowData.setdefault("responseOptions", {}).update(
+                {"choices": process_choices(input_type, value)}
+            )
 
         # elif key == "Identifier?" and value:
         #     identifier_val = value.lower() == "y"
@@ -322,7 +344,7 @@ def create_form_schema(
         json_ld["compute"] = compute_list
 
     act = Activity(**json_ld)
-    # TODO: should we completely remove matrixInfo??
+    # TODO (future):  remove or fix matrix info
     # remove matrixInfo to pass validataion
     # if matrix_list:
     #     json_ld["matrixInfo"] = matrix_list
@@ -425,14 +447,15 @@ def process_csv(
 
             datas[form_name].append(row)
 
-            # THIS IS WRONG  TODO
+            # TODO: should we bring back the language
             # if not languages:
             #    languages = parse_language_iso_codes(row["Field Label"])
-            # if form_name == "pex_bm_apa": breakpoint()
-            # for ii, field in enumerate(datas[form_name]):
-            if row.get("Field Type", "") == "calc":
+
+            if row.get("Field Type", "") in COMPUTE_LIST:
+                # TODO: this right now doesn't give jsExpression
                 condition = normalize_condition(
-                    row["Choices, Calculations, OR Slider Labels"]
+                    row["Choices, Calculations, OR Slider Labels"],
+                    field_type=row["Field Type"],
                 )
                 compute[form_name].append(
                     {
@@ -509,6 +532,7 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
 
         for field in rows:
             # TODO (future): this probably can be done in proces_csv so don't have to run the loop again
+            # TODO: Depends how the Matrix group should be treated
             field_properties = process_field_properties(field)
             bl_list.append(field_properties)
             if field.get("Matrix Group Name") or field.get("Matrix Ranking?"):
