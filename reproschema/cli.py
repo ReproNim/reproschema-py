@@ -6,6 +6,7 @@ from . import get_logger, set_logger_level
 from . import __version__
 from .redcap2reproschema import redcap2reproschema as redcap2rs
 from .reproschema2redcap import reproschema2redcap as rs2redcap
+from .migrate import migrate2newschema
 
 lgr = get_logger()
 
@@ -51,6 +52,24 @@ def validate(path):
     result = validate(path)
     if result:
         click.echo("Validation successful")
+
+
+@main.command()
+@click.argument("path", nargs=1, type=click.Path(exists=True, dir_okay=True))
+@click.option("--inplace", is_flag=True, help="Changing file in place")
+@click.option(
+    "--fixed-path",
+    type=click.Path(dir_okay=True, writable=True, resolve_path=True),
+    help="Path to the fixed file/directory, if not provide suffix 'after_migration' is used",
+)
+def migrate(path, inplace, fixed_path):
+    if not (path.startswith("http") or os.path.exists(path)):
+        raise ValueError(f"{path} must be a URL or an existing file or directory")
+    if fixed_path and inplace:
+        raise Exception("Either inplace or fixed_path has to be provided.")
+    new_path = migrate2newschema(path, inplace=inplace, fixed_path=fixed_path)
+    if new_path:
+        click.echo(f"File/Directory after migration {new_path}")
 
 
 @main.command()
