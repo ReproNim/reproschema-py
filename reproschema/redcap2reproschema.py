@@ -251,7 +251,7 @@ def process_row(
     field_type = field.get("Field Type", "")
     input_type, value_type = parse_field_type_and_value(field)
     rowData["ui"] = {"inputType": input_type}
-    rowData["responseOptions"] = {"valueType": value_type}
+    rowData["responseOptions"] = {"valueType": [value_type]}
 
     # setting additional fields for some field types
     if field_type == "yesno":

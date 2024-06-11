@@ -164,7 +164,7 @@ class AdditionalNoteObj(Thing):
         description="""An element to define the source (eg. RedCap, NDA) where the note was taken from.""",
     )
     value: Optional[
-        Union[Decimal, Dict[str, str], MissingType, StructuredValue, bool, str]
+        Union[Dict[str, str], MissingType, StructuredValue, bool, float, int, str]
     ] = Field(
         None,
         title="value",
@@ -206,7 +206,7 @@ class AdditionalProperty(Thing):
         title="limit",
         description="""An element to limit the duration (uses ISO 8601) this activity is allowed to be completed by once activity is available.""",
     )
-    maxRetakes: Optional[Decimal] = Field(
+    maxRetakes: Optional[int] = Field(
         None,
         title="maxRetakes",
         description="""Defines number of times the item is allowed to be redone.""",
@@ -260,9 +260,7 @@ class Choice(Thing):
         description="""An image of the item. This can be a <a class=\"localLink\" href=\"http://schema.org/URL\">URL</a> or a fully described <a class=\"localLink\" href=\"http://schema.org/ImageObject\">ImageObject</a>.""",
     )
     value: Optional[
-        Union[
-            float, int, Decimal, Dict[str, str], MissingType, StructuredValue, bool, str
-        ]
+        Union[Dict[str, str], MissingType, StructuredValue, bool, float, int, str]
     ] = Field(
         None,
         title="value",
@@ -481,7 +479,7 @@ class OverrideProperty(Thing):
         title="limit",
         description="""An element to limit the duration (uses ISO 8601) this activity is allowed to be completed by once activity is available.""",
     )
-    maxRetakes: Optional[Decimal] = Field(
+    maxRetakes: Optional[int] = Field(
         None,
         title="maxRetakes",
         description="""Defines number of times the item is allowed to be redone.""",
@@ -589,7 +587,7 @@ class Response(Thing):
         description="""A pointer to the node describing the item.""",
     )
     value: Optional[
-        Union[Decimal, Dict[str, str], MissingType, StructuredValue, bool, str]
+        Union[Dict[str, str], MissingType, StructuredValue, bool, float, int, str]
     ] = Field(
         None,
         title="value",
@@ -656,7 +654,7 @@ class ResponseOption(Thing):
         title="unitOptions",
         description="""A list of objects to represent a human displayable name alongside the more formal value for units.""",
     )
-    valueType: Optional[Union[str, List[str]]] = Field(
+    valueType: Optional[List[str]] = Field(
         default_factory=list,
         title="The type of the response",
         description="""The type of the response of an item. For example, string, integer, etc.""",
