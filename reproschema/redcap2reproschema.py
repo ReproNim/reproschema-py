@@ -1,9 +1,9 @@
 import os
-import argparse
 import csv
 import json
 import re
 import yaml
+from pathlib import Path
 from bs4 import BeautifulSoup
 from .models import Activity, Item, Protocol, write_obj_jsonld
 from .utils import CONTEXTFILE_URL
@@ -478,12 +478,13 @@ def process_csv(
 
 
 # todo adding output path
-def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
+def redcap2reproschema(csv_file, yaml_file, output_path, schema_context_url=None):
     """
     Convert a REDCap data dictionary to Reproschema format.
 
     :param csv_file: Path to the REDCap CSV file.
     :param yaml_path: Path to the YAML configuration file.
+    :param output_path: Path to the output dir, where protocol directory will be created
     :param schema_context_url: URL of the schema context. Optional.
     """
 
@@ -501,18 +502,11 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
         raise ValueError("Protocol name not specified in the YAML file.")
 
     protocol_name = protocol_name.replace(" ", "_")  # Replacing spaces with underscores
-
-    # Check if the directory already exists
-    if not os.path.exists(protocol_name):
-        os.mkdir(protocol_name)  # Create the directory if it doesn't exist
-
-    # Get absolute path of the local repository
-    abs_folder_path = os.path.abspath(protocol_name)
+    abs_folder_path = Path(output_path) / protocol_name
+    abs_folder_path.mkdir(parents=True, exist_ok=True)
 
     if schema_context_url is None:
         schema_context_url = CONTEXTFILE_URL
-
-    # Initialize variables
 
     # Process the CSV file
     datas, order, compute, _ = process_csv(
@@ -573,18 +567,3 @@ def redcap2reproschema(csv_file, yaml_file, schema_context_url=None):
         protocol_order,
         protocol_visibility_obj,
     )
-
-
-def main():
-    parser = argparse.ArgumentParser(
-        description="Convert REDCap data dictionary to Reproschema format."
-    )
-    parser.add_argument("csv_file", help="Path to the REDCap data dictionary CSV file.")
-    parser.add_argument("yaml_file", help="Path to the Reproschema protocol YAML file.")
-    args = parser.parse_args()
-
-    redcap2reproschema(args.csv_file, args.yaml_file)
-
-
-if __name__ == "__main__":
-    main()

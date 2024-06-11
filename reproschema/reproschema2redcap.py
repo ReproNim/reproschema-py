@@ -280,7 +280,7 @@ def write_to_csv(csv_data, output_csv_filename):
     print("The CSV file was written successfully")
 
 
-def main(input_dir_path, output_csv_filename):
+def reproschema2redcap(input_dir_path, output_csv_filename):
     contextfile = CONTEXTFILE_URL  # todo, give an option
     http_kwargs = {}
     stop, port = start_server()
@@ -292,15 +292,3 @@ def main(input_dir_path, output_csv_filename):
     finally:
         stop_server(stop)
     write_to_csv(csv_data, output_csv_filename)
-
-
-if __name__ == "__main__":
-    # check if input_dir_path and output_csv_filename are provided
-    if len(sys.argv) < 3:
-        print(
-            "Usage: python reproschema2redcap.py <input_dir_path> <output_csv_filename>"
-        )
-        sys.exit(1)
-    input_dir_path = Path(sys.argv[1])
-    output_csv_filename = sys.argv[2]
-    main(input_dir_path, output_csv_filename)

@@ -5,7 +5,7 @@ from pathlib import Path
 from . import get_logger, set_logger_level
 from . import __version__
 from .redcap2reproschema import redcap2reproschema as redcap2rs
-from .reproschema2redcap import main as rs2redcap
+from .reproschema2redcap import reproschema2redcap as rs2redcap
 
 lgr = get_logger()
 
@@ -104,12 +104,19 @@ def serve(port):
 @main.command()
 @click.argument("csv_path", type=click.Path(exists=True, dir_okay=False))
 @click.argument("yaml_path", type=click.Path(exists=True, dir_okay=False))
-def redcap2reproschema(csv_path, yaml_path):
+@click.option(
+    "--output-path",
+    type=click.Path(dir_okay=True, writable=True, resolve_path=True),
+    default=".",
+    show_default=True,
+    help="Path to the output directory, defaults to the current directory.",
+)
+def redcap2reproschema(csv_path, yaml_path, output_path):
     """
     Convert REDCap CSV files to Reproschema format.
     """
     try:
-        redcap2rs(csv_path, yaml_path)
+        redcap2rs(csv_path, yaml_path, output_path)
         click.echo("Converted REDCap data dictionary to Reproschema format.")
     except Exception as e:
         raise click.ClickException(f"Error during conversion: {e}")
