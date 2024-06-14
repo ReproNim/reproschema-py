@@ -13,7 +13,8 @@ matrix_group_count = {}
 # All the mapping used in the code
 SCHEMA_MAP = {
     "Variable / Field Name": "@id",  # column A
-    "Item Display Name": "prefLabel",
+    # "Item Display Name": "prefLabel", # there is no column for this
+    "Field Note": "description",
     # TODO: often "Field Annotation" has "@HIDDEN" and other markers
     # TODO: not sure if this can be every treated as description
     # "Field Annotation": "description",  # column R
@@ -28,8 +29,7 @@ SCHEMA_MAP = {
     "Branching Logic (Show field only if...)": "visibility",  # column L
     "Custom Alignment": "customAlignment",  # column N
     # "Identifier?": "identifiable",  # column K # todo: should we remove the identifiers completely?
-    "multipleChoice": "multipleChoice",
-    "responseType": "@type",
+    "responseType": "@type",  # not sre what to do with it
 }
 
 INPUT_TYPE_MAP = {
@@ -50,14 +50,14 @@ INPUT_TYPE_MAP = {
 VALUE_TYPE_MAP = {
     "text": "xsd:string",
     "date_": "xsd:date",
-    "date_mdy": "xsd:string",  # ?? new one TODO: not sure what to do with it, it's not xsd:date
-    "datetime_seconds_mdy": "xsd:string",  # ?? new one TODO: not sure what to do with it, it's not xsd:date
+    "date_mdy": "xsd:date",  # ?? new one TODO: not sure what to do with it, it's not xsd:date
+    "datetime_seconds_mdy": "xsd:date",  # ?? new one TODO: not sure what to do with it, it's not xsd:date
     "date_ymd": "xsd:date",  # new one
     "datetime_": "xsd:dateTime",
     "time_": "xsd:time",
     "email": "xsd:string",
     "phone": "xsd:string",
-    "number": "xsd:decimal",  # new oen
+    "number": "xsd:decimal",  # new one (TODO: could be integer, but have no idea of knowing)
     "float": "xsd:decimal",  # new oen
     "integer": "xsd:integer",  # new one
     "signature": "xsd: string",  # ?? new one
@@ -71,9 +71,8 @@ VALUE_TYPE_MAP = {
 # TODO: I don't know what to do with customAlignment
 # UI_LIST = ["shuffle", "allow", "customAlignment"]
 COMPUTE_LIST = ["calc", "sql"]  # field types that should be used as compute
-# TODO: for now the minValue and max Value is not used...
-# TODO: since sometimes is string and not sure what to do
-RESPONSE_LIST = ["multipleChoice"]  # , "minValue", "maxValue"]
+# TODO:  minValue and max Value can be smteims str, ignored for now
+RESPONSE_COND = ["minValue", "maxValue"]
 ADDITIONAL_NOTES_LIST = ["Field Note", "Question Number (surveys only)"]
 
 
@@ -89,6 +88,15 @@ def clean_header(header):
 # TODO: normalized condition should depend on the field type, e.g., for SQL
 def normalize_condition(condition_str, field_type=None):
     # Regular expressions for various pattern replacements
+    # TODO: function doesn't remove <b></b> tags
+    if isinstance(condition_str, bool):
+        return condition_str
+    elif isinstance(condition_str, str) and condition_str.lower() == "true":
+        return True
+    elif isinstance(condition_str, str) and condition_str.lower() == "false":
+        return False
+    elif condition_str is None:
+        return None
     re_parentheses = re.compile(r"\(([0-9]*)\)")
     re_non_gt_lt_equal = re.compile(r"([^>|<])=")
     re_brackets = re.compile(r"\[([^\]]*)\]")
@@ -163,44 +171,54 @@ def parse_field_type_and_value(field):
                 f"supported types are {VALUE_TYPE_MAP.keys()}"
             )
         value_type = VALUE_TYPE_MAP.get(validation_type)
+        # there are some specific input types in Reproschema that could be used instead of text
+        if validation_type == "integer" and field_type == "text":
+            input_type = "number"
+        elif validation_type in ["float", "number"] and field_type == "text":
+            input_type = "float"
+        elif validation_type == "email" and field_type == "text":
+            input_type = "email"
+        elif validation_type == "signature" and field_type == "text":
+            input_type = "sign"
+        elif value_type == "xsd:date" and field_type == "text":
+            input_type = "date"
     elif field_type == "yesno":
         value_type = "xsd:boolen"
     elif field_type in COMPUTE_LIST:
         value_type = "xsd:integer"
-    elif input_type in ["radio", "dropdown"]:
-        # If there's no validation type, but the field type is radio or dropdown, use xsd:integer
-        value_type = "xsd:integer"  # TODO: ask
-    else:  # set the default value type as string (TODO: ask)
+    else:  # set the default value type as string
         value_type = "xsd:string"
     return input_type, value_type
 
 
-def process_choices(input_type, choices_str):
+def process_choices(choices_str, field_name):
     if len(choices_str.split("|")) < 2:
         print(f"WARNING: I found only one option for choice: {choices_str}")
 
     choices = []
-    for choice in choices_str.split("|"):
+    choices_value_type = []
+    for ii, choice in enumerate(choices_str.split("|")):
         parts = choice.split(", ")
         if len(parts) < 2:
             print(
-                f"Warning: Skipping invalid choice format '{choice}' in a {input_type} field"
+                f"Warning: Invalid choice format '{choice}' in a {field_name} field, adding integer as a value"
             )
-            continue
-
+            # TODO! I'm adding int by default, but there is probably some legend in the csv and this is not yet implemented
+            parts = [ii, parts[0]]
         # Try to convert the first part to an integer, if it fails, keep it as a string
         try:
             value = int(parts[0])
+            choices_value_type.append("xsd:integer")
         except ValueError:
             value = parts[0]
-
+            choices_value_type.append("xsd:string")
         choice_obj = {"name": {"en": " ".join(parts[1:])}, "value": value}
         # remove image for now
         # if len(parts) == 3:
         #     # Handle image url
         #     choice_obj["image"] = f"{parts[2]}.png"
         choices.append(choice_obj)
-    return choices
+    return choices, list(set(choices_value_type))
 
 
 def parse_html(input_string, default_language="en"):
@@ -220,7 +238,6 @@ def parse_html(input_string, default_language="en"):
         result[default_language] = soup.get_text(
             strip=True
         )  # Use the entire text as default language text
-
     return result
 
 
@@ -229,6 +246,7 @@ def process_row(
     schema_context_url,
     form_name,
     field,
+    add_preable=True,
 ):
     """Process a row of the REDCap data and generate the jsonld file for the item."""
     global matrix_group_count
@@ -244,8 +262,8 @@ def process_row(
     rowData = {
         "category": "reproschema:Item",
         "id": item_id,
-        "prefLabel": {"en": item_id},
-        "description": {"en": f"{item_id} of {form_name}"},
+        "prefLabel": {"en": item_id},  # there is no prefLabel in REDCap
+        # "description": {"en": f"{item_id} of {form_name}"},
     }
 
     field_type = field.get("Field Type", "")
@@ -259,28 +277,53 @@ def process_row(
             {"name": {"en": "Yes"}, "value": 1},
             {"name": {"en": "No"}, "value": 0},
         ]
+    elif field_type == "checkbox":
+        rowData["responseOptions"]["multipleChoice"] = True
     elif field_type in COMPUTE_LIST:
         rowData["ui"]["readonlyValue"] = True
 
     for key, value in field.items():
-        if SCHEMA_MAP.get(key) in ["question", "description", "preamble"] and value:
+        # cbreakpoint()
+        if SCHEMA_MAP.get(key) in ["question", "description"] and value:
+            rowData.update({SCHEMA_MAP[key]: parse_html(value)})
+        elif SCHEMA_MAP.get(key) == "preamble" and value and add_preable:
             rowData.update({SCHEMA_MAP[key]: parse_html(value)})
         elif SCHEMA_MAP.get(key) == "allow" and value:
-            rowData.setdefault("ui", {}).update({"allow": value.split(", ")})
-        elif SCHEMA_MAP.get(key) in RESPONSE_LIST and value:
-            if key == "multipleChoice":
-                value = value == "1"
-            rowData.setdefault("responseOptions", {}).update({SCHEMA_MAP[key]: value})
+            rowData["ui"].update({"allow": value.split(", ")})
         # choices are only for some input_types
         elif (
             SCHEMA_MAP.get(key) == "choices"
             and value
             and input_type in ["radio", "select", "slider"]
         ):
-            # Pass both input_type and value to process_choices
-            rowData.setdefault("responseOptions", {}).update(
-                {"choices": process_choices(input_type, value)}
+            choices, choices_val_type_l = process_choices(
+                value, field_name=field["Variable / Field Name"]
             )
+            rowData["responseOptions"].update(
+                {
+                    "choices": choices,
+                    "valueType": choices_val_type_l,
+                },  # updating value type for choices (can be int or str)
+            )
+        # for now adding only for numerics, sometimes can be string or date.. TODO
+        elif (
+            SCHEMA_MAP.get(key) in RESPONSE_COND
+            and value
+            and value_type in ["xsd:integer", "xsd:decimal"]
+        ):
+            if value_type == "xsd:integer":
+                try:
+                    value = int(value)
+                except ValueError:
+                    print(f"Warning: Value {value} is not an integer")
+                    continue
+            elif value_type == "xsd:decimal":
+                try:
+                    value = float(value)
+                except ValueError:
+                    print(f"Warning: Value {value} is not a decimal")
+                    continue
+            rowData["responseOptions"].update({SCHEMA_MAP[key]: value})
 
         # elif key == "Identifier?" and value:
         #     identifier_val = value.lower() == "y"
@@ -320,6 +363,7 @@ def create_form_schema(
     bl_list,
     matrix_list,  # TODO: in the future
     compute_list,
+    preable=None,
 ):
     """Create the JSON-LD schema for the Activity."""
     # Use a set to track unique items and preserve order
@@ -330,7 +374,7 @@ def create_form_schema(
         "category": "reproschema:Activity",
         "id": f"{form_name}_schema",
         "prefLabel": {"en": activity_display_name},
-        "description": {"en": activity_description},
+        #        "description": {"en": activity_description},
         "schemaVersion": "1.0.0-rc4",
         "version": redcap_version,
         "ui": {
@@ -339,7 +383,8 @@ def create_form_schema(
             "shuffle": False,
         },
     }
-
+    if preable:
+        json_ld["preamble"] = parse_html(preable)
     if compute_list:
         json_ld["compute"] = compute_list
 
@@ -379,7 +424,7 @@ def create_protocol_schema(
         "category": "reproschema:Protocol",
         "id": f"{protocol_name}_schema",
         "prefLabel": {"en": protocol_display_name},
-        "altLabel": {"en": f"{protocol_name}_schema"},
+        # "altLabel": {"en": f"{protocol_name}_schema"}, todo: should we add this?
         "description": {"en": protocol_description},
         "schemaVersion": "1.0.0-rc4",
         "version": redcap_version,
@@ -451,6 +496,7 @@ def process_csv(
             # if not languages:
             #    languages = parse_language_iso_codes(row["Field Label"])
 
+            field_name = row["Variable / Field Name"]
             if row.get("Field Type", "") in COMPUTE_LIST:
                 # TODO: this right now doesn't give jsExpression
                 condition = normalize_condition(
@@ -459,19 +505,12 @@ def process_csv(
                 )
                 compute[form_name].append(
                     {
-                        "variableName": row["Variable / Field Name"],
+                        "variableName": field_name,
                         "jsExpression": condition,
                     }
                 )
-            field_name = row["Variable / Field Name"]
-            order[form_name].append(f"items/{field_name}")
-            print("Processing field: ", field_name, " in form: ", form_name)
-            process_row(
-                abs_folder_path,
-                schema_context_url,
-                form_name,
-                row,
-            )
+            else:
+                order[form_name].append(f"items/{field_name}")
 
     os.makedirs(f"{abs_folder_path}/{protocol_name}", exist_ok=True)
     return datas, order, compute, languages
@@ -523,6 +562,7 @@ def redcap2reproschema(csv_file, yaml_file, output_path, schema_context_url=None
     for form_name, rows in datas.items():
         bl_list = []
         matrix_list = []
+        preambles_list = []
 
         for field in rows:
             # TODO (future): this probably can be done in proces_csv so don't have to run the loop again
@@ -537,9 +577,23 @@ def redcap2reproschema(csv_file, yaml_file, output_path, schema_context_url=None
                         "matrixRanking": field["Matrix Ranking?"],
                     }
                 )
+            preamble = field.get("Section Header", "").strip()
+            if preamble:
+                preambles_list.append(preamble)
+
+        if len(set(preambles_list)) == 1:
+            preamble_act = preambles_list[0]
+            preamble_itm = False
+        elif len(set(preambles_list)) == 0:
+            preamble_act = None
+            preamble_itm = False
+        else:
+            preamble_act = None
+            preamble_itm = True
 
         activity_display_name = rows[0]["Form Name"]
-        activity_description = rows[0].get("Form Note", "Default description")
+        # todo: there is no form note in the csv
+        activity_description = ""  # rows[0].get("Form Note", "Default description")
 
         create_form_schema(
             abs_folder_path,
@@ -552,10 +606,22 @@ def redcap2reproschema(csv_file, yaml_file, output_path, schema_context_url=None
             bl_list,
             matrix_list,
             compute[form_name],
+            preable=preamble_act,
         )
 
+        # Process items after I know if preable belongs to the form or item
+        for field in rows:
+            field_name = field["Variable / Field Name"]
+            print("Processing field: ", field_name, " in form: ", form_name)
+            process_row(
+                abs_folder_path,
+                schema_context_url,
+                form_name,
+                field,
+                add_preable=preamble_itm,
+            )
+        print("Processing activities", form_name)
         process_activities(form_name, protocol_visibility_obj, protocol_order)
-
     # Create protocol schema
     create_protocol_schema(
         abs_folder_path,

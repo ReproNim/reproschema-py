@@ -43,30 +43,38 @@ def fetch_choices_from_url(url):
         return ""
 
 
-def find_Ftype_and_colH(item, row_data):
+def find_Ftype_and_colH(item, row_data, response_options):
     # Extract the input type from the item_json
     f_type = item.ui.inputType
     col_h = ""
 
     if f_type in ["text", "textarea", "email"]:
         f_type = "text"
+    elif f_type in ["static", "save"]:
+        f_type = "descriptive"
     elif f_type == "integer":
         f_type = "text"
         col_h = "integer"
-    elif f_type in ["number", "float"]:
+    elif f_type == "number":
         f_type = "text"
-        col_h = "number"
+        col_h = "integer"
+    elif f_type == "float":
+        f_type = "text"
+        col_h = "float"
     elif f_type == "date":
         f_type = "text"
         col_h = "date_mdy"
     elif f_type == "select":
-        multiple_choice = item.responseOptions.multipleChoice
+        multiple_choice = response_options.multipleChoice
         print("mult", multiple_choice)
         f_type = "checkbox" if multiple_choice else "dropdown"
-    elif f_type.startswith("select"):
+    elif f_type == "radio":
+        if response_options.multipleChoice:
+            f_type = "checkbox"
+    elif f_type.startswith("select"):  # TODO: this should be reviewed
         # Adjusting for selectCountry, selectLanguage, selectState types
         f_type = "radio"
-        choices_url = item.responseOptions.choices
+        choices_url = response_options.choices
         if choices_url and isinstance(choices_url, str):
             choices_data = fetch_choices_from_url(choices_url)
             if choices_data:
@@ -84,7 +92,16 @@ def find_Ftype_and_colH(item, row_data):
     return row_data
 
 
-def process_item(item, activity_name, contextfile, http_kwargs):
+def process_item(
+    item,
+    item_properties,
+    activity_name,
+    activity_preamble,
+    contextfile,
+    http_kwargs,
+    compute_item=False,
+    compute_expr=None,
+):
     """
     Process an item in JSON format and extract relevant information into a dictionary.
 
@@ -95,6 +112,8 @@ def process_item(item, activity_name, contextfile, http_kwargs):
     Returns:
         dict: A dictionary containing the extracted information.
     """
+    if activity_name.endswith("_schema"):
+        activity_name = activity_name[:-7]
     row_data = {
         "val_min": "",
         "val_max": "",
@@ -102,8 +121,9 @@ def process_item(item, activity_name, contextfile, http_kwargs):
         "required": "",
         "field_notes": "",
         "var_name": "",
-        "activity": activity_name.lower(),
+        "activity": activity_name,
         "field_label": "",
+        "isVis_logic": "",
     }
 
     # Extract min and max values from response options, if available
@@ -136,19 +156,30 @@ def process_item(item, activity_name, contextfile, http_kwargs):
             item_choices = [f"{ch.value}, {ch.name.get('en', '')}" for ch in choices]
             row_data["choices"] = " | ".join(item_choices)
 
-    row_data["required"] = ""  # response_options.get("requiredValue", "")
-    row_data["field_notes"] = item.altLabel.get("en", "")
-    row_data["preamble"] = item.preamble.get("en", "")
+    if item_properties.get("valueRequired", "") == True:
+        row_data["required"] = "y"
+    if "isVis" in item_properties and item_properties["isVis"] != True:
+        row_data["isVis_logic"] = item_properties["isVis"]
+    row_data["field_notes"] = item.description.get("en", "")
+    row_data["preamble"] = item.preamble.get("en", activity_preamble)
     row_data["var_name"] = item.id
 
-    question = item.question
+    if compute_item:
+        # for compute items there are no questions
+        question = item.description
+    else:
+        question = item.question
     if isinstance(question, dict):
         row_data["field_label"] = question.get("en", "")
     elif isinstance(question, str):
         row_data["field_label"] = question
 
-    # Call helper function to find field type and validation type (if any) and update row_data
-    row_data = find_Ftype_and_colH(item, row_data)
+    if compute_item and compute_expr:
+        row_data["choices"] = compute_expr
+        row_data["field_type"] = "calc"
+    else:
+        # Call helper function to find field type and validation type (if any) and update row_data
+        row_data = find_Ftype_and_colH(item, row_data, response_options)
 
     return row_data
 
@@ -190,37 +221,71 @@ def get_csv_data(dir_path, contextfile, http_kwargs):
                     )
                     del parsed_activity_json["@context"]
                     act = Activity(**parsed_activity_json)
+                    items_properties = {
+                        el["variableName"]: el
+                        for el in parsed_activity_json["ui"]["addProperties"]
+                    }
+                    items_properties.update(
+                        {
+                            el["isAbout"]: el
+                            for el in parsed_activity_json["ui"]["addProperties"]
+                        }
+                    )
 
                     if parsed_activity_json:
-                        item_order = act.ui.order
-                        for item in item_order:
-                            if not _is_url(item):
-                                item = activity_path.parent / item
-                            item_json = load_file(
-                                item,
-                                started=True,
-                                http_kwargs=http_kwargs,
-                                fixoldschema=True,
-                                compact=True,
-                                compact_context=contextfile,
-                            )
+                        item_order = [("ord", el) for el in act.ui.order]
+                        item_calc = [("calc", el) for el in act.compute]
 
+                        for tp, item in item_order + item_calc:
+                            if tp == "calc":
+                                js_expr = item.jsExpression
+                                if item.variableName in items_properties:
+                                    item = items_properties[item.variableName][
+                                        "isAbout"
+                                    ]
+                                else:
+                                    print(
+                                        "WARNING: no item properties found for",
+                                        item.variableName,
+                                        activity_name,
+                                    )
+                                    continue
+                                item_calc = True
+                            else:
+                                item_calc = False
+                                js_expr = None
+                            it_prop = items_properties.get(item)
+                            if not _is_url(item):
+                                item = Path(activity_path).parent / item
+                            try:
+                                item_json = load_file(
+                                    item,
+                                    started=True,
+                                    http_kwargs=http_kwargs,
+                                    fixoldschema=True,
+                                    compact=True,
+                                    compact_context=contextfile,
+                                )
+                            except Exception as e:
+                                print(f"Error loading item: {item}")
+                                continue
                             item_json.pop("@context", "")
                             itm = Item(**item_json)
-                            if item_json:
-                                if _is_url(activity_path):
-                                    activity_name = activity_path.split("/")[-1].split(
-                                        "."
-                                    )[0]
-                                else:
-                                    activity_name = activity_path.stem
-                                row_data = process_item(
-                                    itm, activity_name, contextfile, http_kwargs
-                                )
-                                csv_data.append(row_data)
+                            activity_name = act.id.split("/")[-1].split(".")[0]
+                            activity_preamble = act.preamble.get("en", "").strip()
+                            row_data = process_item(
+                                itm,
+                                it_prop,
+                                activity_name,
+                                activity_preamble,
+                                contextfile,
+                                http_kwargs,
+                                item_calc,
+                                js_expr,
+                            )
+                            csv_data.append(row_data)
                 # Break after finding the first _schema file
                 break
-
     return csv_data
 
 
@@ -233,7 +298,7 @@ def write_to_csv(csv_data, output_csv_filename):
         "Field Type",
         "Field Label",
         "Choices, Calculations, OR Slider Labels",
-        "Field Note",
+        "Field Note",  # TODO: is this description?
         "Text Validation Type OR Show Slider Number",
         "Text Validation Min",
         "Text Validation Max",
@@ -254,8 +319,11 @@ def write_to_csv(csv_data, output_csv_filename):
         # Map the data from your format to REDCap format
         redcap_data = []
         for row in csv_data:
+            var_name = row["var_name"]
+            if _is_url(var_name):
+                var_name = var_name.split("/")[-1].split(".")[0]
             redcap_row = {
-                "Variable / Field Name": row["var_name"],
+                "Variable / Field Name": var_name,
                 "Form Name": row["activity"],
                 "Section Header": row[
                     "preamble"
@@ -267,8 +335,10 @@ def write_to_csv(csv_data, output_csv_filename):
                 "Text Validation Type OR Show Slider Number": row.get(
                     "val_type_OR_slider", ""
                 ),
+                "Required Field?": row["required"],
                 "Text Validation Min": row["val_min"],
                 "Text Validation Max": row["val_max"],
+                "Branching Logic (Show field only if...)": row["isVis_logic"],
                 # Add other fields as necessary based on your data
             }
             redcap_data.append(redcap_row)

@@ -40,13 +40,15 @@ def _fetch_jsonld_context(url):
 def load_file(
     path_or_url,
     started=False,
-    http_kwargs={},
+    http_kwargs=None,
     compact=False,
     compact_context=None,
     fixoldschema=False,
 ):
     """Load a file or URL and return the expanded JSON-LD data."""
     path_or_url = str(path_or_url)
+    if http_kwargs is None:
+        http_kwargs = {}
     if _is_url(path_or_url):
         data = jsonld.expand(path_or_url)
         if len(data) == 1:
