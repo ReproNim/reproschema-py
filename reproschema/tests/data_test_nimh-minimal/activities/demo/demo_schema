@@ -1,0 +1,36 @@
+{
+    "@context": [
+        "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
+        {
+            "demo": "https://raw.githubusercontent.com/ReproNim/reproschema-library/80867e36fb2c00563290486bf3f3bbeb3198f5cb/activities/NDA/items/"
+        }
+        ],
+    "@type": "reproschema:Activity",
+    "@id": "demo_schema",
+    "prefLabel": {"en": "Demographics" },
+    "description": "Demographic information",
+    "preamble": " ",
+    "schemaVersion": "1.0.0-rc4",
+    "version": "0.0.1",
+    "ui": {
+        "addProperties": [
+            {
+                "isAbout": "demo:interview_age",
+                "variableName": "interview_age"
+            },
+            {
+                "isAbout": "demo:sex",
+                "variableName": "sex"
+            }
+        ],
+        "order": [
+            "demo:interview_age",
+            "demo:sex"
+        ],
+        "shuffle": false,
+        "allow": [
+			"reproschema:AutoAdvance",
+			"reproschema:AllowExport"
+		]
+    }
+}

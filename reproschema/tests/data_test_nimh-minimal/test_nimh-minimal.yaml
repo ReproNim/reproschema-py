@@ -1,0 +1,16 @@
+# Reproschema Protocol Configuration
+
+# Protocol Name:
+# Use underscores for spaces and avoid special characters.
+# This is the unique identifier for your protocol.
+protocol_name: "nimh_minimal"
+
+# Protocol Display Name:
+# This name will be displayed in the application.
+protocol_display_name: "NIMH collection"
+
+# Protocol Description:
+# Provide a brief description of your protocol.
+protocol_description: "Minimal list of data collection instruments that would be ideal for use by all mental health researchers conducting clinical research to facilitate and harmonize mental health data collection."
+
+redcap_version: "unknown"
