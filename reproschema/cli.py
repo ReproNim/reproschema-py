@@ -5,7 +5,8 @@ from pathlib import Path
 from . import get_logger, set_logger_level
 from . import __version__
 from .redcap2reproschema import redcap2reproschema as redcap2rs
-from .reproschema2redcap import main as rs2redcap
+from .reproschema2redcap import reproschema2redcap as rs2redcap
+from .migrate import migrate2newschema
 
 lgr = get_logger()
 
@@ -42,14 +43,33 @@ def main(log_level):
 
 
 @main.command()
-@click.option("--shapefile", default=None, type=click.Path(exists=True, dir_okay=False))
 @click.argument("path", nargs=1, type=str)
-def validate(shapefile, path):
+def validate(path):
     if not (path.startswith("http") or os.path.exists(path)):
         raise ValueError(f"{path} must be a URL or an existing file or directory")
     from .validate import validate
 
-    validate(shapefile, path)
+    result = validate(path)
+    if result:
+        click.echo("Validation successful")
+
+
+@main.command()
+@click.argument("path", nargs=1, type=click.Path(exists=True, dir_okay=True))
+@click.option("--inplace", is_flag=True, help="Changing file in place")
+@click.option(
+    "--fixed-path",
+    type=click.Path(dir_okay=True, writable=True, resolve_path=True),
+    help="Path to the fixed file/directory, if not provide suffix 'after_migration' is used",
+)
+def migrate(path, inplace, fixed_path):
+    if not (path.startswith("http") or os.path.exists(path)):
+        raise ValueError(f"{path} must be a URL or an existing file or directory")
+    if fixed_path and inplace:
+        raise Exception("Either inplace or fixed_path has to be provided.")
+    new_path = migrate2newschema(path, inplace=inplace, fixed_path=fixed_path)
+    if new_path:
+        click.echo(f"File/Directory after migration {new_path}")
 
 
 @main.command()
@@ -103,12 +123,19 @@ def serve(port):
 @main.command()
 @click.argument("csv_path", type=click.Path(exists=True, dir_okay=False))
 @click.argument("yaml_path", type=click.Path(exists=True, dir_okay=False))
-def redcap2reproschema(csv_path, yaml_path):
+@click.option(
+    "--output-path",
+    type=click.Path(dir_okay=True, writable=True, resolve_path=True),
+    default=".",
+    show_default=True,
+    help="Path to the output directory, defaults to the current directory.",
+)
+def redcap2reproschema(csv_path, yaml_path, output_path):
     """
     Convert REDCap CSV files to Reproschema format.
     """
     try:
-        redcap2rs(csv_path, yaml_path)
+        redcap2rs(csv_path, yaml_path, output_path)
         click.echo("Converted REDCap data dictionary to Reproschema format.")
     except Exception as e:
         raise click.ClickException(f"Error during conversion: {e}")
