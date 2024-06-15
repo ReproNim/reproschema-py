@@ -325,7 +325,7 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
     return errors_list, warnings_list
 
 
-def test_rp2redcap_redcap2rp(tmpdir):
+def test_rs2redcap_redcap2rs(tmpdir):
     runner = CliRunner()
     copytree(
         Path(__file__).parent / "data_test_nimh-minimal", tmpdir / "nimh_minimal_orig"
