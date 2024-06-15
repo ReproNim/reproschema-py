@@ -1,4 +1,6 @@
-import os, json
+import os
+import json
+from pathlib import Path
 from .utils import start_server, stop_server, lgr
 from .jsonldutils import load_file, validate_data
 from pathlib import Path
@@ -6,8 +8,6 @@ from pathlib import Path
 
 def validate_dir(directory, started=False, http_kwargs={}):
     """Validate a directory containing JSONLD documents against the ReproSchema pydantic model.
-
-    .. warning:: This assumes every file in the directory can be read by a json parser.
 
     Parameters
     ----------
@@ -36,17 +36,16 @@ def validate_dir(directory, started=False, http_kwargs={}):
     else:
         if "port" not in http_kwargs:
             raise KeyError(f"HTTP server started, but port key is missing")
-    for full_file_name in Path(directory).rglob("*"):
-        # Skip files that should not be validated
-        if full_file_name.name in [".DS_Store"]:
-            continue
-        # checking if the path is a file and if the file can be a jsonld file
-        if full_file_name.is_file() and full_file_name.suffix in [
-            "",
-            "js",
-            "json",
-            "jsonld",
-        ]:
+
+    for root, _, files in os.walk(directory):
+        for name in files:
+            full_file_name = os.path.join(root, name)
+
+            if Path(full_file_name).suffix not in [".jsonld", "json", "js", ""]:
+                lgr.info(f"Skipping file {full_file_name}")
+                continue
+
+            lgr.debug(f"Validating file {full_file_name}")
             try:
                 data = load_file(full_file_name, started=True, http_kwargs=http_kwargs)
                 if len(data) == 0:
