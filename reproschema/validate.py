@@ -37,6 +37,9 @@ def validate_dir(directory, started=False, http_kwargs={}):
         if "port" not in http_kwargs:
             raise KeyError(f"HTTP server started, but port key is missing")
     for full_file_name in Path(directory).rglob("*"):
+        # Skip files that should not be validated
+        if full_file_name.name in [".DS_Store"]:
+            continue
         # checking if the path is a file and if the file can be a jsonld file
         if full_file_name.is_file() and full_file_name.suffix in [
             "",
@@ -83,6 +86,10 @@ def validate(path):
     if os.path.isdir(path):
         conforms = validate_dir(path)
     else:
+        # Skip validation for .DS_Store files
+        if Path(path).name == ".DS_Store":
+            lgr.info(f"{path} is a .DS_Store file and is skipped.")
+            return True
         data = load_file(path, started=False)
         conforms, vtext = validate_data(data)
         if not conforms:
