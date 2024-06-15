@@ -25,7 +25,6 @@ def test_reproschema2redcap(tmpdir):
         )
         print("input", original_data_dir)
         print("output", output_csv_path)
-        print(result.output)
 
         assert result.exit_code == 0
 

@@ -97,6 +97,7 @@ def normalize_condition(condition_str, field_type=None):
         return False
     elif condition_str is None:
         return None
+
     re_parentheses = re.compile(r"\(([0-9]*)\)")
     re_non_gt_lt_equal = re.compile(r"([^>|<])=")
     re_brackets = re.compile(r"\[([^\]]*)\]")
@@ -283,7 +284,7 @@ def process_row(
         rowData["ui"]["readonlyValue"] = True
 
     for key, value in field.items():
-        # cbreakpoint()
+        # breakpoint()
         if SCHEMA_MAP.get(key) in ["question", "description"] and value:
             rowData.update({SCHEMA_MAP[key]: parse_html(value)})
         elif SCHEMA_MAP.get(key) == "preamble" and value and add_preable:
@@ -393,6 +394,7 @@ def create_form_schema(
     # remove matrixInfo to pass validataion
     # if matrix_list:
     #     json_ld["matrixInfo"] = matrix_list
+
 
     path = os.path.join(f"{abs_folder_path}", "activities", form_name)
     os.makedirs(path, exist_ok=True)
