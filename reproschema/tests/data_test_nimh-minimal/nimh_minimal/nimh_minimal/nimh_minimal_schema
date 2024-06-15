@@ -1,0 +1,128 @@
+{
+    "@context": [
+        "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0-rc4/contexts/generic",
+        {
+            "activity_path": "https://raw.githubusercontent.com/ReproNim/reproschema-library/a23a13875c7262c0bd0d77bd90c1ec296c6d1116/activities/"
+        }
+        ],
+    "@type": "reproschema:Protocol",
+    "@id": "nimh_minimal_schema",
+    "prefLabel": "NIMH collection",
+    "description": "Minimal list of data collection instruments that would be ideal for use by all mental health researchers conducting clinical research to facilitate and harmonize mental health data collection.",
+    "schemaVersion": "1.0.0-rc4",
+    "version": "0.0.1",
+    "landingPage": [
+        {
+            "@id": "README.md",
+            "inLanguage": "en"
+        }
+    ],
+    "ui": {
+        "addProperties": [
+            {
+                "isAbout": "../activities/demo/demo_schema",
+                "variableName": "demo_schema",
+                "prefLabel": {
+                    "en": "Demographics"
+                }
+            },
+            {
+                "isAbout": "activity_path:DSM-5_A/DSM5_crosscutting_adult_schema",
+                "variableName": "DSM5_crosscutting_adult_schema",
+                "prefLabel": {
+                    "en": "DSM5 Adult"
+                },
+                "isVis": "Number(demo_schema.interview_age) >= 12*18"
+            },
+	        {
+                "variableName": "WHODAS12_schema",
+                "isAbout": "activity_path:WHODAS12/WHODAS12_schema",
+                "prefLabel": {
+                    "en": "WHODAS12"
+                },
+                "isVis": "Number(demo_schema.interview_age) >= 12*18"
+            },
+	        {
+                "variableName": "PHQ9_schema",
+                "isAbout": "activity_path:PHQ-9/PHQ9_schema",
+                "prefLabel": {
+                    "en": "PHQ9"
+                },
+                "isVis": "Number(demo_schema.interview_age) >= 12*18"
+            },
+	        {
+                "variableName": "GAD7_schema",
+                "isAbout": "activity_path:GAD7/GAD7_schema",
+                "prefLabel": {
+                    "en": "GAD7"
+                },
+                "isVis": "Number(demo_schema.interview_age) >= 12*18"
+            },
+            {
+                "isAbout": "activity_path:dsm_5_parent_guardian_rated_level_1_crosscutting_s/dsm_5_parent_guardian_rated_level_1_crosscutting_s_schema_first_19",
+                "variableName": "dsm_5_parent_guardian_rated_level_1_crosscutting_s_schema_first_19",
+                "prefLabel": {
+                    "en": "DSM5 Parent first 19"
+                },
+                "isVis": "Number(demo_schema_interview_age) > 12*6 && Number(demo_schema_interview_age) < 12*18"
+            },
+            {
+                "isAbout": "activity_path:dsm_5_parent_guardian_rated_level_1_crosscutting_s/dsm_5_parent_guardian_rated_level_1_crosscutting_s_schema_20_to_25",
+                "variableName": "dsm_5_parent_guardian_rated_level_1_crosscutting_s_schema_20_to_25",
+                "prefLabel": {
+                    "en": "DSM5 Parent 20 to 25"
+                },
+                "isVis": "Number(demo_schema_interview_age) > 12*6 && Number(demo_schema_interview_age) < 12*18"
+            },
+            {
+                "isAbout": "activity_path:DSM-5_Y/DSM5_crosscutting_youth_schema",
+                "variableName": "DSM5_crosscutting_youth_schema",
+                "prefLabel": {
+                    "en": "DSM5 Youth"
+                },
+                "isVis": "Number(demo_schema_interview_age) > 12*6 && Number(demo_schema_interview_age) < 12*18"
+            },
+            {
+                "isAbout": "activity_path:RCADS-25-C/RCADS25_caregiver_administered_schema",
+                "variableName": "RCADS25_caregiver_administered_schema",
+                "prefLabel": {
+                    "en": "RCADS-25 Caregiver"
+                },
+                "isVis": "Number(demo_schema_interview_age) > 12*4 && Number(demo_schema_interview_age) < 12*18"
+            },
+            {
+                "isAbout": "activity_path:RCADS-25-Y/RCADS25_youth_administered_schema",
+                "variableName": "RCADS25_youth_administered_schema",
+                "prefLabel": {
+                    "en": "RCADS-25 Youth"
+                },
+                "isVis": "Number(demo_schema_interview_age) > 12*4 && Number(demo_schema_interview_age) < 12*18"
+            },
+            {
+                "isAbout": "activity_path:ThankYou/ThankYou_schema",
+                "variableName": "ThankYou_schema",
+                "prefLabel": {
+                    "en": "Submit responses"
+                }
+            }
+        ],
+        "order": [
+            "../activities/demo/demo_schema",
+            "activity_path:DSM-5_A/DSM5_crosscutting_adult_schema",
+            "activity_path:WHODAS12/WHODAS12_schema",
+            "activity_path:PHQ-9/PHQ9_schema",
+            "activity_path:GAD7/GAD7_schema",
+            "activity_path:dsm_5_parent_guardian_rated_level_1_crosscutting_s/dsm_5_parent_guardian_rated_level_1_crosscutting_s_schema_first_19",
+            "activity_path:dsm_5_parent_guardian_rated_level_1_crosscutting_s/dsm_5_parent_guardian_rated_level_1_crosscutting_s_schema_20_to_25",
+            "activity_path:DSM-5_Y/DSM5_crosscutting_youth_schema",
+            "activity_path:RCADS-25-C/RCADS25_caregiver_administered_schema",
+            "activity_path:RCADS-25-Y/RCADS25_youth_administered_schema",
+            "activity_path:ThankYou/ThankYou_schema"
+        ],
+        "shuffle": false,
+        "allow": [
+            "reproschema:AllowExport",
+	    "reproschema:AutoAdvance"
+        ]
+    }
+}

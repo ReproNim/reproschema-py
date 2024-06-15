@@ -1,77 +1,146 @@
 from pyld import jsonld
-from pyshacl import validate as shacl_validate
 import json
 import os
-from .utils import start_server, stop_server, lgr
+from pathlib import Path
+from copy import deepcopy
+import requests
+from urllib.parse import urlparse
+from .utils import start_server, stop_server, lgr, fixing_old_schema, CONTEXTFILE_URL
+from .models import (
+    Item,
+    Activity,
+    Protocol,
+    ResponseOption,
+    ResponseActivity,
+    Response,
+    identify_model_class,
+)
 
 
-def load_file(path_or_url, started=False, http_kwargs={}):
-    try:
+def _is_url(path):
+    """
+    Determine whether the given path is a URL.
+    """
+    parsed = urlparse(str(path))
+    return parsed.scheme in ("http", "https", "ftp", "ftps")
+
+
+def _is_file(path):
+    """
+    Determine whether the given path is a valid file path.
+    """
+    return os.path.isfile(path)
+
+
+def _fetch_jsonld_context(url):
+    response = requests.get(url)
+    return response.json()
+
+
+def load_file(
+    path_or_url,
+    started=False,
+    http_kwargs=None,
+    compact=False,
+    compact_context=None,
+    fixoldschema=False,
+):
+    """Load a file or URL and return the expanded JSON-LD data."""
+    path_or_url = str(path_or_url)
+    if http_kwargs is None:
+        http_kwargs = {}
+    if _is_url(path_or_url):
         data = jsonld.expand(path_or_url)
         if len(data) == 1:
-            if "@id" not in data[0]:
+            if "@id" not in data[0] and "id" not in data[0]:
                 data[0]["@id"] = path_or_url
-    except jsonld.JsonLdError as e:
-        if 'only "http" and "https"' in str(e):
-            lgr.debug("Reloading with local server")
-            root = os.path.dirname(path_or_url)
-            if not started:
-                stop, port = start_server(**http_kwargs)
-            else:
-                if "port" not in http_kwargs:
-                    raise KeyError("port key missing in http_kwargs")
-                port = http_kwargs["port"]
-            base_url = f"http://localhost:{port}/"
-            if root:
-                base_url += f"{root}/"
-            with open(path_or_url) as json_file:
-                data = json.load(json_file)
-            try:
-                data = jsonld.expand(data, options={"base": base_url})
-            except:
-                raise
-            finally:
-                if not started:
-                    stop_server(stop)
-            if len(data) == 1:
-                if "@id" not in data[0]:
-                    data[0]["@id"] = base_url + os.path.basename(path_or_url)
+    elif _is_file(path_or_url):
+        lgr.debug("Reloading with local server")
+        root = os.path.dirname(path_or_url)
+        if not started:
+            stop, port = start_server(**http_kwargs)
         else:
+            if "port" not in http_kwargs:
+                raise KeyError("port key missing in http_kwargs")
+            port = http_kwargs["port"]
+        base_url = f"http://localhost:{port}/"
+        if root:
+            base_url += f"{root}/"
+        with open(path_or_url) as json_file:
+            try:
+                data = json.load(json_file)
+            except json.JSONDecodeError as e:
+                raise json.JSONDecodeError(
+                    f"Error parsing JSON file {json_file}: {e.msg}", e.doc, e.pos
+                ) from e
+        try:
+            data = jsonld.expand(data, options={"base": base_url})
+        except:
             raise
+        finally:
+            if not started:
+                stop_server(stop)
+        if len(data) == 1:
+            if "@id" not in data[0] and "id" not in data[0]:
+                data[0]["@id"] = base_url + os.path.basename(path_or_url)
+    else:
+        raise Exception(f"{path_or_url} is not a valid URL or file path")
+
+    if isinstance(data, list) and len(data) == 1:
+        data = data[0]
+
+    if fixoldschema:
+        data = fixing_old_schema(data, copy_data=True)
+    if compact:
+        if compact_context:
+            if _is_file(compact_context):
+                with open(compact_context) as fp:
+                    context = json.load(fp)
+            elif _is_url(compact_context):
+                context = _fetch_jsonld_context(compact_context)
+            else:
+                raise Exception(
+                    f"compact_context has tobe a file or url, but {compact_context} provided"
+                )
+        if _is_file(path_or_url):
+            data = jsonld.compact(data, ctx=context, options={"base": base_url})
+        else:
+            data = jsonld.compact(data, ctx=context)
+
     return data
 
 
-def validate_data(data, shape_file_path):
-    """Validate an expanded jsonld document against a shape.
+def validate_data(data):
+    """Validate an expanded jsonld document against the pydantic model.
 
     Parameters
     ----------
     data : dict
         Python dictionary containing JSONLD object
-    shape_file_path : str
-        SHACL file for the document
 
     Returns
     -------
     conforms: bool
         Whether the document is conformant with the shape
     v_text: str
-        Validation information returned by PySHACL
+        Validation errors if any returned by pydantic
 
     """
-    kwargs = {"algorithm": "URDNA2015", "format": "application/n-quads"}
-    normalized = jsonld.normalize(data, kwargs)
-    data_file_format = "nquads"
-    shape_file_format = "turtle"
-    conforms, v_graph, v_text = shacl_validate(
-        normalized,
-        shacl_graph=shape_file_path,
-        data_graph_format=data_file_format,
-        shacl_graph_format=shape_file_format,
-        inference="rdfs",
-        debug=False,
-        serialize_report_graph=True,
-    )
+    # do we need it?
+    # kwargs = {"algorithm": "URDNA2015", "format": "application/n-quads"}
+    # normalized = jsonld.normalize(data, kwargs)
+    obj_type = identify_model_class(data["@type"][0])
+    data_fixed = [fixing_old_schema(data, copy_data=True)]
+    context = _fetch_jsonld_context(CONTEXTFILE_URL)
+    data_fixed_comp = jsonld.compact(data_fixed, context)
+    del data_fixed_comp["@context"]
+    conforms = False
+    v_text = ""
+    try:
+        obj_type(**data_fixed_comp)
+        conforms = True
+    except Exception as e:
+        v_text = str(e)
     return conforms, v_text
 
 
