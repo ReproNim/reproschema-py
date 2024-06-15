@@ -326,34 +326,37 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
 
 
 def test_rp2redcap_redcap2rp(tmpdir):
-    protocol_schema_orig = (
-        Path(__file__).parent / "data_test_nimh-minimal" / "nimh_minimal"
+    runner = CliRunner()
+    copytree(
+        Path(__file__).parent / "data_test_nimh-minimal", tmpdir / "nimh_minimal_orig"
+    )
+    tmpdir.chdir()
+    print("\n current dir", os.getcwd())
+    result1 = runner.invoke(
+        main,
+        ["reproschema2redcap", "nimh_minimal_orig/nimh_minimal", "output_nimh.csv"],
+    )
+    print("\n results of reproschema2redcap", result1.output)
+
+    result2 = runner.invoke(
+        main,
+        [
+            "redcap2reproschema",
+            "output_nimh.csv",
+            "nimh_minimal_orig/test_nimh-minimal.yaml",
+            "--output-path",
+            "output_nimh",
+        ],
     )
 
-    # TODO: thiis has to be fixed
-    # locally I run this first: reproschema reproschema2redcap reproschema/tests/data_test_nimh-minimal test_nimh-minimal.csv
-    # then other way: reproschema redcap2reproschema test_nimh-minimal.csv test_nimh-minimal.yaml --output-path output_test_nimh1
-    # and then provided protocol_schema_final and protocol_schema_original
-    # added data to teh repo
-    #
-    # runner = CliRunner()
-    #
-    # print("! protocol_schema_orig", protocol_schema_orig)
-    # with runner.isolated_filesystem():
-    #     # Copy necessary test data into the isolated filesystem
-    #     output_csv_path = Path(tmpdir) / "output.csv"
-    #
-    #     result = runner.invoke(
-    #         main, ["reproschema2redcap", str(protocol_schema_orig), str(output_csv_path)]
-    #     )
-    #     print(str(protocol_schema_orig))
-    #     print("output", output_csv_path)
-    #     print(result.output)
-    #
-    # breakpoint()
+    print("\n results of redcap2reproschema", result2.output)
 
-    protocol_schema_final = "/Users/dorota/reproschema_rpos/reproschema-py/output_test_nimh1/nimh_minimal/nimh_minimal/nimh_minimal_schema"
+    protocol_schema_orig = (
+        "nimh_minimal_orig/nimh_minimal/nimh_minimal/nimh_minimal_schema"
+    )
+    protocol_schema_final = "output_nimh/nimh_minimal/nimh_minimal/nimh_minimal_schema"
 
+    breakpoint()
     http_kwargs = {}
     stop, port = start_server()
     http_kwargs["port"] = port
@@ -373,38 +376,4 @@ def test_rp2redcap_redcap2rp(tmpdir):
     errors_list, warnings_list = compare_protocols(prot_tree_orig, prot_tree_final)
 
     assert not errors_list, f"Errors: {errors_list}"
-    print("Warnings: ", warnings_list)
-
-    # runner = CliRunner()
-
-    # with runner.isolated_filesystem():
-    #     # Copy necessary test data into the isolated filesystem
-    #     original_data_dir = os.path.join(
-    #         os.path.dirname(__file__), "test_rs2redcap_data", "test_redcap2rs"
-    #     )
-    #     copytree(original_data_dir, "input_data")
-    #
-    #     input_path = Path("input_data")
-    #     output_csv_path = os.path.join(tmpdir, "output.csv")
-    #
-    #     result = runner.invoke(
-    #         main, ["reproschema2redcap", str(input_path), output_csv_path]
-    #     )
-    #     print("input", original_data_dir)
-    #     print("output", output_csv_path)
-    #     print(result.output)
-    #
-    #     assert result.exit_code == 0
-    #
-    #     assert os.path.exists(output_csv_path)
-    #
-    #     with open(output_csv_path, "r", encoding="utf-8") as csv_file:
-    #         reader = csv.reader(csv_file)
-    #         csv_contents = list(reader)
-    #
-    #     assert (
-    #         len(csv_contents) > 1
-    #     )  # More than one row indicates content beyond headers
-    #
-    #     # Clean up temporary directory after use (optional)
-    #     # rmtree(tmpdir)
+    print("No errors, but found warnings: ", warnings_list)
