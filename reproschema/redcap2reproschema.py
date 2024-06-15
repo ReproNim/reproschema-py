@@ -395,7 +395,6 @@ def create_form_schema(
     # if matrix_list:
     #     json_ld["matrixInfo"] = matrix_list
 
-
     path = os.path.join(f"{abs_folder_path}", "activities", form_name)
     os.makedirs(path, exist_ok=True)
     filename = f"{form_name}_schema"
