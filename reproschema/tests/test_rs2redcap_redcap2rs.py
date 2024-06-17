@@ -356,7 +356,7 @@ def test_rs2redcap_redcap2rs(tmpdir):
     )
     protocol_schema_final = "output_nimh/nimh_minimal/nimh_minimal/nimh_minimal_schema"
 
-    breakpoint()
+    # breakpoint()
     http_kwargs = {}
     stop, port = start_server()
     http_kwargs["port"] = port
