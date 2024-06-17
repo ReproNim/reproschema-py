@@ -2,7 +2,7 @@ name: Update CONTEXTFILE_URL
 
 on:
   schedule:
-    - cron: '0 0 * * 0' # Runs weekly at midnight on Sunday
+    - cron: '0 0 1 * *' # Runs weekly at midnight on Sunday
   workflow_dispatch:
 
 jobs:
