@@ -77,7 +77,7 @@ profile = "black"
 skip_gitignore = true
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -v --durations=0"
+addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -v"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 minversion = "6.0"

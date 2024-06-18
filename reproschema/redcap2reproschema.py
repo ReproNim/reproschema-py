@@ -287,7 +287,6 @@ def process_row(
         rowData["ui"]["readonlyValue"] = True
 
     for key, value in field.items():
-        # breakpoint()
         if SCHEMA_MAP.get(key) in ["question", "description"] and value:
             rowData.update({SCHEMA_MAP[key]: parse_html(value)})
         elif SCHEMA_MAP.get(key) == "preamble" and value and add_preable:

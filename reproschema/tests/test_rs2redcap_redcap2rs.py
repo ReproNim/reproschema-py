@@ -362,7 +362,6 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                 # TODO: check choices
                 # for key in ["minValue", "maxValue"]:
                 #     if getattr(respopt_final, key) != getattr(respopt_orig, key):
-                #         breakpoint()
                 #         errors_list.append(print(f"Activity {act_name}: items {nm} have different {key}"))
     return errors_list, warnings_list
 
@@ -405,7 +404,6 @@ def test_rs2redcap_redcap2rs(tmpdir):
         "output_nimh/nimh_minimal/nimh_minimal/nimh_minimal_schema"
     )
 
-    breakpoint()
     http_kwargs = {}
     stop, port = start_server()
     http_kwargs["port"] = port
