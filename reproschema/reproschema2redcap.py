@@ -1,21 +1,11 @@
-import sys
-import json
 import csv
 from pathlib import Path
-import requests
-from pyld import jsonld
 
-from .models import (
-    Item,
-    Activity,
-    Protocol,
-    ResponseOption,
-    ResponseActivity,
-    Response,
-    write_obj_jsonld,
-)
-from .utils import fixing_old_schema, start_server, stop_server, CONTEXTFILE_URL
-from .jsonldutils import load_file, _is_file, _is_url
+import requests
+
+from .jsonldutils import _is_url, load_file
+from .models import Activity, Item, Protocol, ResponseOption
+from .utils import CONTEXTFILE_URL, start_server, stop_server
 
 
 def fetch_choices_from_url(url):
@@ -36,7 +26,9 @@ def fetch_choices_from_url(url):
             return ""
 
         # Format choices as 'code, description'
-        formatted_choices = [f"{idx}, {choice}" for idx, choice in enumerate(choices)]
+        formatted_choices = [
+            f"{idx}, {choice}" for idx, choice in enumerate(choices)
+        ]
         return " | ".join(formatted_choices)
     except Exception as e:
         print(f"Error fetching choices from {url}: {e}")
@@ -153,12 +145,14 @@ def process_item(
     choices = response_options.choices if response_options else ""
     if choices and not isinstance(choices, str):
         if isinstance(choices, list):
-            item_choices = [f"{ch.value}, {ch.name.get('en', '')}" for ch in choices]
+            item_choices = [
+                f"{ch.value}, {ch.name.get('en', '')}" for ch in choices
+            ]
             row_data["choices"] = " | ".join(item_choices)
 
-    if item_properties.get("valueRequired", "") == True:
+    if item_properties.get("valueRequired", "") is True:
         row_data["required"] = "y"
-    if "isVis" in item_properties and item_properties["isVis"] != True:
+    if "isVis" in item_properties and item_properties["isVis"] is not True:
         row_data["isVis_logic"] = item_properties["isVis"]
     row_data["field_notes"] = item.description.get("en", "")
     row_data["preamble"] = item.preamble.get("en", activity_preamble)
@@ -228,7 +222,9 @@ def get_csv_data(dir_path, contextfile, http_kwargs):
                     items_properties.update(
                         {
                             el["isAbout"]: el
-                            for el in parsed_activity_json["ui"]["addProperties"]
+                            for el in parsed_activity_json["ui"][
+                                "addProperties"
+                            ]
                         }
                     )
 
@@ -266,13 +262,15 @@ def get_csv_data(dir_path, contextfile, http_kwargs):
                                     compact=True,
                                     compact_context=contextfile,
                                 )
-                            except Exception as e:
+                            except Exception:
                                 print(f"Error loading item: {item}")
                                 continue
                             item_json.pop("@context", "")
                             itm = Item(**item_json)
                             activity_name = act.id.split("/")[-1].split(".")[0]
-                            activity_preamble = act.preamble.get("en", "").strip()
+                            activity_preamble = act.preamble.get(
+                                "en", ""
+                            ).strip()
                             row_data = process_item(
                                 itm,
                                 it_prop,
@@ -313,7 +311,9 @@ def write_to_csv(csv_data, output_csv_filename):
     ]
 
     # Writing to the CSV file
-    with open(output_csv_filename, "w", newline="", encoding="utf-8") as csvfile:
+    with open(
+        output_csv_filename, "w", newline="", encoding="utf-8"
+    ) as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=headers)
 
         # Map the data from your format to REDCap format

@@ -1,2 +1,9 @@
-from .model import Activity, Item, Protocol, ResponseOption, ResponseActivity, Response
-from .utils import write_obj_jsonld, identify_model_class
+from .model import (
+    Activity,
+    Item,
+    Protocol,
+    Response,
+    ResponseActivity,
+    ResponseOption,
+)
+from .utils import identify_model_class, write_obj_jsonld

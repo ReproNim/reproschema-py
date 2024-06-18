@@ -1,12 +1,12 @@
 import os
-import click
 from pathlib import Path
 
-from . import get_logger, set_logger_level
-from . import __version__
+import click
+
+from . import __version__, get_logger, set_logger_level
+from .migrate import migrate2newschema
 from .redcap2reproschema import redcap2reproschema as redcap2rs
 from .reproschema2redcap import reproschema2redcap as rs2redcap
-from .migrate import migrate2newschema
 
 lgr = get_logger()
 
@@ -21,7 +21,11 @@ def print_version(ctx, param, value):
 # group to provide commands
 @click.group()
 @click.option(
-    "--version", is_flag=True, callback=print_version, expose_value=False, is_eager=True
+    "--version",
+    is_flag=True,
+    callback=print_version,
+    expose_value=False,
+    is_eager=True,
 )
 @click.option(
     "-l",
@@ -46,7 +50,9 @@ def main(log_level):
 @click.argument("path", nargs=1, type=str)
 def validate(path):
     if not (path.startswith("http") or os.path.exists(path)):
-        raise ValueError(f"{path} must be a URL or an existing file or directory")
+        raise ValueError(
+            f"{path} must be a URL or an existing file or directory"
+        )
     from .validate import validate
 
     result = validate(path)
@@ -64,7 +70,9 @@ def validate(path):
 )
 def migrate(path, inplace, fixed_path):
     if not (path.startswith("http") or os.path.exists(path)):
-        raise ValueError(f"{path} must be a URL or an existing file or directory")
+        raise ValueError(
+            f"{path} must be a URL or an existing file or directory"
+        )
     if fixed_path and inplace:
         raise Exception("Either inplace or fixed_path has to be provided.")
     new_path = migrate2newschema(path, inplace=inplace, fixed_path=fixed_path)
@@ -89,7 +97,9 @@ def migrate(path, inplace, fixed_path):
 @click.argument("path", nargs=1, type=str)
 def convert(path, format, prefixfile, contextfile):
     if not (path.startswith("http") or os.path.exists(path)):
-        raise ValueError(f"{path} must be a URL or an existing file or directory")
+        raise ValueError(
+            f"{path} must be a URL or an existing file or directory"
+        )
     from .jsonldutils import to_newformat
 
     print(to_newformat(path, format, prefixfile, contextfile))
@@ -106,13 +116,19 @@ def convert(path, format, prefixfile, contextfile):
 @click.argument("path", nargs=1, type=str)
 def create(path, format):
     if not (path.startswith("http") or os.path.exists(path)):
-        raise ValueError(f"{path} must be a URL or an existing file or directory")
+        raise ValueError(
+            f"{path} must be a URL or an existing file or directory"
+        )
     raise NotImplementedError
 
 
 @main.command()
 @click.option(
-    "--port", help="Port to serve on", type=int, default=8000, show_default=True
+    "--port",
+    help="Port to serve on",
+    type=int,
+    default=8000,
+    show_default=True,
 )
 def serve(port):
     from .utils import start_server
