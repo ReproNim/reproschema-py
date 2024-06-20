@@ -8,7 +8,8 @@ import csv
 
 from ..models import Protocol, Activity, Item, ResponseOption
 from ..jsonldutils import load_file, _is_url
-from ..utils import fixing_old_schema, start_server, stop_server, CONTEXTFILE_URL
+from ..utils import fixing_old_schema, start_server, stop_server
+from ..context_url import CONTEXTFILE_URL
 from ..redcap2reproschema import normalize_condition
 
 
@@ -356,7 +357,6 @@ def test_rs2redcap_redcap2rs(tmpdir):
     )
     protocol_schema_final = "output_nimh/nimh_minimal/nimh_minimal/nimh_minimal_schema"
 
-    breakpoint()
     http_kwargs = {}
     stop, port = start_server()
     http_kwargs["port"] = port

@@ -5,7 +5,8 @@ from pathlib import Path
 from copy import deepcopy
 import requests
 from urllib.parse import urlparse
-from .utils import start_server, stop_server, lgr, fixing_old_schema, CONTEXTFILE_URL
+from .utils import start_server, stop_server, lgr, fixing_old_schema
+from .context_url import CONTEXTFILE_URL
 from .models import (
     Item,
     Activity,

@@ -10,9 +10,6 @@ from . import get_logger
 
 lgr = get_logger()
 
-# todo: move it somewhere
-CONTEXTFILE_URL = "https://raw.githubusercontent.com/ReproNim/reproschema/ref/linkml/contexts/reproschema"
-
 
 class LoggingRequestHandler(SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
