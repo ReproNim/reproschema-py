@@ -12,7 +12,6 @@ from ..jsonldutils import _is_url, load_file
 from ..models import Activity, Item, Protocol, ResponseOption
 from ..redcap2reproschema import normalize_condition
 from ..utils import (
-    CONTEXTFILE_URL,
     fixing_old_schema,
     start_server,
     stop_server,
