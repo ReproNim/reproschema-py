@@ -21,13 +21,13 @@ description = "Reproschema Python library"
 dynamic = ["version"]
 license = {text = "Apache License, 2.0"}
 maintainers = [{name = "Repronim developers", email = "info@repronim.org"}]
-name = "reproschema-py"
+name = "reproschema"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 
 [project.optional-dependencies]
-all = ["reproschema-py[doc]", "reproschema-py[test]"]
-dev = ["reproschema-py[doc]", "reproschema-py[test]", "black", "pre-commit"]
+all = ["reproschema[doc]", "reproschema[test]"]
+dev = ["reproschema[doc]", "reproschema[test]", "black", "pre-commit"]
 doc = [
     "packaging",
     "sphinx >= 2.1.2",
@@ -36,7 +36,7 @@ doc = [
     "sphinxcontrib-napoleon",
     "sphinxcontrib-versioning"
 ]
-docs = ["reproschema-py[doc]"]
+docs = ["reproschema[doc]"]
 # For running unit and docstring tests
 test = [
     "pytest >= 4.4.0",
@@ -46,7 +46,7 @@ test = [
     "pytest-rerunfailures",
     "codecov"
 ]
-tests = ["reproschema-py[test]"]
+tests = ["reproschema[test]"]
 
 [project.scripts]
 reproschema = "reproschema.cli:main"
