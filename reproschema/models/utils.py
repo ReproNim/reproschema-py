@@ -1,5 +1,13 @@
 import json
-from .model import Protocol, Activity, Item, ResponseOption, ResponseActivity, Response
+
+from .model import (
+    Activity,
+    Item,
+    Protocol,
+    Response,
+    ResponseActivity,
+    ResponseOption,
+)
 
 
 def identify_model_class(category):

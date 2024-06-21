@@ -1,6 +1,8 @@
 import os
-from ..jsonldutils import to_newformat
+
 import pytest
+
+from ..jsonldutils import to_newformat
 
 
 @pytest.fixture

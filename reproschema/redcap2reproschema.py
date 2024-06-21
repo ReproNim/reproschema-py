@@ -1,12 +1,13 @@
-import os
 import csv
-import json
+import os
 import re
-import yaml
 from pathlib import Path
+
+import yaml
 from bs4 import BeautifulSoup
-from .models import Activity, Item, Protocol, write_obj_jsonld
+
 from .context_url import CONTEXTFILE_URL
+from .models import Activity, Item, Protocol, write_obj_jsonld
 
 matrix_group_count = {}
 
@@ -58,7 +59,7 @@ VALUE_TYPE_MAP = {
     "email": "xsd:string",
     "phone": "xsd:string",
     "number": "xsd:decimal",  # new one (TODO: could be integer, but have no idea of knowing)
-    "float": "xsd:decimal",  # new oen
+    "float": "xsd:decimal",  # new one
     "integer": "xsd:integer",  # new one
     "signature": "xsd: string",  # ?? new one
     "zipcode": "xsd: string",  # new one
@@ -184,7 +185,7 @@ def parse_field_type_and_value(field):
         elif value_type == "xsd:date" and field_type == "text":
             input_type = "date"
     elif field_type == "yesno":
-        value_type = "xsd:boolen"
+        value_type = "xsd:boolean"
     elif field_type in COMPUTE_LIST:
         value_type = "xsd:integer"
     else:  # set the default value type as string
@@ -256,7 +257,9 @@ def process_row(
         matrix_group_count[matrix_group_name] = (
             matrix_group_count.get(matrix_group_name, 0) + 1
         )
-        item_id = f"{matrix_group_name}_{matrix_group_count[matrix_group_name]}"
+        item_id = (
+            f"{matrix_group_name}_{matrix_group_count[matrix_group_name]}"
+        )
     else:
         item_id = field.get("Variable / Field Name", "")
 
@@ -284,7 +287,6 @@ def process_row(
         rowData["ui"]["readonlyValue"] = True
 
     for key, value in field.items():
-        # breakpoint()
         if SCHEMA_MAP.get(key) in ["question", "description"] and value:
             rowData.update({SCHEMA_MAP[key]: parse_html(value)})
         elif SCHEMA_MAP.get(key) == "preamble" and value and add_preable:
@@ -391,7 +393,7 @@ def create_form_schema(
 
     act = Activity(**json_ld)
     # TODO (future):  remove or fix matrix info
-    # remove matrixInfo to pass validataion
+    # remove matrixInfo to pass validation
     # if matrix_list:
     #     json_ld["matrixInfo"] = matrix_list
 
@@ -464,7 +466,9 @@ def create_protocol_schema(
 
 def parse_language_iso_codes(input_string):
     soup = BeautifulSoup(input_string, "lxml")
-    return [element.get("lang") for element in soup.find_all(True, {"lang": True})]
+    return [
+        element.get("lang") for element in soup.find_all(True, {"lang": True})
+    ]
 
 
 def process_csv(
@@ -488,7 +492,8 @@ def process_csv(
                 order[form_name] = []
                 compute[form_name] = []
                 os.makedirs(
-                    f"{abs_folder_path}/activities/{form_name}/items", exist_ok=True
+                    f"{abs_folder_path}/activities/{form_name}/items",
+                    exist_ok=True,
                 )
 
             datas[form_name].append(row)
@@ -518,7 +523,9 @@ def process_csv(
 
 
 # todo adding output path
-def redcap2reproschema(csv_file, yaml_file, output_path, schema_context_url=None):
+def redcap2reproschema(
+    csv_file, yaml_file, output_path, schema_context_url=None
+):
     """
     Convert a REDCap data dictionary to Reproschema format.
 
@@ -541,7 +548,9 @@ def redcap2reproschema(csv_file, yaml_file, output_path, schema_context_url=None
     if not protocol_name:
         raise ValueError("Protocol name not specified in the YAML file.")
 
-    protocol_name = protocol_name.replace(" ", "_")  # Replacing spaces with underscores
+    protocol_name = protocol_name.replace(
+        " ", "_"
+    )  # Replacing spaces with underscores
     abs_folder_path = Path(output_path) / protocol_name
     abs_folder_path.mkdir(parents=True, exist_ok=True)
 
@@ -594,7 +603,9 @@ def redcap2reproschema(csv_file, yaml_file, output_path, schema_context_url=None
 
         activity_display_name = rows[0]["Form Name"]
         # todo: there is no form note in the csv
-        activity_description = ""  # rows[0].get("Form Note", "Default description")
+        activity_description = (
+            ""  # rows[0].get("Form Note", "Default description")
+        )
 
         create_form_schema(
             abs_folder_path,

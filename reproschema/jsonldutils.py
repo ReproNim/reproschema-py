@@ -1,21 +1,21 @@
-from pyld import jsonld
 import json
 import os
-from pathlib import Path
-from copy import deepcopy
-import requests
 from urllib.parse import urlparse
-from .utils import start_server, stop_server, lgr, fixing_old_schema
+
+import requests
+from pyld import jsonld
+
 from .context_url import CONTEXTFILE_URL
 from .models import (
-    Item,
     Activity,
+    Item,
     Protocol,
-    ResponseOption,
-    ResponseActivity,
     Response,
+    ResponseActivity,
+    ResponseOption,
     identify_model_class,
 )
+from .utils import fixing_old_schema, lgr, start_server, stop_server
 
 
 def _is_url(path):
@@ -72,7 +72,9 @@ def load_file(
                 data = json.load(json_file)
             except json.JSONDecodeError as e:
                 raise json.JSONDecodeError(
-                    f"Error parsing JSON file {json_file}: {e.msg}", e.doc, e.pos
+                    f"Error parsing JSON file {json_file}: {e.msg}",
+                    e.doc,
+                    e.pos,
                 ) from e
         try:
             data = jsonld.expand(data, options={"base": base_url})
@@ -104,7 +106,9 @@ def load_file(
                     f"compact_context has tobe a file or url, but {compact_context} provided"
                 )
         if _is_file(path_or_url):
-            data = jsonld.compact(data, ctx=context, options={"base": base_url})
+            data = jsonld.compact(
+                data, ctx=context, options={"base": base_url}
+            )
         else:
             data = jsonld.compact(data, ctx=context)
 

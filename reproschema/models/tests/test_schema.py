@@ -1,13 +1,14 @@
-from .. import Protocol, Activity, Item, ResponseOption
-from ..utils import write_obj_jsonld
-from ...utils import start_server, stop_server
-from ...jsonldutils import load_file
-
-from pyld import jsonld
-import json, os
+import json
+import os
 from pathlib import Path
 
 import pytest
+from pyld import jsonld
+
+from ...jsonldutils import load_file
+from ...utils import start_server, stop_server
+from .. import Activity, Item, Protocol, ResponseOption
+from ..utils import write_obj_jsonld
 
 contextfile_url = "https://raw.githubusercontent.com/ReproNim/reproschema/ref/linkml/contexts/reproschema"
 
@@ -29,7 +30,9 @@ def server_http_kwargs(request):
     return http_kwargs
 
 
-@pytest.mark.parametrize("model_class", [Protocol, Activity, Item, ResponseOption])
+@pytest.mark.parametrize(
+    "model_class", [Protocol, Activity, Item, ResponseOption]
+)
 def test_constructors(model_class):
     ob = model_class()
     assert hasattr(ob, "id")
@@ -93,7 +96,10 @@ def test_activity(tmp_path, server_http_kwargs):
             "es": "Durante las últimas 2 semanas, ¿con qué frecuencia le han molestado los siguintes problemas?",
         },
         "compute": [
-            {"variableName": "activity1_total_score", "jsExpression": "item1 + item2"}
+            {
+                "variableName": "activity1_total_score",
+                "jsExpression": "item1 + item2",
+            }
         ],
     }
     activity_obj = Activity(**activity_dict)
@@ -143,8 +149,14 @@ def test_item(tmp_path, server_http_kwargs):
             "maxValue": 3,
             "multipleChoice": False,
             "choices": [
-                {"name": {"en": "Not at all", "es": "Para nada"}, "value": "a"},
-                {"name": {"en": "Several days", "es": "Varios días"}, "value": "b"},
+                {
+                    "name": {"en": "Not at all", "es": "Para nada"},
+                    "value": "a",
+                },
+                {
+                    "name": {"en": "Several days", "es": "Varios días"},
+                    "value": "b",
+                },
             ],
         },
     }

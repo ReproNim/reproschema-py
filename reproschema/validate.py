@@ -1,9 +1,9 @@
-import os
 import json
+import os
 from pathlib import Path
-from .utils import start_server, stop_server, lgr
+
 from .jsonldutils import load_file, validate_data
-from pathlib import Path
+from .utils import lgr, start_server, stop_server
 
 
 def validate_dir(directory, started=False, http_kwargs={}):
@@ -35,19 +35,26 @@ def validate_dir(directory, started=False, http_kwargs={}):
         http_kwargs["port"] = port
     else:
         if "port" not in http_kwargs:
-            raise KeyError(f"HTTP server started, but port key is missing")
+            raise KeyError("HTTP server started, but port key is missing")
 
     for root, _, files in os.walk(directory):
         for name in files:
             full_file_name = os.path.join(root, name)
 
-            if Path(full_file_name).suffix not in [".jsonld", "json", "js", ""]:
+            if Path(full_file_name).suffix not in [
+                ".jsonld",
+                "json",
+                "js",
+                "",
+            ]:
                 lgr.info(f"Skipping file {full_file_name}")
                 continue
 
             lgr.debug(f"Validating file {full_file_name}")
             try:
-                data = load_file(full_file_name, started=True, http_kwargs=http_kwargs)
+                data = load_file(
+                    full_file_name, started=True, http_kwargs=http_kwargs
+                )
                 if len(data) == 0:
                     raise ValueError("Empty data graph")
                 print(f"Validating {full_file_name}")
@@ -58,7 +65,9 @@ def validate_dir(directory, started=False, http_kwargs={}):
                 raise
             else:
                 if not conforms:
-                    lgr.critical(f"File {full_file_name} has validation errors.")
+                    lgr.critical(
+                        f"File {full_file_name} has validation errors."
+                    )
                     if stop is not None:
                         stop_server(stop)
                     raise ValueError(vtext)

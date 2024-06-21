@@ -1,10 +1,7 @@
 import logging
 import os
 
-from ._version import get_versions
-
-__version__ = get_versions()["version"]
-del get_versions
+from reproschema._version import __version__
 
 #
 # Basic logger configuration
@@ -40,12 +37,11 @@ logging.basicConfig(format=FORMAT)
 try:
     import etelemetry
 
-    etelemetry.check_available_version("repronim/reproschema-py", __version__, lgr=lgr)
+    etelemetry.check_available_version(
+        "repronim/reproschema-py", __version__, lgr=lgr
+    )
 except Exception as exc:
     lgr.warning(
-        "Failed to check for a more recent version available with etelemetry: %s", exc
+        "Failed to check for a more recent version available with etelemetry: %s",
+        exc,
     )
-
-from . import _version
-
-__version__ = _version.get_versions()["version"]
