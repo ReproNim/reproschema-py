@@ -1,4 +1,4 @@
-![Python package](https://github.com/ReproNim/reproschema-py/workflows/Python%20package/badge.svg?branch=master)
+![Python package](https://github.com/ReproNim/reproschema-py/workflows/Python%20package/badge.svg?branch=main)
 
 # Reproschema Python library and Command Line Interface (CLI)
 
