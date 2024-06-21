@@ -5,13 +5,16 @@ from urllib.parse import urlparse
 import requests
 from pyld import jsonld
 
-from .models import identify_model_class
-from .utils import (
-    CONTEXTFILE_URL,
-    fixing_old_schema,
-    lgr,
-    start_server,
-    stop_server,
+from .utils import start_server, stop_server, lgr, fixing_old_schema
+from .context_url import CONTEXTFILE_URL
+from .models import (
+    Item,
+    Activity,
+    Protocol,
+    ResponseOption,
+    ResponseActivity,
+    Response,
+    identify_model_class,
 )
 
 

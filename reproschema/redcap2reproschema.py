@@ -7,7 +7,7 @@ import yaml
 from bs4 import BeautifulSoup
 
 from .models import Activity, Item, Protocol, write_obj_jsonld
-from .utils import CONTEXTFILE_URL
+from .context_url import CONTEXTFILE_URL
 
 matrix_group_count = {}
 
