@@ -11,11 +11,7 @@ from ..context_url import CONTEXTFILE_URL
 from ..jsonldutils import _is_url, load_file
 from ..models import Activity, Item, Protocol, ResponseOption
 from ..redcap2reproschema import normalize_condition
-from ..utils import (
-    fixing_old_schema,
-    start_server,
-    stop_server,
-)
+from ..utils import fixing_old_schema, start_server, stop_server
 
 
 def create_protocol_dict(
