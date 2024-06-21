@@ -5,12 +5,7 @@ import requests
 
 from .context_url import CONTEXTFILE_URL
 from .jsonldutils import _is_url, load_file
-from .models import (
-    Activity,
-    Item,
-    Protocol,
-    ResponseOption,
-)
+from .models import Activity, Item, Protocol, ResponseOption
 from .utils import start_server, stop_server
 
 
