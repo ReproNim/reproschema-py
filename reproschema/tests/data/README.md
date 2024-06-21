@@ -1,1 +1,1 @@
-This file should be ingored during validation.
+This file should be ignored during validation.

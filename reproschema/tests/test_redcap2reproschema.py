@@ -1,8 +1,10 @@
 import os
 import shutil
+
 import pytest
 import yaml
 from click.testing import CliRunner
+
 from ..cli import main
 
 CSV_FILE_NAME = "redcap_dict.csv"

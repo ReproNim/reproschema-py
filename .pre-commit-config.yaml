@@ -8,7 +8,43 @@ repos:
     -   id: end-of-file-fixer
     -   id: check-yaml
     -   id: check-added-large-files
+
+# Sorts Python imports alphabetically and by section with `isort`.
+-   repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+    -   id: isort
+        args: [--profile, black, --settings-path, pyproject.toml]
+
 -   repo: https://github.com/psf/black
     rev: 24.4.2
     hooks:
     -   id: black
+
+# Checks for spelling errors
+-   repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+    -   id: codespell
+        args: [--toml, pyproject.toml]
+        additional_dependencies: [tomli]
+
+# Format TOML files
+-   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+    rev: v2.13.0
+    hooks:
+    -   id: pretty-format-toml
+        args: [--autofix, --indent, '4']
+
+# Check that Python code complies with PEP8 guidelines
+# flake8 uses pydocstyle to check docstrings: https://flake8.pycqa.org/en/latest/
+# flake8-docstrings: https://pypi.org/project/flake8-docstrings/
+# flake8-use-fstring forces to use fstrings: https://pypi.org/project/flake8-use-fstring/
+# flake8-functions checks functions quality: https://pypi.org/project/flake8-functions/
+# flake8-bugbear detects some common bugs: https://github.com/PyCQA/flake8-bugbear
+-   repo: https://github.com/pyCQA/flake8
+    rev: 7.1.0
+    hooks:
+    -   id: flake8
+        args: [--config, .flake8, --verbose, reproschema]
+        additional_dependencies: [flake8-bugbear]

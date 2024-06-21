@@ -1,16 +1,15 @@
 from __future__ import annotations
-from datetime import datetime, date
-from decimal import Decimal
+
+from datetime import datetime
 from enum import Enum
-import re
-import sys
-from typing import Any, List, Literal, Dict, Optional, Union
+from typing import Dict, List, Optional, Union
+
 from pydantic.version import VERSION as PYDANTIC_VERSION
 
 if int(PYDANTIC_VERSION[0]) >= 2:
-    from pydantic import BaseModel, ConfigDict, Field, field_validator
+    from pydantic import BaseModel, ConfigDict, Field
 else:
-    from pydantic import BaseModel, Field, validator
+    from pydantic import BaseModel, Field
 
 metamodel_version = "None"
 version = "1.0.0"
@@ -107,7 +106,9 @@ class Activity(Thing):
         description="""An array of objects indicating computations in an activity or protocol and maps it to the corresponding Item. scoring logic is a subset of all computations that could be performed and not all computations will be scoring. For example, one may want to do conversion from one unit to another.""",
     )
     cronTable: Optional[str] = Field(
-        None, title="cronTable", description="""TODO not described in reproschema"""
+        None,
+        title="cronTable",
+        description="""TODO not described in reproschema""",
     )
     description: Optional[Dict[str, str]] = Field(default_factory=dict)
     image: Optional[Union[ImageObject, str]] = Field(
@@ -164,7 +165,9 @@ class AdditionalNoteObj(Thing):
         description="""An element to define the source (eg. RedCap, NDA) where the note was taken from.""",
     )
     value: Optional[
-        Union[Dict[str, str], MissingType, StructuredValue, bool, float, int, str]
+        Union[
+            Dict[str, str], MissingType, StructuredValue, bool, float, int, str
+        ]
     ] = Field(
         None,
         title="value",
@@ -260,7 +263,9 @@ class Choice(Thing):
         description="""An image of the item. This can be a <a class=\"localLink\" href=\"http://schema.org/URL\">URL</a> or a fully described <a class=\"localLink\" href=\"http://schema.org/ImageObject\">ImageObject</a>.""",
     )
     value: Optional[
-        Union[Dict[str, str], MissingType, StructuredValue, bool, float, int, str]
+        Union[
+            Dict[str, str], MissingType, StructuredValue, bool, float, int, str
+        ]
     ] = Field(
         None,
         title="value",
@@ -540,7 +545,9 @@ class Protocol(Thing):
         description="""An array of objects indicating computations in an activity or protocol and maps it to the corresponding Item. scoring logic is a subset of all computations that could be performed and not all computations will be scoring. For example, one may want to do conversion from one unit to another.""",
     )
     cronTable: Optional[str] = Field(
-        None, title="cronTable", description="""TODO not described in reproschema"""
+        None,
+        title="cronTable",
+        description="""TODO not described in reproschema""",
     )
     description: Optional[Dict[str, str]] = Field(default_factory=dict)
     landingPage: Optional[List[Union[LandingPage, str]]] = Field(
@@ -587,7 +594,9 @@ class Response(Thing):
         description="""A pointer to the node describing the item.""",
     )
     value: Optional[
-        Union[Dict[str, str], MissingType, StructuredValue, bool, float, int, str]
+        Union[
+            Dict[str, str], MissingType, StructuredValue, bool, float, int, str
+        ]
     ] = Field(
         None,
         title="value",

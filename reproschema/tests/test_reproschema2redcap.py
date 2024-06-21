@@ -1,10 +1,12 @@
+import csv
 import os
+from pathlib import Path
+from shutil import copytree, rmtree
+
 import pytest
 from click.testing import CliRunner
+
 from ..cli import main
-from shutil import copytree, rmtree
-from pathlib import Path
-import csv
 
 
 def test_reproschema2redcap(tmpdir):

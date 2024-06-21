@@ -1,17 +1,14 @@
 import os
 import threading
+from copy import deepcopy
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from tempfile import mkdtemp
-import requests
+
 import requests_cache
-from copy import deepcopy
 
 from . import get_logger
 
 lgr = get_logger()
-
-# todo: move it somewhere
-CONTEXTFILE_URL = "https://raw.githubusercontent.com/ReproNim/reproschema/ref/linkml/contexts/reproschema"
 
 
 class LoggingRequestHandler(SimpleHTTPRequestHandler):
@@ -129,7 +126,7 @@ def _allowtype_fix(data_el):
 
 
 def fixing_old_schema(data, copy_data=False):
-    """Fixes the old schema so it can be load to teh new model"""
+    """Fixes the old schema so it can be load to the new model"""
     if copy_data:
         data = deepcopy(data)
     for key, val in data.items():
