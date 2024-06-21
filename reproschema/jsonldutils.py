@@ -5,17 +5,17 @@ from urllib.parse import urlparse
 import requests
 from pyld import jsonld
 
-from .utils import start_server, stop_server, lgr, fixing_old_schema
 from .context_url import CONTEXTFILE_URL
 from .models import (
-    Item,
     Activity,
+    Item,
     Protocol,
-    ResponseOption,
-    ResponseActivity,
     Response,
+    ResponseActivity,
+    ResponseOption,
     identify_model_class,
 )
+from .utils import fixing_old_schema, lgr, start_server, stop_server
 
 
 def _is_url(path):

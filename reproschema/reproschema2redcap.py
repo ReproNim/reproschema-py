@@ -2,18 +2,20 @@ import csv
 from pathlib import Path
 
 import requests
+
+from .context_url import CONTEXTFILE_URL
+from .jsonldutils import _is_file, _is_url, load_file
 from .models import (
-    Item,
     Activity,
+    Item,
     Protocol,
-    ResponseOption,
-    ResponseActivity,
     Response,
+    ResponseActivity,
+    ResponseOption,
     write_obj_jsonld,
 )
 from .utils import fixing_old_schema, start_server, stop_server
-from .context_url import CONTEXTFILE_URL
-from .jsonldutils import load_file, _is_file, _is_url
+
 
 def fetch_choices_from_url(url):
     try:

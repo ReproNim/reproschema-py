@@ -7,11 +7,9 @@ import pytest
 from click.testing import CliRunner
 
 from ..cli import main
-from ..models import Protocol, Activity, Item, ResponseOption
-from ..jsonldutils import load_file, _is_url
-from ..utils import fixing_old_schema, start_server, stop_server
 from ..context_url import CONTEXTFILE_URL
-
+from ..jsonldutils import _is_url, load_file
+from ..models import Activity, Item, Protocol, ResponseOption
 from ..redcap2reproschema import normalize_condition
 from ..utils import (
     CONTEXTFILE_URL,

@@ -6,8 +6,8 @@ from pathlib import Path
 import yaml
 from bs4 import BeautifulSoup
 
-from .models import Activity, Item, Protocol, write_obj_jsonld
 from .context_url import CONTEXTFILE_URL
+from .models import Activity, Item, Protocol, write_obj_jsonld
 
 matrix_group_count = {}
 
