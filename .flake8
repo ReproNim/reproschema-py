@@ -7,5 +7,6 @@ exclude =
     docs/sphinxext/
     docs/tools/
     reproschema/_version.py
+    reproschema/models/model.py
 max-line-length=79
 extend-ignore = B001, B006, B016, E501, E722, F821
