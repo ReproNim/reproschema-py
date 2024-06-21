@@ -49,6 +49,9 @@ def main(log_level):
 @main.command()
 @click.argument("path", nargs=1, type=str)
 def validate(path):
+    """
+    Validates if the path has a valid reproschema format
+    """
     if not (path.startswith("http") or os.path.exists(path)):
         raise ValueError(
             f"{path} must be a URL or an existing file or directory"
@@ -69,6 +72,9 @@ def validate(path):
     help="Path to the fixed file/directory, if not provide suffix 'after_migration' is used",
 )
 def migrate(path, inplace, fixed_path):
+    """
+    Updates to a new reproschema version
+    """
     if not (path.startswith("http") or os.path.exists(path)):
         raise ValueError(
             f"{path} must be a URL or an existing file or directory"
@@ -96,6 +102,9 @@ def migrate(path, inplace, fixed_path):
 )
 @click.argument("path", nargs=1, type=str)
 def convert(path, format, prefixfile, contextfile):
+    """
+    Converts a path to a different format, jsonld, n-triples or turtle
+    """
     if not (path.startswith("http") or os.path.exists(path)):
         raise ValueError(
             f"{path} must be a URL or an existing file or directory"
@@ -148,7 +157,7 @@ def serve(port):
 )
 def redcap2reproschema(csv_path, yaml_path, output_path):
     """
-    Convert REDCap CSV files to Reproschema format.
+    Converts REDCap CSV files to Reproschema format.
     """
     try:
         redcap2rs(csv_path, yaml_path, output_path)
@@ -162,7 +171,7 @@ def redcap2reproschema(csv_path, yaml_path, output_path):
 @click.argument("output_csv_path", type=click.Path(writable=True))
 def reproschema2redcap(input_path, output_csv_path):
     """
-    Convert reproschema protocol to REDCap CSV format.
+    Converts reproschema protocol to REDCap CSV format.
     """
     # Convert input_path to a Path object
     input_path_obj = Path(input_path)

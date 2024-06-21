@@ -4,7 +4,7 @@
 
 ## Installation
 
-reproschema requires Python 3.7+.
+reproschema requires Python 3.10+.
 
 ```
 pip install reproschema
@@ -12,31 +12,31 @@ pip install reproschema
 
 ### Developer installation
 
-Install repo in developer mode:
+After you create a fork, you can clone and install repo in developer mode:
 
 ```
-git clone https://github.com/ReproNim/reproschema-py.git
+git clone https://github.com/<your github>/reproschema-py.git
 cd reproschema-py
 pip install -e .[dev]
 ```
+#### Style
+This repo uses pre-commit to check styling.
+- Install pre-commit with pip: `pip install pre-commit`
+- In order to use it with the repository, you have to run `run pre-commit install` in the root directory the first time you use it.
 
-It is also useful to install pre-commit, which takes care of styling when
-committing code. When pre-commit is used you may have to run git commit twice,
+When pre-commit is used you may have to run git commit twice,
 since pre-commit may make additional changes to your code for styling and will
-not commit these changes by default:
+not commit these changes by default.
 
-```
-pre-commit install
-```
+
 ## CLI usage
 
-This package installs `reproschema` a CLI.
+This package installs `reproschema` Command Line Interface (CLI).
 
 ```
-$ reproschema
-Usage: reproschema [OPTIONS] COMMAND [ARGS]...
+$ reproschema --help
 
-  A client to support interactions with ReproSchema
+$  A client to support interactions with ReproSchema
 
   To see help for a specific command, run
 
@@ -49,17 +49,18 @@ Options:
   --help                          Show this message and exit.
 
 Commands:
-  convert
+  convert             Converts a path to a different format, jsonld,...
   create
-  redcap2reproschema  Convert REDCap CSV files to Reproschema format.
-  reproschema2redcap  Convert reproschema protocol to REDCap CSV format.
+  migrate             Updates to a new reproschema version
+  redcap2reproschema  Converts REDCap CSV files to Reproschema format.
+  reproschema2redcap  Converts reproschema protocol to REDCap CSV format.
   serve
-  validate
+  validate            Validates if the path has a valid reproschema format
 ```
 
-## `reproschema2redcap` Usage
+## `reproschema2redcap`
 
-### Command-Line Usage
+### CLI Usage
 
 You can use this feature directly from the command line. To convert ReproSchema protocol to REDCap CSV format, use the following command
 
@@ -73,7 +74,7 @@ reproschema reproschema2redcap <input_dir_path> <output_csv_filename>
   cd reproschema-demo-protocol
   pwd
   ```
-  In this case,  the output from `pwd` (which shows your current directory path)should be your `<input_dir_path>`.
+  In this case,  the output from `pwd` (which shows your current directory path) should be your `<input_dir_path>`.
 - `<output_csv_filename>`: The name of the output CSV file where the converted data will be saved.
 
 ### Python Function Usage
@@ -89,7 +90,7 @@ output_csv_filename = "output.csv"
 reproschema2redcap(input_dir_path, output_csv_filename)
 ```
 
-## `redcap2reproschema` Usage
+## `redcap2reproschema`
 The `redcap2reproschema` function is designed to process a given REDCap CSV file and YAML configuration to generate the output in the reproschema format.
 
 ### Prerequisites
@@ -111,13 +112,14 @@ protocol_name: "My_Protocol"
 protocol_display_name: "Assessment Protocol"
 protocol_description: "This protocol is for assessing cognitive skills."
 ```
-### Command-Line Usage
+### CLI Usage
 
 The `redcap2reproschema`` function has been integrated into a CLI tool, use the following command:
 ```bash
 reproschema redcap2reproschema path/to/your_redcap_data_dic.csv path/to/your_redcap2rs.yaml
 ```
 
+Optionally you can provide a path to the output directory (defaults is the current directory) by adding option: `--output-path PATH`
 ### Python Function Usage
 
 You can also use the `redcap2reproschema` function from the `reproschema-py` package in your Python code.
@@ -127,15 +129,10 @@ from reproschema import redcap2reproschema
 
 csv_path = "path-to/your_redcap_data_dic.csv"
 yaml_path = "path-to/your_redcap2rs.yaml"
+output_path = "path-to/directory_you_want_to_save_output"
 
-reproschema2redcap(input_dir_path, output_csv_filename)
+reproschema2redcap(csv_file, yaml_file, output_path)
 ```
-
-After configuring the YAML file:
-
-1. Run the Python script with the paths to your CSV file and the YAML file as arguments.
-2. Command Format: `python script_name.py path/to/your_redcap_data_dic.csv path/to/your_redcap2rs.yaml`
 
 ### Notes
 1. The script requires an active internet connection to access the GitHub repository.
-2. Make sure you use `git add`, `git commit`, `git push` properly afterwards to maintain a good version control for your converted data.
