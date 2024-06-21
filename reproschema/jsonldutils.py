@@ -6,15 +6,7 @@ import requests
 from pyld import jsonld
 
 from .context_url import CONTEXTFILE_URL
-from .models import (
-    Activity,
-    Item,
-    Protocol,
-    Response,
-    ResponseActivity,
-    ResponseOption,
-    identify_model_class,
-)
+from .models import identify_model_class
 from .utils import fixing_old_schema, lgr, start_server, stop_server
 
 

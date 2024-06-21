@@ -4,17 +4,14 @@ from pathlib import Path
 import requests
 
 from .context_url import CONTEXTFILE_URL
-from .jsonldutils import _is_file, _is_url, load_file
+from .jsonldutils import _is_url, load_file
 from .models import (
     Activity,
     Item,
     Protocol,
-    Response,
-    ResponseActivity,
     ResponseOption,
-    write_obj_jsonld,
 )
-from .utils import fixing_old_schema, start_server, stop_server
+from .utils import start_server, stop_server
 
 
 def fetch_choices_from_url(url):
