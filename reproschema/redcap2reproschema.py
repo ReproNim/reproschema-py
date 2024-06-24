@@ -54,7 +54,7 @@ VALUE_TYPE_MAP = {
     "date_mdy": "xsd:date",  # ?? new one TODO: not sure what to do with it, it's not xsd:date
     "datetime_seconds_mdy": "xsd:date",  # ?? new one TODO: not sure what to do with it, it's not xsd:date
     "date_ymd": "xsd:date",  # new one
-    "date_dmy": "xsd:date", 
+    "date_dmy": "xsd:date",
     "datetime_": "xsd:dateTime",
     "datetime_ymd": "xsd:dateTime",
     "time_": "xsd:time",
@@ -203,7 +203,7 @@ def process_choices(choices_str, field_name):
     choices_value_type = []
     for ii, choice in enumerate(choices_str.split("|")):
         parts = choice.split(", ")
-        
+
         # Handle the case where the choice is something like "1,"
         if len(parts) == 1:
             if choice.endswith(","):
@@ -222,10 +222,14 @@ def process_choices(choices_str, field_name):
             value = parts[0]
             choices_value_type.append("xsd:string")
 
-        choice_obj = {"name": {"en": " ".join(parts[1:]).strip()}, "value": value}
+        choice_obj = {
+            "name": {"en": " ".join(parts[1:]).strip()},
+            "value": value,
+        }
         choices.append(choice_obj)
 
     return choices, list(set(choices_value_type))
+
 
 def parse_html(input_string, default_language="en"):
     result = {}
