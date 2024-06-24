@@ -41,6 +41,11 @@ def validate_dir(directory, started=False, http_kwargs={}):
         for name in files:
             full_file_name = os.path.join(root, name)
 
+            # Skip .DS_Store files
+            if name == ".DS_Store":
+                lgr.info(f"Skipping file {full_file_name}")
+                continue
+
             if Path(full_file_name).suffix not in [
                 ".jsonld",
                 "json",
