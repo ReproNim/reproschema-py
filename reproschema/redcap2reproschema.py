@@ -56,6 +56,7 @@ VALUE_TYPE_MAP = {
     "date_ymd": "xsd:date",  # new one
     "date_dmy": "xsd:date", 
     "datetime_": "xsd:dateTime",
+    "datetime_ymd": "xsd:dateTime",
     "time_": "xsd:time",
     "email": "xsd:string",
     "phone": "xsd:string",
