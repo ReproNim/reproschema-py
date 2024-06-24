@@ -54,6 +54,7 @@ VALUE_TYPE_MAP = {
     "date_mdy": "xsd:date",  # ?? new one TODO: not sure what to do with it, it's not xsd:date
     "datetime_seconds_mdy": "xsd:date",  # ?? new one TODO: not sure what to do with it, it's not xsd:date
     "date_ymd": "xsd:date",  # new one
+    "date_dmy": "xsd:date", 
     "datetime_": "xsd:dateTime",
     "time_": "xsd:time",
     "email": "xsd:string",
