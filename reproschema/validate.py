@@ -5,8 +5,21 @@ from pathlib import Path
 from .jsonldutils import load_file, validate_data
 from .utils import lgr, start_server, stop_server
 
-DIR_TO_SKIP = [".git", "__pycache__", "env", "venv"]
-FILES_TO_SKIP = [".DS_Store", ".gitignore", ".flake8", ".autorc", "LICENSE"]
+DIR_TO_SKIP = [
+    ".git",
+    ".github",
+    "__pycache__",
+    "env",
+    "venv",
+]
+FILES_TO_SKIP = [
+    ".DS_Store",
+    ".gitignore",
+    ".flake8",
+    ".autorc",
+    "LICENSE",
+    "Makefile",
+]
 SUPPORTED_EXTENSIONS = [
     ".jsonld",
     "json",
@@ -59,7 +72,7 @@ def validate_dir(
         lgr.info(f"Skipping directory {directory}")
         return True
 
-    lgr.debug(f"Validating directory {directory}")
+    lgr.info(f"Validating directory {directory}")
 
     files_to_validate = [
         str(x)
@@ -119,6 +132,8 @@ def validate(path):
 
     """
     if os.path.isdir(path):
+
+        lgr.info(f"Validating directory {path}")
 
         stop, port = start_server()
         http_kwargs = {"port": port}
