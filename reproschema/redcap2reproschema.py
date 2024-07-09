@@ -7,6 +7,7 @@ import yaml
 from bs4 import BeautifulSoup
 
 from .context_url import CONTEXTFILE_URL
+from .jsonldutils import get_context_version
 from .models import Activity, Item, Protocol, write_obj_jsonld
 
 matrix_group_count = {}
@@ -378,7 +379,7 @@ def create_form_schema(
         "id": f"{form_name}_schema",
         "prefLabel": {"en": activity_display_name},
         #        "description": {"en": activity_description},
-        "schemaVersion": "1.0.0-rc4",
+        "schemaVersion": get_context_version(schema_context_url),
         "version": redcap_version,
         "ui": {
             "order": unique_order,
