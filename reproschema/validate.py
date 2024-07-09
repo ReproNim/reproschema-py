@@ -1,5 +1,4 @@
 import json
-import os
 from pathlib import Path
 
 from .jsonldutils import load_file, validate_data
@@ -63,12 +62,14 @@ def validate_dir(
     if http_kwargs is None:
         http_kwargs = {}
 
-    if not os.path.isdir(directory):
+    directory = Path(directory)
+
+    if not directory.is_dir():
         if stop is not None:
             stop_server(stop)
-        raise Exception(f"{directory} is not a directory")
+        raise Exception(f"{str(directory)} is not a directory")
 
-    if Path(directory).name in DIR_TO_SKIP:
+    if directory.name in DIR_TO_SKIP:
         lgr.info(f"Skipping directory {directory}")
         return True
 
@@ -76,7 +77,7 @@ def validate_dir(
 
     files_to_validate = [
         str(x)
-        for x in Path(directory).iterdir()
+        for x in directory.iterdir()
         if x.is_file()
         and x.name not in FILES_TO_SKIP
         and x.suffix in SUPPORTED_EXTENSIONS
@@ -104,7 +105,7 @@ def validate_dir(
 
     dirs_to_validate = [
         str(x)
-        for x in Path(directory).iterdir()
+        for x in directory.iterdir()
         if x.is_dir() and x.name not in DIR_TO_SKIP
     ]
 
@@ -131,7 +132,7 @@ def validate(path):
         exception.
 
     """
-    if os.path.isdir(path):
+    if Path(path).is_dir():
 
         lgr.info(f"Validating directory {path}")
 
