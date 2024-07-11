@@ -10,8 +10,6 @@ from .context_url import CONTEXTFILE_URL
 from .jsonldutils import get_context_version
 from .models import Activity, Item, Protocol, write_obj_jsonld
 
-matrix_group_count = {}
-
 # All the mapping used in the code
 SCHEMA_MAP = {
     "Variable / Field Name": "@id",  # column A
@@ -252,18 +250,9 @@ def process_row(
     add_preable=True,
 ):
     """Process a row of the REDCap data and generate the jsonld file for the item."""
-    global matrix_group_count
-    matrix_group_name = field.get("Matrix Group Name", "")
-    if matrix_group_name:
-        matrix_group_count[matrix_group_name] = (
-            matrix_group_count.get(matrix_group_name, 0) + 1
-        )
-        item_id = (
-            f"{matrix_group_name}_{matrix_group_count[matrix_group_name]}"
-        )
-    else:
-        item_id = field.get("Variable / Field Name", "")
-
+    item_id = field.get(
+        "Variable / Field Name", ""
+    )  # item_id should always be the Variable name in redcap
     rowData = {
         "category": "reproschema:Item",
         "id": item_id,
@@ -349,7 +338,7 @@ def process_row(
         "activities",
         form_name,
         "items",
-        f'{field["Variable / Field Name"]}',
+        item_id,
     )
 
     write_obj_jsonld(it, file_path_item, contextfile_url=schema_context_url)
