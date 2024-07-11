@@ -10,8 +10,6 @@ from .context_url import CONTEXTFILE_URL
 from .jsonldutils import get_context_version
 from .models import Activity, Item, Protocol, write_obj_jsonld
 
-matrix_group_count = {}
-
 # All the mapping used in the code
 SCHEMA_MAP = {
     "Variable / Field Name": "@id",  # column A
