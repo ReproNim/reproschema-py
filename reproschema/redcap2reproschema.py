@@ -250,7 +250,9 @@ def process_row(
     add_preable=True,
 ):
     """Process a row of the REDCap data and generate the jsonld file for the item."""
-    item_id = field.get("Variable / Field Name", "") # item_id should always be the Variable name in redcap
+    item_id = field.get(
+        "Variable / Field Name", ""
+    )  # item_id should always be the Variable name in redcap
     rowData = {
         "category": "reproschema:Item",
         "id": item_id,
