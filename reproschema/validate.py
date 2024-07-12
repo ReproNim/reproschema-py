@@ -92,6 +92,10 @@ def validate_dir(
                 if stop is not None:
                     stop_server(stop)
                 raise ValueError(f"Empty data graph in file {name}")
+            if data["@id"].split("/")[-1] != name.split("/")[-1]:
+                raise Exception(
+                    f"Document {data['@id']} does not match file name {name}"
+                )
             conforms, vtext = validate_data(data)
         except (ValueError, json.JSONDecodeError):
             if stop is not None:
