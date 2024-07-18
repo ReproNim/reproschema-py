@@ -58,6 +58,7 @@ Homepage = "https://github.com/ReproNim/reproschema-py"
 line-length = 79
 
 [tool.codespell]
+exclude-file = "CHANGELOG.md"
 ignore-words = "codespell_ignore_words.txt"
 skip = "./.git"
 
