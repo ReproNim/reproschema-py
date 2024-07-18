@@ -12,19 +12,19 @@ pip install reproschema
 
 ### Developer installation
 
-After you create a fork, you can clone and install repo in developer mode:
+Fork this repo to your own GitHub account, then clone and install your forked repo in the developer mode:
 
 ```
 git clone https://github.com/<your github>/reproschema-py.git
 cd reproschema-py
-pip install -e .[dev]
+pip install -e .
 ```
 #### Style
 This repo uses pre-commit to check styling.
 - Install pre-commit with pip: `pip install pre-commit`
 - In order to use it with the repository, you have to run `run pre-commit install` in the root directory the first time you use it.
 
-When pre-commit is used you may have to run git commit twice,
+When pre-commit is used, you may have to run git commit twice,
 since pre-commit may make additional changes to your code for styling and will
 not commit these changes by default.
 
@@ -102,15 +102,17 @@ Before the conversion, ensure you have the following:
 ### YAML File Configuration
 In the `templates/redcap2rs.yaml` file, provide the following information:
 
-- **protocol_name**: This is a unique identifier for your protocol. Use underscores for spaces and avoid special characters.
-- **protocol_display_name**: The name that will appear in the application.
+- **protocol_name**: A unique identifier for your protocol. Use underscores for spaces and avoid special characters.
+- **protocol_display_name**: Name that will appear in the application.
 - **protocol_description**: A brief description of your protocol.
+- **redcap_version**: Version of your redcap file (you can customize it).
 
 Example:
 ```yaml
 protocol_name: "My_Protocol"
 protocol_display_name: "Assessment Protocol"
 protocol_description: "This protocol is for assessing cognitive skills."
+redcap_version: "X.XX.X"
 ```
 ### CLI Usage
 
@@ -119,7 +121,7 @@ The `redcap2reproschema`` function has been integrated into a CLI tool, use the 
 reproschema redcap2reproschema path/to/your_redcap_data_dic.csv path/to/your_redcap2rs.yaml
 ```
 
-Optionally you can provide a path to the output directory (defaults is the current directory) by adding option: `--output-path PATH`
+Optionally you can provide a path to the output directory (default is the current directory) by adding the option: `--output-path PATH`
 ### Python Function Usage
 
 You can also use the `redcap2reproschema` function from the `reproschema-py` package in your Python code.
@@ -131,7 +133,7 @@ csv_path = "path-to/your_redcap_data_dic.csv"
 yaml_path = "path-to/your_redcap2rs.yaml"
 output_path = "path-to/directory_you_want_to_save_output"
 
-reproschema2redcap(csv_file, yaml_file, output_path)
+redcap2reproschema(csv_file, yaml_file, output_path)
 ```
 
 ### Notes
