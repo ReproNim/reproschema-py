@@ -53,7 +53,9 @@ VALUE_TYPE_MAP = {
     "date_mdy": "xsd:date",  # ?? new one TODO: not sure what to do with it, it's not xsd:date
     "datetime_seconds_mdy": "xsd:date",  # ?? new one TODO: not sure what to do with it, it's not xsd:date
     "date_ymd": "xsd:date",  # new one
+    "date_dmy": "xsd:date",
     "datetime_": "xsd:dateTime",
+    "datetime_ymd": "xsd:dateTime",
     "time_": "xsd:time",
     "email": "xsd:string",
     "phone": "xsd:string",
@@ -200,12 +202,17 @@ def process_choices(choices_str, field_name):
     choices_value_type = []
     for ii, choice in enumerate(choices_str.split("|")):
         parts = choice.split(", ")
-        if len(parts) < 2:
-            print(
-                f"Warning: Invalid choice format '{choice}' in a {field_name} field, adding integer as a value"
-            )
-            # TODO! I'm adding int by default, but there is probably some legend in the csv and this is not yet implemented
-            parts = [ii, parts[0]]
+
+        # Handle the case where the choice is something like "1,"
+        if len(parts) == 1:
+            if choice.endswith(","):
+                parts = [parts[0][:-1], ""]
+            else:
+                print(
+                    f"Warning: Invalid choice format '{choice}' in a {field_name} field, adding integer as a value"
+                )
+                parts = [ii, parts[0]]
+
         # Try to convert the first part to an integer, if it fails, keep it as a string
         try:
             value = int(parts[0])
@@ -213,12 +220,13 @@ def process_choices(choices_str, field_name):
         except ValueError:
             value = parts[0]
             choices_value_type.append("xsd:string")
-        choice_obj = {"name": {"en": " ".join(parts[1:])}, "value": value}
-        # remove image for now
-        # if len(parts) == 3:
-        #     # Handle image url
-        #     choice_obj["image"] = f"{parts[2]}.png"
+
+        choice_obj = {
+            "name": {"en": " ".join(parts[1:]).strip()},
+            "value": value,
+        }
         choices.append(choice_obj)
+
     return choices, list(set(choices_value_type))
 
 
