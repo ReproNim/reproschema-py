@@ -60,6 +60,7 @@ line-length = 79
 [tool.codespell]
 ignore-words = "codespell_ignore_words.txt"
 skip = "./.git"
+exclude-file="CHANGELOG.md"
 
 [tool.hatch.build.hooks.vcs]
 version-file = "reproschema/_version.py"
