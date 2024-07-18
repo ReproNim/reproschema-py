@@ -88,15 +88,7 @@ def load_file(
         data = fixing_old_schema(data, copy_data=True)
     if compact:
         if compact_context:
-            if _is_file(compact_context):
-                with open(compact_context) as fp:
-                    context = json.load(fp)
-            elif _is_url(compact_context):
-                context = _fetch_jsonld_context(compact_context)
-            else:
-                raise Exception(
-                    f"compact_context has tobe a file or url, but {compact_context} provided"
-                )
+            context = read_contextfile(compact_context)
         if _is_file(path_or_url):
             data = jsonld.compact(
                 data, ctx=context, options={"base": base_url}
@@ -128,7 +120,7 @@ def validate_data(data):
     # normalized = jsonld.normalize(data, kwargs)
     obj_type = identify_model_class(data["@type"][0])
     data_fixed = [fixing_old_schema(data, copy_data=True)]
-    context = _fetch_jsonld_context(CONTEXTFILE_URL)
+    context = read_contextfile(CONTEXTFILE_URL)
     data_fixed_comp = jsonld.compact(data_fixed, context)
     del data_fixed_comp["@context"]
     conforms = False
@@ -139,6 +131,40 @@ def validate_data(data):
     except Exception as e:
         v_text = str(e)
     return conforms, v_text
+
+
+def read_contextfile(contextfile):
+    """Read a context file and return the context."""
+    if _is_file(contextfile):
+        with open(contextfile) as fp:
+            context = json.load(fp)
+    elif _is_url(contextfile):
+        context = _fetch_jsonld_context(contextfile)
+    else:
+        raise Exception(
+            f"compact_context has tobe a file or url, but {contextfile} provided"
+        )
+    return context
+
+
+def get_context_version(contextfile):
+    """Get the version from the context file path"""
+    from packaging.version import InvalidVersion, Version
+
+    if contextfile.split("/")[-3] != "releases":
+        raise ValueError(
+            f"Can't get the version from {contextfile}, expected to have releases in the path"
+        )
+    else:
+        try:
+            Version(contextfile.split("/")[-2])
+            return contextfile.split("/")[-2]
+        except InvalidVersion:
+            raise ValueError(
+                f"Can't get the version from {contextfile}, "
+                f"expected to have a valid version in the path, "
+                f"but got {contextfile.split('/')[-2]}"
+            )
 
 
 def to_newformat(path, format, prefixfile=None, contextfile=None):
@@ -171,8 +197,7 @@ def to_newformat(path, format, prefixfile=None, contextfile=None):
     data = load_file(path)
     if format == "jsonld":
         if contextfile is not None:
-            with open(contextfile) as fp:
-                context = json.load(fp)
+            context = read_contextfile(contextfile)
             data = jsonld.compact(data, context)
         return json.dumps(data, indent=2)
     kwargs = {"algorithm": "URDNA2015", "format": "application/n-quads"}
