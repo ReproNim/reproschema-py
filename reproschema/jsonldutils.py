@@ -99,13 +99,15 @@ def load_file(
     return data
 
 
-def validate_data(data):
+def validate_data(data, schemaname):
     """Validate an expanded jsonld document against the pydantic model.
 
     Parameters
     ----------
     data : dict
         Python dictionary containing JSONLD object
+    schemaname : str
+        Name of the schema (name of the file) being validated
 
     Returns
     -------
@@ -115,14 +117,16 @@ def validate_data(data):
         Validation errors if any returned by pydantic
 
     """
-    # do we need it?
-    # kwargs = {"algorithm": "URDNA2015", "format": "application/n-quads"}
-    # normalized = jsonld.normalize(data, kwargs)
     obj_type = identify_model_class(data["@type"][0])
     data_fixed = [fixing_old_schema(data, copy_data=True)]
     context = read_contextfile(CONTEXTFILE_URL)
     data_fixed_comp = jsonld.compact(data_fixed, context)
     del data_fixed_comp["@context"]
+    if obj_type.__name__ in ["Item", "Activity", "Protocol"]:
+        if data_fixed_comp["id"].split("/")[-1] != schemaname:
+            raise Exception(
+                f"Document {data['@id']} does not match the schema name {schemaname}"
+            )
     conforms = False
     v_text = ""
     try:

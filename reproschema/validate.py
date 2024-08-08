@@ -92,7 +92,7 @@ def validate_dir(
                 if stop is not None:
                     stop_server(stop)
                 raise ValueError(f"Empty data graph in file {name}")
-            conforms, vtext = validate_data(data)
+            conforms, vtext = validate_data(data, schemaname=Path(name).name)
         except (ValueError, json.JSONDecodeError):
             if stop is not None:
                 stop_server(stop)
@@ -133,27 +133,20 @@ def validate(path):
 
     """
     if Path(path).is_dir():
-
         lgr.info(f"Validating directory {path}")
-
         stop, port = start_server()
         http_kwargs = {"port": port}
         started = True
-
         conforms, _ = validate_dir(
             path, started=started, http_kwargs=http_kwargs, stop=stop
         )
-
         stop_server(stop)
-
     else:
-
         if Path(path).name in FILES_TO_SKIP:
             lgr.info(f"Skipping file {path}")
             return True
-
         data = load_file(path, started=False)
-        conforms, vtext = validate_data(data)
+        conforms, vtext = validate_data(data, schemaname=Path(path).name)
         if not conforms:
             lgr.critical(f"File {path} has validation errors.")
             raise ValueError(vtext)
