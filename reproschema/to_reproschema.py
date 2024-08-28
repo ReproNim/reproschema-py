@@ -1,10 +1,11 @@
+import argparse
 import os
+import re
 from pathlib import Path
+
+import pandas as pd
 import yaml
 from bs4 import BeautifulSoup
-import re
-import pandas as pd
-import argparse
 
 from .context_url import CONTEXTFILE_URL
 from .jsonldutils import get_context_version
@@ -20,7 +21,7 @@ CSV_TO_REPROSCHEMA_MAP = {
     "branch_logic": "REDCap Branching Logic",
     "description": "Description",
     "valueRequired": "REDCap Field Required",
-    "validation": "REDCap Text Validation Type"
+    "validation": "REDCap Text Validation Type",
 }
 
 VALUE_TYPE_MAP = {
@@ -42,7 +43,16 @@ INPUT_TYPE_MAP = {
     "Text": "text",
 }
 
-ADDITIONAL_NOTES_LIST = ["Domain", "Study", "Field Class", "Field Category", "Data Scope", "Source/Respondent", "Description Status"]
+ADDITIONAL_NOTES_LIST = [
+    "Domain",
+    "Study",
+    "Field Class",
+    "Field Category",
+    "Data Scope",
+    "Source/Respondent",
+    "Description Status",
+]
+
 
 class CSVProcessor:
     def __init__(self, csv_file):
@@ -52,18 +62,24 @@ class CSVProcessor:
 
     def load_csv(self, abs_folder_path):
         df = pd.read_csv(self.csv_file)
-        df.columns = df.columns.str.strip().str.replace('"', '')
+        df.columns = df.columns.str.strip().str.replace('"', "")
 
         grouped = df.groupby(CSV_TO_REPROSCHEMA_MAP["activity_name"])
         for activity_name, group in grouped:
-            activity_path = Path(abs_folder_path) / "activities" / activity_name / "items"
+            activity_path = (
+                Path(abs_folder_path) / "activities" / activity_name / "items"
+            )
             activity_path.mkdir(parents=True, exist_ok=True)
 
-            self.datas[activity_name] = group.to_dict(orient='records')
-            self.order[activity_name] = [f"items/{item}" for item in group[CSV_TO_REPROSCHEMA_MAP["item_name"]]]
+            self.datas[activity_name] = group.to_dict(orient="records")
+            self.order[activity_name] = [
+                f"items/{item}"
+                for item in group[CSV_TO_REPROSCHEMA_MAP["item_name"]]
+            ]
 
     def get_data(self):
         return self.datas, self.order
+
 
 class ItemProcessor:
     def __init__(self):
@@ -75,47 +91,75 @@ class ItemProcessor:
     def branch_logic(self, condition_str):
         if not condition_str:
             return "true"
-        
+
         condition_str = re.sub(r"\[([^\]]+)\]", r"\1", condition_str)
         condition_str = re.sub(r"([^><!=])=", r"\1===", condition_str)
-        condition_str = re.sub(r"\bAND\b", " && ", condition_str, flags=re.IGNORECASE)
-        condition_str = re.sub(r"\bOR\b", " || ", condition_str, flags=re.IGNORECASE)
-        condition_str = re.sub(r"sum\(([^)]+)\)", r"[\1].reduce((a, b) => a + b, 0)", condition_str)
+        condition_str = re.sub(
+            r"\bAND\b", " && ", condition_str, flags=re.IGNORECASE
+        )
+        condition_str = re.sub(
+            r"\bOR\b", " || ", condition_str, flags=re.IGNORECASE
+        )
+        condition_str = re.sub(
+            r"sum\(([^)]+)\)",
+            r"[\1].reduce((a, b) => a + b, 0)",
+            condition_str,
+        )
         return condition_str
-    
+
     def process_item(self, item):
-        input_type = self.input_type_map.get(item[self.csv_to_reproschema_map["inputType"]], "text")
+        input_type = self.input_type_map.get(
+            item[self.csv_to_reproschema_map["inputType"]], "text"
+        )
         item_data = {
             "category": "reproschema:Item",
             "id": item[self.csv_to_reproschema_map["item_name"]],
-            "prefLabel": {"en": item[self.csv_to_reproschema_map["item_name"]]},
+            "prefLabel": {
+                "en": item[self.csv_to_reproschema_map["item_name"]]
+            },
             "question": {
-                "en": self.clean_html(item[self.csv_to_reproschema_map["question"]])
+                "en": self.clean_html(
+                    item[self.csv_to_reproschema_map["question"]]
+                )
             },
             "ui": {"inputType": input_type},
             "responseOptions": {
                 "valueType": self.determine_value_type(item),
-                "multipleChoice": item[self.csv_to_reproschema_map["inputType"]] == "Multi-select"
-            }
+                "multipleChoice": item[
+                    self.csv_to_reproschema_map["inputType"]
+                ]
+                == "Multi-select",
+            },
         }
 
         if self.csv_to_reproschema_map["response_option"] in item:
-            item_data["responseOptions"]["choices"], item_data["responseOptions"]["valueType"] = self.process_response_options(
+            (
+                item_data["responseOptions"]["choices"],
+                item_data["responseOptions"]["valueType"],
+            ) = self.process_response_options(
                 item[self.csv_to_reproschema_map["response_option"]],
-                item_name=item[self.csv_to_reproschema_map["item_name"]]
+                item_name=item[self.csv_to_reproschema_map["item_name"]],
             )
 
         for column in self.additional_notes_columns:
-            if column in item and item[column]:  
-                notes_obj = {"source": "redcap", "column": column, "value": item[column]}
-                item_data.setdefault("additionalNotesObj", []).append(notes_obj)
+            if column in item and item[column]:
+                notes_obj = {
+                    "source": "redcap",
+                    "column": column,
+                    "value": item[column],
+                }
+                item_data.setdefault("additionalNotesObj", []).append(
+                    notes_obj
+                )
 
         return item_data
 
     def determine_value_type(self, item):
         item_type = item[self.csv_to_reproschema_map["inputType"]]
-        validation_type = item.get(self.csv_to_reproschema_map.get("validation", ""), "")
-        
+        validation_type = item.get(
+            self.csv_to_reproschema_map.get("validation", ""), ""
+        )
+
         # Ensure validation_type is a string before stripping
         if pd.isna(validation_type):
             validation_type = ""
@@ -124,10 +168,11 @@ class ItemProcessor:
 
         return [self.value_type_map.get(validation_type, "xsd:string")]
 
-
     def process_response_options(self, response_option_str, item_name):
         if pd.isna(response_option_str):
-            return [], ["xsd:string"]  # Return an empty list and default value type if response options are missing
+            return [], [
+                "xsd:string"
+            ]  # Return an empty list and default value type if response options are missing
 
         response_option = []
         response_option_value_type = []
@@ -141,11 +186,11 @@ class ItemProcessor:
             key_value = choice.split("=>")
             if len(key_value) == 2:
                 value = key_value[0].strip().strip("'")
-                
+
                 # Skip if the value is "NULL"
                 if value == "NULL":
                     continue
-                
+
                 name = self.clean_html(key_value[1].strip().strip("'"))
 
                 # Try to convert the value to an integer, if possible
@@ -158,10 +203,11 @@ class ItemProcessor:
 
                 response_option.append({"name": {"en": name}, "value": value})
             else:
-                print(f"Warning: Invalid choice format '{choice}' in {item_name} field")
+                print(
+                    f"Warning: Invalid choice format '{choice}' in {item_name} field"
+                )
 
         return response_option, list(set(response_option_value_type))
-
 
     def clean_html(self, raw_html):
         """Helper function to clean up HTML tags and return plain text"""
@@ -203,8 +249,15 @@ class ActivitySchema:
         write_obj_jsonld(act, file_path, contextfile_url=CONTEXTFILE_URL)
         print(f"{self.activity_name} Instrument schema created")
 
+
 class ProtocolSchema:
-    def __init__(self, protocol_name, protocol_display_name, redcap_version, protocol_description=""):
+    def __init__(
+        self,
+        protocol_name,
+        protocol_display_name,
+        redcap_version,
+        protocol_description="",
+    ):
         self.protocol_name = protocol_name
         self.protocol_display_name = protocol_display_name
         self.redcap_version = redcap_version
@@ -215,7 +268,9 @@ class ProtocolSchema:
         protocol_visibility_obj[activity_name] = True
         self.activities.append(activity_name)
 
-    def create_protocol_schema(self, abs_folder_path, protocol_order, protocol_visibility_obj):
+    def create_protocol_schema(
+        self, abs_folder_path, protocol_order, protocol_visibility_obj
+    ):
         protocol_schema = {
             "category": "reproschema:Protocol",
             "id": f"{self.protocol_name}_schema",
@@ -249,6 +304,7 @@ class ProtocolSchema:
         write_obj_jsonld(prot, file_path, contextfile_url=CONTEXTFILE_URL)
         print(f"Protocol schema created in {file_path}")
 
+
 def to_reproschema(csv_file, yaml_file, output_path):
     csv_processor = CSVProcessor(csv_file=csv_file)
     item_processor = ItemProcessor()
@@ -270,12 +326,12 @@ def to_reproschema(csv_file, yaml_file, output_path):
         activity_schema = ActivitySchema(
             activity_name,
             rows[0][CSV_TO_REPROSCHEMA_MAP["activity_name"]],
-            protocol["redcap_version"]
+            protocol["redcap_version"],
         )
 
         bl_list = []
 
-        for idx, item in enumerate(rows):  
+        for idx, item in enumerate(rows):
             item_data = item_processor.process_item(item)
 
             # Handle "description" as a dictionary
@@ -283,26 +339,40 @@ def to_reproschema(csv_file, yaml_file, output_path):
 
             item_name = item[CSV_TO_REPROSCHEMA_MAP["item_name"]]
             it = Item(**item_data)
-            file_path_item = Path(abs_folder_path) / "activities" / activity_name / "items" / item_name
-            write_obj_jsonld(it, file_path_item, contextfile_url=CONTEXTFILE_URL)
+            file_path_item = (
+                Path(abs_folder_path)
+                / "activities"
+                / activity_name
+                / "items"
+                / item_name
+            )
+            write_obj_jsonld(
+                it, file_path_item, contextfile_url=CONTEXTFILE_URL
+            )
 
             activity_schema.add_item(item_data)
 
             # Handle "valueRequired" for bl_list separately
             if not pd.isna(item[CSV_TO_REPROSCHEMA_MAP["valueRequired"]]):
-                value_required = str(item[CSV_TO_REPROSCHEMA_MAP["valueRequired"]]) == '1'
+                value_required = (
+                    str(item[CSV_TO_REPROSCHEMA_MAP["valueRequired"]]) == "1"
+                )
             else:
                 value_required = False
 
             # Add to bl_list
-            annotation = item.get(CSV_TO_REPROSCHEMA_MAP.get("annotation", ""), "")
+            annotation = item.get(
+                CSV_TO_REPROSCHEMA_MAP.get("annotation", ""), ""
+            )
             is_vis = "@HIDDEN" not in annotation
-            bl_list.append({
-                "variableName": item_name,
-                "isAbout": f"items/{item_name}",
-                "valueRequired": value_required,
-                "isVis": is_vis,  
-            })
+            bl_list.append(
+                {
+                    "variableName": item_name,
+                    "isAbout": f"items/{item_name}",
+                    "valueRequired": value_required,
+                    "isVis": is_vis,
+                }
+            )
 
         activity_schema.create_activity_schema(
             abs_folder_path,
@@ -316,19 +386,25 @@ def to_reproschema(csv_file, yaml_file, output_path):
         protocol_name,
         protocol.get("protocol_display_name"),
         protocol.get("redcap_version"),
-        protocol.get("protocol_description", "")
+        protocol.get("protocol_description", ""),
     )
     protocol_schema.create_protocol_schema(
-        abs_folder_path,
-        protocol_order,
-        protocol_visibility_obj
+        abs_folder_path, protocol_order, protocol_visibility_obj
     )
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Convert a CSV file to Reproschema format.")
+    parser = argparse.ArgumentParser(
+        description="Convert a CSV file to Reproschema format."
+    )
     parser.add_argument("csv_file", help="Path to the input CSV file.")
-    parser.add_argument("yaml_file", help="Path to the YAML configuration file.")
-    parser.add_argument("output_path", help="Path to the directory where the output schemas will be saved.")
+    parser.add_argument(
+        "yaml_file", help="Path to the YAML configuration file."
+    )
+    parser.add_argument(
+        "output_path",
+        help="Path to the directory where the output schemas will be saved.",
+    )
 
     args = parser.parse_args()
 
@@ -337,6 +413,7 @@ def main():
         yaml_file=args.yaml_file,
         output_path=args.output_path,
     )
+
 
 if __name__ == "__main__":
     main()
