@@ -148,12 +148,11 @@ class ReproSchemaConverter:
     ) -> List[Dict[str, str]]:
         compute_items = []
         for item in items:
-            item_id = item['id'].lower()
-            if '_score' in item_id or item_id.endswith('_raw'):
-                compute_items.append({
-                    'variableName': item['id'],
-                    'jsExpression': ''
-                })
+            item_id = item["id"].lower()
+            if "_score" in item_id or item_id.endswith("_raw"):
+                compute_items.append(
+                    {"variableName": item["id"], "jsExpression": ""}
+                )
         return compute_items
 
     def branch_logic(self, condition_str):
@@ -189,11 +188,12 @@ class ReproSchemaConverter:
                 "order": activity_data["order"],
                 "addProperties": [
                     {
-                        'variableName': item['id'],
-                        'isAbout': f"items/{item['id']}",
-                        'valueRequired': item.get('valueRequired', False),
-                        'isVis': not self.should_hide_item(item)
-                    } for item in activity_data['items']
+                        "variableName": item["id"],
+                        "isAbout": f"items/{item['id']}",
+                        "valueRequired": item.get("valueRequired", False),
+                        "isVis": not self.should_hide_item(item),
+                    }
+                    for item in activity_data["items"]
                 ],
                 "shuffle": False,
             },
@@ -210,18 +210,22 @@ class ReproSchemaConverter:
 
         for item in activity_data["items"]:
             it = Item(**item)
-            file_path_item = path / 'items' / item['id']
-            file_path_item.parent.mkdir(parents=True, exist_ok=True)  # Create parent directories
-            write_obj_jsonld(it, file_path_item, contextfile_url=CONTEXTFILE_URL)
+            file_path_item = path / "items" / item["id"]
+            file_path_item.parent.mkdir(
+                parents=True, exist_ok=True
+            )  # Create parent directories
+            write_obj_jsonld(
+                it, file_path_item, contextfile_url=CONTEXTFILE_URL
+            )
 
-        print(f'{activity_name} Instrument schema created')
+        print(f"{activity_name} Instrument schema created")
 
     def should_hide_item(self, item: Dict[str, Any]) -> bool:
-        item_id = item['id'].lower()
+        item_id = item["id"].lower()
         return (
-            '_score' in item_id or 
-            item_id.endswith('_raw') or 
-            '@HIDDEN' in item.get('annotation', '').lower()
+            "_score" in item_id
+            or item_id.endswith("_raw")
+            or "@HIDDEN" in item.get("annotation", "").lower()
         )
 
     def create_protocol_schema(
