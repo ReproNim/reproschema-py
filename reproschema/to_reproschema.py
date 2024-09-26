@@ -113,7 +113,8 @@ class ReproSchemaConverter:
     def generate_compute_section(self, items: List[Dict[str, Any]]) -> List[Dict[str, str]]:
         compute_items = []
         for item in items:
-            if '_Score' in item['id'] or '_score' in item['id']:
+            item_id = item['id'].lower()
+            if '_score' in item_id or item_id.endswith('_raw'):
                 compute_items.append({
                     'variableName': item['id'],
                     'jsExpression': ''
@@ -150,7 +151,7 @@ class ReproSchemaConverter:
                         'variableName': item['id'],
                         'isAbout': f"items/{item['id']}",
                         'valueRequired': item.get('valueRequired', False),
-                        'isVis': '@HIDDEN' not in item.get('annotation', '')
+                        'isVis': not self.should_hide_item(item)
                     } for item in activity_data['items']
                 ],
                 'shuffle': False,
@@ -171,7 +172,16 @@ class ReproSchemaConverter:
             file_path_item = path / 'items' / item['id']
             file_path_item.parent.mkdir(parents=True, exist_ok=True)  # Create parent directories
             write_obj_jsonld(it, file_path_item, contextfile_url=CONTEXTFILE_URL)
-            print(f'{activity_name} Instrument schema created')
+
+        print(f'{activity_name} Instrument schema created')
+
+    def should_hide_item(self, item: Dict[str, Any]) -> bool:
+        item_id = item['id'].lower()
+        return (
+            '_score' in item_id or 
+            item_id.endswith('_raw') or 
+            '@HIDDEN' in item.get('annotation', '').lower()
+        )
 
     def create_protocol_schema(self, protocol_name: str, protocol_data: Dict[str, Any], activities: List[str], output_path: Path):
         protocol_schema = {
