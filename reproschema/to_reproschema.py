@@ -34,11 +34,17 @@ class ReproSchemaConverter:
             r"\[([^\]]+)\]|\b(AND|OR)\b|([^><!=])=|sum\(([^)]+)\)"
         )
 
-    def load_csv(self, csv_file: str) -> pd.DataFrame:
-        df = pd.read_csv(csv_file)
-        df.columns = df.columns.str.strip().str.replace('"', "")
+    def clean_validity_administration_fields(self, df: pd.DataFrame) -> pd.DataFrame:
+        validity_admin_fields = [col for col in df.columns if col.endswith('_Validity') or col.endswith('_Administration')]
+        for field in validity_admin_fields:
+            df[field] = df[field].apply(lambda x: x.replace("''", "'") if isinstance(x, str) else x)
         return df
 
+    def load_csv(self, csv_file: str) -> pd.DataFrame:
+        df = pd.read_csv(csv_file)
+        df.columns = df.columns.str.strip().str.replace('"', '')
+        df = self.clean_validity_administration_fields(df)
+        return df
     def process_dataframe(self, df: pd.DataFrame) -> Dict[str, Dict[str, Any]]:
         grouped = df.groupby(self.csv_to_reproschema_map["activity_name"])
         activities = {}
@@ -104,26 +110,31 @@ class ReproSchemaConverter:
 
         return [self.value_type_map.get(validation_type, "xsd:string")]
 
-    def process_response_options(
-        self, response_option_str: str, item_name: str
-    ) -> tuple:
+    def process_response_options(self, response_option_str: str, item_name: str) -> tuple:
         if pd.isna(response_option_str):
-            return [], ["xsd:string"]
+            return [], ['xsd:string']
 
         response_option = []
         response_option_value_type = set()
 
-        choices = response_option_str.split("{-}")
+        choices = response_option_str.split('{-}')
         for choice in choices:
-            match = re.match(r"'([^']+)'=>'([^']+)'", choice.strip())
-            if match:
-                value, name = match.groups()
-                response_option.append({"name": {"en": name}, "value": value})
-                response_option_value_type.add("xsd:string")
+            choice = choice.strip()
+            if choice == "NULL=>''":
+                # Handle NULL case
+                response_option.append({'name': {'en': 'NULL'}, 'value': None})
+                response_option_value_type.add('xsd:string')
+            elif '=>' in choice:
+                # Handle cases like ''Questionable'=>'Questionable'' or '0'=>'No'
+                value, name = choice.split('=>')
+                value = value.strip("'")
+                name = name.strip("'")
+                if value.lower() == 'null':
+                    value = None
+                response_option.append({'name': {'en': name}, 'value': value})
+                response_option_value_type.add('xsd:string')
             else:
-                print(
-                    f"Warning: Invalid choice format '{choice}' in {item_name} field"
-                )
+                print(f"Warning: Unexpected choice format '{choice}' in {item_name} field")
 
         return response_option, list(response_option_value_type)
 
