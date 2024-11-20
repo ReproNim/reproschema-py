@@ -201,7 +201,9 @@ def process_choices(choices_str, field_name):
     choices = []
     choices_value_type = []
     for ii, choice in enumerate(choices_str.split("|")):
-        choice = choice.strip()  # Strip leading/trailing whitespace for each choice
+        choice = (
+            choice.strip()
+        )  # Strip leading/trailing whitespace for each choice
         parts = [p.strip() for p in choice.split(",")]
 
         # Handle the case where the choice is something like "1,"
@@ -215,11 +217,11 @@ def process_choices(choices_str, field_name):
                 parts = [ii, parts[0]]
 
         # Determine if value should be treated as an integer or string
-        if parts[0] == '0':
+        if parts[0] == "0":
             # Special case for "0", treat it as an integer
             value = 0
             choices_value_type.append("xsd:integer")
-        elif parts[0].isdigit() and parts[0][0] == '0':
+        elif parts[0].isdigit() and parts[0][0] == "0":
             # If it has leading zeros, treat it as a string
             value = parts[0]
             choices_value_type.append("xsd:string")
