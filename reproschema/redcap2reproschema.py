@@ -201,7 +201,8 @@ def process_choices(choices_str, field_name):
     choices = []
     choices_value_type = []
     for ii, choice in enumerate(choices_str.split("|")):
-        parts = choice.split(", ")
+        choice = choice.strip()  # Strip leading/trailing whitespace for each choice
+        parts = [p.strip() for p in choice.split(",")]
 
         # Handle the case where the choice is something like "1,"
         if len(parts) == 1:
@@ -213,14 +214,22 @@ def process_choices(choices_str, field_name):
                 )
                 parts = [ii, parts[0]]
 
-        # Try to convert the first part to an integer, if it fails, keep it as a string
-        try:
-            value = int(parts[0])
+        # Determine if value should be treated as an integer or string
+        if parts[0] == '0':
+            # Special case for "0", treat it as an integer
+            value = 0
             choices_value_type.append("xsd:integer")
-        except ValueError:
+        elif parts[0].isdigit() and parts[0][0] == '0':
+            # If it has leading zeros, treat it as a string
             value = parts[0]
             choices_value_type.append("xsd:string")
-
+        else:
+            try:
+                value = int(parts[0])
+                choices_value_type.append("xsd:integer")
+            except ValueError:
+                value = parts[0]
+                choices_value_type.append("xsd:string")
         choice_obj = {
             "name": {"en": " ".join(parts[1:]).strip()},
             "value": value,
