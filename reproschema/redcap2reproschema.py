@@ -308,9 +308,16 @@ def process_row(
             and value
             and input_type in ["radio", "select", "slider"]
         ):
-            choices, choices_val_type_l = process_choices(
-                value, field_name=field["Variable / Field Name"]
-            )
+            if input_type == "slider":
+                # Create a list of 101 choices (0 to 100)
+                choices = [
+                    {"name": {"en": " "}, "value": i} for i in range(101)
+                ]
+                choices_val_type_l = ["xsd:integer"]
+            else:
+                choices, choices_val_type_l = process_choices(
+                    value, field_name=field["Variable / Field Name"]
+                )
             rowData["responseOptions"].update(
                 {
                     "choices": choices,
