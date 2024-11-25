@@ -200,40 +200,43 @@ def process_choices(choices_str, field_name):
 
     choices = []
     choices_value_type = []
-    for ii, choice in enumerate(choices_str.split("|")):
-        choice = (
-            choice.strip()
-        )  # Strip leading/trailing whitespace for each choice
-        parts = [p.strip() for p in choice.split(",")]
+    for choice in choices_str.split("|"):
+        choice = choice.strip()
 
-        # Handle the case where the choice is something like "1,"
-        if len(parts) == 1:
+        # Split only on the first comma to separate value from label
+        first_comma_split = choice.split(",", 1)
+        value_part = first_comma_split[0].strip()
+
+        # Get the full label part (keeping all commas and equals signs)
+        if len(first_comma_split) > 1:
+            label_part = first_comma_split[1].strip()
+        else:
+            # Handle cases where there's no comma
             if choice.endswith(","):
-                parts = [parts[0][:-1], ""]
+                label_part = ""
             else:
                 print(
-                    f"Warning: Invalid choice format '{choice}' in a {field_name} field, adding integer as a value"
+                    f"Warning: Invalid choice format '{choice}' in {field_name} field"
                 )
-                parts = [ii, parts[0]]
+                label_part = choice
 
-        # Determine if value should be treated as an integer or string
-        if parts[0] == "0":
-            # Special case for "0", treat it as an integer
+        # Determine value type
+        if value_part == "0":
             value = 0
             choices_value_type.append("xsd:integer")
-        elif parts[0].isdigit() and parts[0][0] == "0":
-            # If it has leading zeros, treat it as a string
-            value = parts[0]
+        elif value_part.isdigit() and value_part[0] == "0":
+            value = value_part
             choices_value_type.append("xsd:string")
         else:
             try:
-                value = int(parts[0])
+                value = int(value_part)
                 choices_value_type.append("xsd:integer")
             except ValueError:
-                value = parts[0]
+                value = value_part
                 choices_value_type.append("xsd:string")
+
         choice_obj = {
-            "name": {"en": " ".join(parts[1:]).strip()},
+            "name": {"en": label_part},
             "value": value,
         }
         choices.append(choice_obj)
@@ -308,15 +311,30 @@ def process_row(
             and value
             and input_type in ["radio", "select", "slider"]
         ):
-            choices, choices_val_type_l = process_choices(
-                value, field_name=field["Variable / Field Name"]
-            )
-            rowData["responseOptions"].update(
-                {
-                    "choices": choices,
-                    "valueType": choices_val_type_l,
-                },  # updating value type for choices (can be int or str)
-            )
+            if input_type == "slider":
+                # For sliders, add both choices and min/max values
+                choices, choices_val_type_l = process_choices(
+                    value, field_name=field["Variable / Field Name"]
+                )
+                rowData["responseOptions"].update(
+                    {
+                        "choices": choices,
+                        "valueType": choices_val_type_l,
+                        "minValue": 0,  # hardcoded for redcap/now
+                        "maxValue": 100,  # hardcoded for redcap/now
+                    }
+                )
+            else:
+                # For radio and select, just process choices normally
+                choices, choices_val_type_l = process_choices(
+                    value, field_name=field["Variable / Field Name"]
+                )
+                rowData["responseOptions"].update(
+                    {
+                        "choices": choices,
+                        "valueType": choices_val_type_l,
+                    }
+                )
         # for now adding only for numerics, sometimes can be string or date.. TODO
         elif (
             SCHEMA_MAP.get(key) in RESPONSE_COND
