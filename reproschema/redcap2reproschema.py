@@ -202,11 +202,11 @@ def process_choices(choices_str, field_name):
     choices_value_type = []
     for choice in choices_str.split("|"):
         choice = choice.strip()
-        
+
         # Split only on the first comma to separate value from label
         first_comma_split = choice.split(",", 1)
         value_part = first_comma_split[0].strip()
-        
+
         # Get the full label part (keeping all commas and equals signs)
         if len(first_comma_split) > 1:
             label_part = first_comma_split[1].strip()
@@ -215,7 +215,9 @@ def process_choices(choices_str, field_name):
             if choice.endswith(","):
                 label_part = ""
             else:
-                print(f"Warning: Invalid choice format '{choice}' in {field_name} field")
+                print(
+                    f"Warning: Invalid choice format '{choice}' in {field_name} field"
+                )
                 label_part = choice
 
         # Determine value type
@@ -311,20 +313,28 @@ def process_row(
         ):
             if input_type == "slider":
                 # For sliders, add both choices and min/max values
-                choices, choices_val_type_l = process_choices(value, field_name=field["Variable / Field Name"])
-                rowData["responseOptions"].update({
-                    "choices": choices,
-                    "valueType": choices_val_type_l,
-                    "minValue": 0,  # hardcoded for redcap/now
-                    "maxValue": 100,  # hardcoded for redcap/now
-                })
+                choices, choices_val_type_l = process_choices(
+                    value, field_name=field["Variable / Field Name"]
+                )
+                rowData["responseOptions"].update(
+                    {
+                        "choices": choices,
+                        "valueType": choices_val_type_l,
+                        "minValue": 0,  # hardcoded for redcap/now
+                        "maxValue": 100,  # hardcoded for redcap/now
+                    }
+                )
             else:
                 # For radio and select, just process choices normally
-                choices, choices_val_type_l = process_choices(value, field_name=field["Variable / Field Name"])
-                rowData["responseOptions"].update({
-                    "choices": choices,
-                    "valueType": choices_val_type_l,
-                })
+                choices, choices_val_type_l = process_choices(
+                    value, field_name=field["Variable / Field Name"]
+                )
+                rowData["responseOptions"].update(
+                    {
+                        "choices": choices,
+                        "valueType": choices_val_type_l,
+                    }
+                )
         # for now adding only for numerics, sometimes can be string or date.. TODO
         elif (
             SCHEMA_MAP.get(key) in RESPONSE_COND

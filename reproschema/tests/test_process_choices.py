@@ -122,7 +122,10 @@ def test_process_choices_likert_scale():
     choices, value_types = process_choices(choices_str, "likert_scale")
     assert choices == [
         {"name": {"en": "0=None (Not at all)"}, "value": 0},
-        {"name": {"en": "1=Slight (Rare, less than a day or two)"}, "value": 1},
+        {
+            "name": {"en": "1=Slight (Rare, less than a day or two)"},
+            "value": 1,
+        },
         {"name": {"en": "2=Mild (Several days)"}, "value": 2},
         {"name": {"en": "3=Moderate (More than half the days)"}, "value": 3},
         {"name": {"en": "4=Severe (Nearly every day)"}, "value": 4},
