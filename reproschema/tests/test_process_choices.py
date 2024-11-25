@@ -116,6 +116,20 @@ def test_process_choices_spaces_in_values():
     assert sorted(value_types) == ["xsd:string"]
 
 
+def test_process_choices_likert_scale():
+    # Test Likert scale choices with number prefixes in descriptions
+    choices_str = "0, 0=None (Not at all) | 1, 1=Slight (Rare, less than a day or two) | 2, 2=Mild (Several days) | 3, 3=Moderate (More than half the days) | 4, 4=Severe (Nearly every day)"
+    choices, value_types = process_choices(choices_str, "likert_scale")
+    assert choices == [
+        {"name": {"en": "0=None (Not at all)"}, "value": 0},
+        {"name": {"en": "1=Slight (Rare, less than a day or two)"}, "value": 1},
+        {"name": {"en": "2=Mild (Several days)"}, "value": 2},
+        {"name": {"en": "3=Moderate (More than half the days)"}, "value": 3},
+        {"name": {"en": "4=Severe (Nearly every day)"}, "value": 4},
+    ]
+    assert value_types == ["xsd:integer"]
+
+
 # Run pytest if script is called directly
 if __name__ == "__main__":
     pytest.main()
