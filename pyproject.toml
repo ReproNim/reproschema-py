@@ -14,7 +14,8 @@ dependencies = [
     "pyyaml",
     "beautifulsoup4",
     "lxml",
-    "pydantic >= 2.0"
+    "pydantic >= 2.0",
+    "pandas"
 ]
 description = "Reproschema Python library"
 # Version from setuptools_scm
