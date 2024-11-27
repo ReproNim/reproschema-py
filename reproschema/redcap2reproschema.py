@@ -3,9 +3,9 @@ import os
 import re
 from pathlib import Path
 
+import pandas as pd
 import yaml
 from bs4 import BeautifulSoup
-import pandas as pd
 
 from .context_url import CONTEXTFILE_URL
 from .jsonldutils import get_context_version
@@ -137,10 +137,14 @@ def process_field_properties(data):
         condition = normalize_condition(condition)
     else:
         condition = True
-        
+
     # Check Field Annotation for special flags
     annotation = data.get("Field Annotation", "").upper()
-    if condition and ("@READONLY" in annotation or "@HIDDEN" in annotation or "@CALCTEXT" in annotation):
+    if condition and (
+        "@READONLY" in annotation
+        or "@HIDDEN" in annotation
+        or "@CALCTEXT" in annotation
+    ):
         condition = False
 
     prop_obj = {
@@ -504,24 +508,30 @@ def parse_language_iso_codes(input_string):
     ]
 
 
-def process_csv_with_pandas(csv_file, abs_folder_path, schema_context_url, protocol_name):
+def process_csv_with_pandas(
+    csv_file, abs_folder_path, schema_context_url, protocol_name
+):
     datas = {}
     order = {}
     compute = {}
     languages = []
 
     df = pd.read_csv(csv_file, encoding="utf-8")
-    df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)  # Clean headers
+    df = df.applymap(
+        lambda x: x.strip() if isinstance(x, str) else x
+    )  # Clean headers
 
     for form_name, group in df.groupby("Form Name"):
         datas[form_name] = group.to_dict(orient="records")
         order[form_name] = []
         compute[form_name] = []
-        os.makedirs(f"{abs_folder_path}/activities/{form_name}/items", exist_ok=True)
+        os.makedirs(
+            f"{abs_folder_path}/activities/{form_name}/items", exist_ok=True
+        )
 
         # TODO: should we bring back the language
-            # if not languages:
-            #    languages = parse_language_iso_codes(row["Field Label"])
+        # if not languages:
+        #    languages = parse_language_iso_codes(row["Field Label"])
 
         for _, row in group.iterrows():
             field_name = row["Variable / Field Name"]
@@ -531,25 +541,30 @@ def process_csv_with_pandas(csv_file, abs_folder_path, schema_context_url, proto
                     row["Choices, Calculations, OR Slider Labels"],
                     field_type=row["Field Type"],
                 )
-                compute[form_name].append({
-                    "variableName": field_name,
-                    "jsExpression": condition,
-                })
+                compute[form_name].append(
+                    {
+                        "variableName": field_name,
+                        "jsExpression": condition,
+                    }
+                )
             elif "@CALCTEXT" in row.get("Field Annotation", "").upper():
                 calc_text = row["Field Annotation"]
                 match = re.search(r"@CALCTEXT\((.*)\)", calc_text)
                 if match:
                     js_expression = match.group(1)
                     js_expression = normalize_condition(js_expression)
-                    compute[form_name].append({
-                        "variableName": field_name,
-                        "jsExpression": js_expression,
-                    })
+                    compute[form_name].append(
+                        {
+                            "variableName": field_name,
+                            "jsExpression": js_expression,
+                        }
+                    )
             else:
                 order[form_name].append(f"items/{field_name}")
 
     os.makedirs(f"{abs_folder_path}/{protocol_name}", exist_ok=True)
     return datas, order, compute, languages
+
 
 # todo adding output path
 def redcap2reproschema(
