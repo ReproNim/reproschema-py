@@ -18,7 +18,7 @@ SCHEMA_MAP = {
     "Field Note": "description",
     # TODO: often "Field Annotation" has "@HIDDEN" and other markers
     # TODO: not sure if this can be every treated as description
-    "Field Annotation": "isVis",  # column R
+    # "Field Annotation": "isVis",  # column R
     "Section Header": "preamble",  # column C (need double-check)
     "Field Label": "question",  # column E
     "Field Type": "inputType",  # column D
