@@ -327,15 +327,17 @@ def process_row(
 
     field_type = field.get("Field Type", "")
     input_type, value_type = parse_field_type_and_value(field)
-    
+
     # Initialize ui object with common properties
     ui_obj = {"inputType": input_type}
-    
+
     # Handle readonly status first - this affects UI behavior
     annotation = str(field.get("Field Annotation", "")).upper()
-    if (field_type in COMPUTE_LIST or 
-        "@READONLY" in annotation or 
-        "@CALCTEXT" in annotation):
+    if (
+        field_type in COMPUTE_LIST
+        or "@READONLY" in annotation
+        or "@CALCTEXT" in annotation
+    ):
         ui_obj["readonlyValue"] = True
 
     rowData["ui"] = ui_obj
