@@ -25,11 +25,11 @@ def test_redcap2reproschema(tmpdir):
 
     shutil.copy(CSV_TEST_FILE, str(temp_csv_file))
     shutil.copy(YAML_TEST_FILE, str(temp_yaml_file))
-    
+
     # Add debug output to see the content of the CSV file
-    with open(str(temp_csv_file), 'r') as f:
+    with open(str(temp_csv_file), "r") as f:
         print("CSV content:", f.read())
-        
+
     with tmpdir.as_cwd():
         # Read YAML to find the expected output directory name
         with open(str(temp_yaml_file), "r") as file:
@@ -44,8 +44,10 @@ def test_redcap2reproschema(tmpdir):
                 str(temp_yaml_file),
             ],
         )
-        
+
         print("Command output:", result.output)  # Add debug output
-        
+
         assert result.exit_code == 0, f"Command failed with: {result.output}"
-        assert os.path.isdir(protocol_name), f"Expected output directory '{protocol_name}' does not exist"
+        assert os.path.isdir(
+            protocol_name
+        ), f"Expected output directory '{protocol_name}' does not exist"
