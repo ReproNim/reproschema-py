@@ -327,10 +327,21 @@ def process_row(
 
     field_type = field.get("Field Type", "")
     input_type, value_type = parse_field_type_and_value(field)
-    rowData["ui"] = {"inputType": input_type}
+    
+    # Initialize ui object with common properties
+    ui_obj = {"inputType": input_type}
+    
+    # Handle readonly status first - this affects UI behavior
+    annotation = str(field.get("Field Annotation", "")).upper()
+    if (field_type in COMPUTE_LIST or 
+        "@READONLY" in annotation or 
+        "@CALCTEXT" in annotation):
+        ui_obj["readonlyValue"] = True
+
+    rowData["ui"] = ui_obj
     rowData["responseOptions"] = {"valueType": [value_type]}
 
-    # setting additional fields for some field types
+    # Handle specific field type configurations
     if field_type == "yesno":
         rowData["responseOptions"]["choices"] = [
             {"name": {"en": "Yes"}, "value": 1},
@@ -338,8 +349,6 @@ def process_row(
         ]
     elif field_type == "checkbox":
         rowData["responseOptions"]["multipleChoice"] = True
-    elif field_type in COMPUTE_LIST:
-        rowData["ui"]["readonlyValue"] = True
 
     for key, value in field.items():
         if SCHEMA_MAP.get(key) in ["question", "description"] and value:
