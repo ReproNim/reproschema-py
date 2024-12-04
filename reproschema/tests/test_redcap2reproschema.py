@@ -23,13 +23,16 @@ def test_redcap2reproschema(tmpdir):
     temp_csv_file = tmpdir.join(CSV_FILE_NAME)
     temp_yaml_file = tmpdir.join(YAML_FILE_NAME)
 
-    shutil.copy(CSV_TEST_FILE, str(temp_csv_file))  # Convert to string
-    shutil.copy(YAML_TEST_FILE, str(temp_yaml_file))  # Convert to string
-    print("tmpdir: ", tmpdir)
-    # Change the current working directory to tmpdir
+    shutil.copy(CSV_TEST_FILE, str(temp_csv_file))
+    shutil.copy(YAML_TEST_FILE, str(temp_yaml_file))
+
+    # Add debug output to see the content of the CSV file
+    with open(str(temp_csv_file), "r") as f:
+        print("CSV content:", f.read())
+
     with tmpdir.as_cwd():
         # Read YAML to find the expected output directory name
-        with open(str(temp_yaml_file), "r") as file:  # Convert to string
+        with open(str(temp_yaml_file), "r") as file:
             protocol = yaml.safe_load(file)
         protocol_name = protocol.get("protocol_name", "").replace(" ", "_")
 
@@ -39,12 +42,12 @@ def test_redcap2reproschema(tmpdir):
                 "redcap2reproschema",
                 str(temp_csv_file),
                 str(temp_yaml_file),
-            ],  # Convert to string
+            ],
         )
 
-        assert (
-            result.exit_code == 0
-        ), f"The command failed to execute successfully: {result.output}"
+        print("Command output:", result.output)  # Add debug output
+
+        assert result.exit_code == 0, f"Command failed with: {result.output}"
         assert os.path.isdir(
             protocol_name
         ), f"Expected output directory '{protocol_name}' does not exist"
