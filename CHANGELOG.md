@@ -1,3 +1,16 @@
+# 0.9.0 (Wed Dec 04 2024)
+
+#### 🚀 Enhancement
+
+- fix isVis based on Field annotation [#80](https://github.com/ReproNim/reproschema-py/pull/80) ([@yibeichan](https://github.com/yibeichan) [@pre-commit-ci[bot]](https://github.com/pre-commit-ci[bot]))
+
+#### Authors: 2
+
+- [@pre-commit-ci[bot]](https://github.com/pre-commit-ci[bot])
+- Yibei Chen ([@yibeichan](https://github.com/yibeichan))
+
+---
+
 # 0.8.0 (Thu Nov 21 2024)
 
 #### 🚀 Enhancement
