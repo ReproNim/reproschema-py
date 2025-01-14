@@ -427,7 +427,7 @@ def process_row(
             notes_obj = {
                 "source": "redcap",
                 "column": key,
-                "value": f'"{value_str}"'  # Add quotation marks
+                "value": f'"{value_str}"',  # Add quotation marks
             }
             rowData.setdefault("additionalNotesObj", []).append(notes_obj)
 
