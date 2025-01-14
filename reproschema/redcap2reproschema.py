@@ -420,7 +420,15 @@ def process_row(
         #     )
 
         elif key in ADDITIONAL_NOTES_LIST and value:
-            notes_obj = {"source": "redcap", "column": key, "value": value}
+            # Convert value to string, handling NaN explicitly
+            value_str = "NaN" if pd.isna(value) else str(value).strip()
+            if not value_str:  # Skip empty strings
+                continue
+            notes_obj = {
+                "source": "redcap",
+                "column": key,
+                "value": f'"{value_str}"'  # Add quotation marks
+            }
             rowData.setdefault("additionalNotesObj", []).append(notes_obj)
 
     it = Item(**rowData)
