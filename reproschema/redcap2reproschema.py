@@ -419,7 +419,7 @@ def process_row(
         #         }
         #     )
 
-        elif key in ADDITIONAL_NOTES_LIST and value:
+        elif key in ADDITIONAL_NOTES_LIST and value and not pd.isna(value):
             # Convert value to string, handling NaN explicitly
             value_str = str(value).strip()
             if not value_str:  # Skip empty strings
