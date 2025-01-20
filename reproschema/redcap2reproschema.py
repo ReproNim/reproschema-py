@@ -541,7 +541,7 @@ def process_row(
             parsed_value = parse_html(value)
             if parsed_value:
                 rowData[schema_key] = parsed_value
-                
+
         elif schema_key == "preamble" and add_preamble:
             parsed_value = parse_html(value)
             if parsed_value:
