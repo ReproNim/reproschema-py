@@ -84,14 +84,24 @@ def find_Ftype_and_colH(item, row_data, response_options):
 
     return row_data
 
-def process_item(item, item_properties, activity_name, activity_preamble, contextfile, http_kwargs, compute_item=False, compute_expr=None):
+
+def process_item(
+    item,
+    item_properties,
+    activity_name,
+    activity_preamble,
+    contextfile,
+    http_kwargs,
+    compute_item=False,
+    compute_expr=None,
+):
     """
     Process an item in JSON format and extract relevant information into a dictionary.
     Only includes non-empty/non-None values to match clean_dict_nans behavior.
     """
     if activity_name.endswith("_schema"):
         activity_name = activity_name[:-7]
-        
+
     # Initialize with only required fields
     row_data = {
         "var_name": item.id,
@@ -112,7 +122,9 @@ def process_item(item, item_properties, activity_name, activity_preamble, contex
         if "ResponseOption" in resp["category"]:
             response_options = ResponseOption(**resp)
         else:
-            raise Exception(f"Expected to have ResponseOption but got {resp['category']}")
+            raise Exception(
+                f"Expected to have ResponseOption but got {resp['category']}"
+            )
     else:
         response_options = item.responseOptions
 
@@ -122,19 +134,27 @@ def process_item(item, item_properties, activity_name, activity_preamble, contex
             row_data["val_min"] = response_options.minValue
         if response_options.maxValue is not None:
             row_data["val_max"] = response_options.maxValue
-        
+
         # Handle choices
         choices = response_options.choices
         if choices and not isinstance(choices, str):
             if isinstance(choices, list):
-                item_choices = [f"{ch.value}, {ch.name.get('en', '')}" for ch in choices if ch.value is not None]
+                item_choices = [
+                    f"{ch.value}, {ch.name.get('en', '')}"
+                    for ch in choices
+                    if ch.value is not None
+                ]
                 if item_choices:
                     row_data["choices"] = " | ".join(item_choices)
 
     # Add valueRequired if explicitly True
-    if item_properties and "valueRequired" in item_properties and item_properties["valueRequired"] is True:
+    if (
+        item_properties
+        and "valueRequired" in item_properties
+        and item_properties["valueRequired"] is True
+    ):
         row_data["required"] = "y"
-        
+
     var_name = str(item.id).split("/")[-1]  # Get the last part of the id path
     if var_name.endswith("_total_score"):
         row_data["isVis_logic"] = False  # This will make the field hidden
@@ -143,7 +163,11 @@ def process_item(item, item_properties, activity_name, activity_preamble, contex
         row_data["isVis_logic"] = item_properties["isVis"]
 
     # Handle description
-    if item.description and "en" in item.description and item.description["en"]:
+    if (
+        item.description
+        and "en" in item.description
+        and item.description["en"]
+    ):
         row_data["field_notes"] = item.description["en"]
 
     # Handle preamble
@@ -227,11 +251,13 @@ def get_csv_data(dir_path, contextfile, http_kwargs):
 
                     # Get activity name without adding extra _schema
                     activity_name = act.id.split("/")[-1]
-                    if activity_name.endswith('_schema.jsonld'):
-                        activity_name = activity_name[:-12]  # Remove _schema.jsonld
-                    elif activity_name.endswith('.jsonld'):
+                    if activity_name.endswith("_schema.jsonld"):
+                        activity_name = activity_name[
+                            :-12
+                        ]  # Remove _schema.jsonld
+                    elif activity_name.endswith(".jsonld"):
                         activity_name = activity_name[:-7]  # Remove .jsonld
-                        
+
                     items_properties.update(
                         {
                             el["isAbout"]: el
@@ -245,22 +271,30 @@ def get_csv_data(dir_path, contextfile, http_kwargs):
                         item_order = [("ord", el) for el in act.ui.order]
                         item_calc = [("calc", el) for el in act.compute]
 
-                        computed_fields = {calc_item.variableName for _, calc_item in item_calc}
-    
+                        computed_fields = {
+                            calc_item.variableName
+                            for _, calc_item in item_calc
+                        }
 
                         for tp, item in item_order + item_calc:
                             try:
                                 if tp == "calc":
                                     js_expr = item.jsExpression
                                     var_name = item.variableName
-                    
+
                                     # Find the corresponding item properties
                                     if var_name in items_properties:
-                                        item = items_properties[var_name]["isAbout"]
+                                        item = items_properties[var_name][
+                                            "isAbout"
+                                        ]
                                         # Ensure computed fields are marked as hidden
-                                        items_properties[var_name]["isVis"] = False
+                                        items_properties[var_name][
+                                            "isVis"
+                                        ] = False
                                     else:
-                                        print(f"WARNING: no item properties found for computed field {var_name} in {activity_name}")
+                                        print(
+                                            f"WARNING: no item properties found for computed field {var_name} in {activity_name}"
+                                        )
                                         continue
                                     item_calc = True
                                 else:
@@ -269,7 +303,7 @@ def get_csv_data(dir_path, contextfile, http_kwargs):
                                 it_prop = items_properties.get(item)
                                 if not _is_url(item):
                                     item = Path(activity_path).parent / item
-                                
+
                                 try:
                                     item_json = load_file(
                                         item,
@@ -285,9 +319,15 @@ def get_csv_data(dir_path, contextfile, http_kwargs):
                                     print(f"Error loading item: {item}")
                                     print(f"Error details: {str(e)}")
                                     continue
-            
-                                activity_name = act.id.split("/")[-1].split(".")[0]
-                                activity_preamble = act.preamble.get("en", "").strip() if hasattr(act, 'preamble') else ""
+
+                                activity_name = act.id.split("/")[-1].split(
+                                    "."
+                                )[0]
+                                activity_preamble = (
+                                    act.preamble.get("en", "").strip()
+                                    if hasattr(act, "preamble")
+                                    else ""
+                                )
 
                                 row_data = process_item(
                                     itm,
@@ -302,11 +342,14 @@ def get_csv_data(dir_path, contextfile, http_kwargs):
                                 csv_data.append(row_data)
 
                             except Exception as e:
-                                print(f"Error processing item {item}: {str(e)}")
+                                print(
+                                    f"Error processing item {item}: {str(e)}"
+                                )
                                 continue
                 # Break after finding the first _schema file
                 break
     return csv_data
+
 
 def write_to_csv(csv_data, output_csv_filename):
     # REDCap-specific headers
@@ -328,23 +371,25 @@ def write_to_csv(csv_data, output_csv_filename):
         "Question Number (surveys only)",
         "Matrix Group Name",
         "Matrix Ranking?",
-        "Field Annotation"
+        "Field Annotation",
     ]
 
     # Writing to the CSV file
-    with open(output_csv_filename, "w", newline="", encoding="utf-8") as csvfile:
+    with open(
+        output_csv_filename, "w", newline="", encoding="utf-8"
+    ) as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=headers)
         writer.writeheader()
-        
+
         for row in csv_data:
             redcap_row = {}
-            
+
             # Handle var_name URL conversion
             var_name = row["var_name"]
             if _is_url(var_name):
                 var_name = var_name.split("/")[-1].split(".")[0]
             redcap_row["Variable / Field Name"] = var_name
-            
+
             # Handle form name
             activity_name = row["activity"]
             if activity_name.endswith("_schema"):
@@ -365,15 +410,21 @@ def write_to_csv(csv_data, output_csv_filename):
                 "isVis_logic": "Branching Logic (Show field only if...)",
                 "field_annotation": "Field Annotation",
                 "matrix_group": "Matrix Group Name",
-                "matrix_ranking": "Matrix Ranking?"
+                "matrix_ranking": "Matrix Ranking?",
             }
 
             # Add mapped fields only if they exist and aren't empty
             for src_key, dest_key in field_mappings.items():
-                if src_key in row and row[src_key] is not None and row[src_key] != "":
+                if (
+                    src_key in row
+                    and row[src_key] is not None
+                    and row[src_key] != ""
+                ):
                     # Special handling for visibility logic
                     if src_key == "isVis_logic":
-                        if row[src_key] is not True:  # Only add if not default True
+                        if (
+                            row[src_key] is not True
+                        ):  # Only add if not default True
                             redcap_row[dest_key] = row[src_key]
                     # Special handling for required field
                     elif src_key == "required":
@@ -382,7 +433,9 @@ def write_to_csv(csv_data, output_csv_filename):
                     elif src_key == "field_annotation":
                         current_annotation = redcap_row.get(dest_key, "")
                         if current_annotation:
-                            redcap_row[dest_key] = f"{current_annotation} {row[src_key]}"
+                            redcap_row[dest_key] = (
+                                f"{current_annotation} {row[src_key]}"
+                            )
                         else:
                             redcap_row[dest_key] = row[src_key]
                     else:
@@ -391,6 +444,7 @@ def write_to_csv(csv_data, output_csv_filename):
             writer.writerow(redcap_row)
 
     print("The CSV file was written successfully")
+
 
 def reproschema2redcap(input_dir_path, output_csv_filename):
     contextfile = CONTEXTFILE_URL  # todo, give an option

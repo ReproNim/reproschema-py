@@ -236,25 +236,37 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                     if key == "valueRequired":
                         # Debug print
                         print(f"\nDebug - Activity: {act_name}, Item: {nm}")
-                        print(f"Original valueRequired: {orig_value}, type: {type(orig_value)}")
-                        print(f"Final valueRequired: {final_value}, type: {type(final_value)}")
-                        
+                        print(
+                            f"Original valueRequired: {orig_value}, type: {type(orig_value)}"
+                        )
+                        print(
+                            f"Final valueRequired: {final_value}, type: {type(final_value)}"
+                        )
+
                         # Compare only True values
                         if orig_value is True:
                             if final_value is not True:
                                 error = True
-                                print(f"Error case 1: orig=True, final={final_value}")
+                                print(
+                                    f"Error case 1: orig=True, final={final_value}"
+                                )
                         elif final_value is True:
                             if orig_value is not True:
                                 error = True
-                                print(f"Error case 2: orig={orig_value}, final=True")
+                                print(
+                                    f"Error case 2: orig={orig_value}, final=True"
+                                )
 
                     elif key == "isVis":
                         # Original isVis handling
                         if orig_value is not None:
-                            if normalize_condition(orig_value) != normalize_condition(final_value):
+                            if normalize_condition(
+                                orig_value
+                            ) != normalize_condition(final_value):
                                 error = True
-                        elif final_value is not None and final_value is not True:
+                        elif (
+                            final_value is not None and final_value is not True
+                        ):
                             error = True
 
                     if error:
@@ -326,12 +338,18 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                     # Handle cases where one might be NaN/None and the other empty string
                     orig_q = act_items_orig[nm]["obj"].question.get("en", "")
                     final_q = el["obj"].question.get("en", "")
-                    
+
                     # Convert None/NaN to empty string for comparison
-                    orig_q = "" if pd.isna(orig_q) or orig_q is None else orig_q
-                    final_q = "" if pd.isna(final_q) or final_q is None else final_q
-                    
-                    if normalize_condition(orig_q) != normalize_condition(final_q):
+                    orig_q = (
+                        "" if pd.isna(orig_q) or orig_q is None else orig_q
+                    )
+                    final_q = (
+                        "" if pd.isna(final_q) or final_q is None else final_q
+                    )
+
+                    if normalize_condition(orig_q) != normalize_condition(
+                        final_q
+                    ):
                         if "<br><br>" in normalize_condition(orig_q):
                             warnings_list.append(
                                 print_return_msg(
