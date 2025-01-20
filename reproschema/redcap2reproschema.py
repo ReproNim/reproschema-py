@@ -421,7 +421,7 @@ def process_row(
 
         elif key in ADDITIONAL_NOTES_LIST and value:
             # Convert value to string, handling NaN explicitly
-            value_str = "NaN" if pd.isna(value) else str(value).strip()
+            value_str = str(value).strip()
             if not value_str:  # Skip empty strings
                 continue
             notes_obj = {
