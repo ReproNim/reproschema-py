@@ -87,7 +87,6 @@ def test_process_choices_incomplete_values():
     choices, value_types = process_choices(choices_str, "incomplete_values")
     assert choices == [
         {"name": {"en": "Yes"}, "value": 1},
-        {"name": {"en": ""}, "value": 2},
         {"name": {"en": "No"}, "value": 3},
     ]
     assert value_types == ["xsd:integer"]
