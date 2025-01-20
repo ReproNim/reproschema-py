@@ -77,6 +77,7 @@ COMPUTE_LIST = ["calc", "sql"]  # field types that should be used as compute
 RESPONSE_COND = ["minValue", "maxValue"]
 ADDITIONAL_NOTES_LIST = ["Field Note", "Question Number (surveys only)"]
 
+
 def clean_dict_nans(obj):
     """
     Recursively remove NaN values from nested dictionaries and lists.
@@ -89,35 +90,40 @@ def clean_dict_nans(obj):
             if cleaned_value is not None:
                 cleaned[key] = cleaned_value
         return cleaned if cleaned else None
-    
+
     elif isinstance(obj, list):
         cleaned = [clean_dict_nans(item) for item in obj]
         cleaned = [item for item in cleaned if item is not None]
         return cleaned if cleaned else None
-    
+
     elif pd.isna(obj):
         return None
-    
+
     return obj
+
 
 # TODO: normalized condition should depend on the field type, e.g., for SQL
 def normalize_condition(condition_str, field_type=None):
     # Regular expressions for various pattern replacements
     # TODO: function doesn't remove <b></b> tags
-    
+
     try:
         # Handle boolean values
         if isinstance(condition_str, bool):
             return condition_str
-        elif isinstance(condition_str, str) and condition_str.lower() == "true":
+        elif (
+            isinstance(condition_str, str) and condition_str.lower() == "true"
+        ):
             return True
-        elif isinstance(condition_str, str) and condition_str.lower() == "false":
+        elif (
+            isinstance(condition_str, str) and condition_str.lower() == "false"
+        ):
             return False
-        
+
         # Handle empty/null values
         if condition_str is None or pd.isna(condition_str):
             return None
-            
+
         # Convert non-string types to string
         if not isinstance(condition_str, str):
             try:
@@ -131,24 +137,26 @@ def normalize_condition(condition_str, field_type=None):
 
         # Define regex patterns
         patterns = {
-            'parentheses': (r"\(([0-9]*)\)", r"___\1"),
-            'non_gt_lt_equal': (r"([^>|<])=", r"\1 =="),
-            'brackets': (r"\[([^\]]*)\]", r" \1 "),
-            'or_operator': (r"\bor\b", "||"),
-            'and_operator': (r"\band\b", "&&"),
-            'extra_spaces': (r"\s+", " "),
-            'double_quotes': (r'"', "'")
+            "parentheses": (r"\(([0-9]*)\)", r"___\1"),
+            "non_gt_lt_equal": (r"([^>|<])=", r"\1 =="),
+            "brackets": (r"\[([^\]]*)\]", r" \1 "),
+            "or_operator": (r"\bor\b", "||"),
+            "and_operator": (r"\band\b", "&&"),
+            "extra_spaces": (r"\s+", " "),
+            "double_quotes": (r'"', "'"),
         }
 
         # Apply transformations
         for pattern, replacement in patterns.items():
             if isinstance(replacement, tuple):
-                condition_str = re.sub(replacement[0], replacement[1], condition_str)
+                condition_str = re.sub(
+                    replacement[0], replacement[1], condition_str
+                )
             else:
                 condition_str = re.sub(pattern, replacement, condition_str)
 
         # Handle SQL and calc type conditions differently if specified
-        if field_type in ['sql', 'calc']:
+        if field_type in ["sql", "calc"]:
             # Add specific handling for SQL/calc expressions if needed
             pass
 
@@ -156,20 +164,21 @@ def normalize_condition(condition_str, field_type=None):
         condition_str = condition_str.strip()
         if not condition_str:
             return None
-            
+
         return condition_str
 
     except Exception as e:
         print(f"Error normalizing condition: {str(e)}")
         return None
 
+
 def process_field_properties(data):
     """
     Extract and process field properties from REDCap data.
-    
+
     Args:
         data (dict): Dictionary containing field data from REDCap
-        
+
     Returns:
         dict: Processed field properties
     """
@@ -177,7 +186,7 @@ def process_field_properties(data):
         # Validate input
         if not isinstance(data, dict):
             raise ValueError("Input must be a dictionary")
-            
+
         var_name = data.get("Variable / Field Name")
         if not var_name or pd.isna(var_name):
             raise ValueError("Variable / Field Name is required")
@@ -186,7 +195,7 @@ def process_field_properties(data):
         prop_obj = {
             "variableName": str(var_name).strip(),
             "isAbout": f"items/{str(var_name).strip()}",
-            "isVis": True  # Default value
+            "isVis": True,  # Default value
         }
 
         # Process branching logic
@@ -200,7 +209,10 @@ def process_field_properties(data):
         annotation = data.get("Field Annotation")
         if pd.notna(annotation):
             annotation = str(annotation).upper()
-            if any(marker in annotation for marker in ["@READONLY", "@HIDDEN", "@CALCTEXT"]):
+            if any(
+                marker in annotation
+                for marker in ["@READONLY", "@HIDDEN", "@CALCTEXT"]
+            ):
                 prop_obj["isVis"] = False
 
         # Process required field
@@ -210,12 +222,14 @@ def process_field_properties(data):
             if required_field == "y":
                 prop_obj["valueRequired"] = True
             elif required_field not in ["", "n"]:
-                print(f"Warning: Unexpected Required Field value '{required_field}' for {var_name}")
+                print(
+                    f"Warning: Unexpected Required Field value '{required_field}' for {var_name}"
+                )
 
         # Process matrix properties if present
         matrix_group = data.get("Matrix Group Name")
         matrix_ranking = data.get("Matrix Ranking?")
-        
+
         if pd.notna(matrix_group):
             prop_obj["matrixGroupName"] = str(matrix_group).strip()
             if pd.notna(matrix_ranking):
@@ -224,22 +238,24 @@ def process_field_properties(data):
         return prop_obj
 
     except Exception as e:
-        print(f"Error processing field properties for {data.get('Variable / Field Name', 'unknown field')}: {str(e)}")
+        print(
+            f"Error processing field properties for {data.get('Variable / Field Name', 'unknown field')}: {str(e)}"
+        )
         # Return basic properties to allow processing to continue
         return {
             "variableName": str(data.get("Variable / Field Name", "unknown")),
             "isAbout": f"items/{str(data.get('Variable / Field Name', 'unknown'))}",
-            "isVis": True
+            "isVis": True,
         }
 
 
 def parse_field_type_and_value(field):
     """
     Parse field type and determine appropriate value type.
-    
+
     Args:
         field: Dictionary containing field information
-        
+
     Returns:
         tuple: (input_type, value_type)
     """
@@ -261,23 +277,28 @@ def parse_field_type_and_value(field):
         value_type = "xsd:string"  # Default value type
 
         # Get validation type
-        validation_type = field.get("Text Validation Type OR Show Slider Number")
+        validation_type = field.get(
+            "Text Validation Type OR Show Slider Number"
+        )
         if pd.notna(validation_type):
             validation_type = str(validation_type).strip().lower()
-            
+
             if validation_type:
                 if validation_type not in VALUE_TYPE_MAP:
                     raise ValueError(
                         f"Validation type '{validation_type}' is not supported, "
                         f"supported types are: {', '.join(VALUE_TYPE_MAP.keys())}"
                     )
-                    
+
                 value_type = VALUE_TYPE_MAP[validation_type]
 
                 # Adjust input type based on validation
                 if validation_type == "integer" and field_type == "text":
                     input_type = "number"
-                elif validation_type in ["float", "number"] and field_type == "text":
+                elif (
+                    validation_type in ["float", "number"]
+                    and field_type == "text"
+                ):
                     input_type = "float"
                 elif validation_type == "email" and field_type == "text":
                     input_type = "email"
@@ -285,19 +306,23 @@ def parse_field_type_and_value(field):
                     input_type = "sign"
                 elif value_type == "xsd:date" and field_type == "text":
                     input_type = "date"
-                    
+
         elif field_type == "yesno":
             value_type = "xsd:boolean"
         elif field_type in COMPUTE_LIST:
             value_type = "xsd:integer"
-            
+
         # Handle radio/select fields with choices
         if input_type in ["radio", "select", "slider"]:
             choices = field.get("Choices, Calculations, OR Slider Labels")
             if pd.notna(choices):
-                _, value_types = process_choices(choices, field.get("Variable / Field Name", "unknown"))
+                _, value_types = process_choices(
+                    choices, field.get("Variable / Field Name", "unknown")
+                )
                 if value_types:
-                    value_type = value_types[0]  # Use first value type if multiple exist
+                    value_type = value_types[
+                        0
+                    ]  # Use first value type if multiple exist
 
         return input_type, value_type
 
@@ -305,14 +330,15 @@ def parse_field_type_and_value(field):
         print(f"Error parsing field type: {str(e)}")
         return "text", "xsd:string"  # Return defaults on error
 
+
 def process_choices(choices_str, field_name):
     """
     Process REDCap choice options into structured format.
-    
+
     Args:
         choices_str: String containing choice options
         field_name: Field name for error reporting
-        
+
     Returns:
         tuple: (choices list, value types list) or (None, None) if invalid
     """
@@ -326,10 +352,10 @@ def process_choices(choices_str, field_name):
 
         choices = []
         choices_value_type = set()
-        
+
         # Split choices by pipe
         choice_items = [c.strip() for c in choices_str.split("|") if c.strip()]
-        
+
         if len(choice_items) < 1:
             print(f"Warning: No valid choices found in {field_name}")
             return None, None
@@ -338,14 +364,18 @@ def process_choices(choices_str, field_name):
             # Split on first comma only
             parts = choice.split(",", 1)
             if len(parts) < 2:
-                print(f"Warning: Invalid choice format '{choice}' in {field_name}")
+                print(
+                    f"Warning: Invalid choice format '{choice}' in {field_name}"
+                )
                 continue
 
             value_part = parts[0].strip()
             label_part = parts[1].strip()
 
             if not label_part:
-                print(f"Warning: Empty label in choice '{choice}' in {field_name}")
+                print(
+                    f"Warning: Empty label in choice '{choice}' in {field_name}"
+                )
                 continue
 
             # Determine value type and convert value
@@ -368,11 +398,11 @@ def process_choices(choices_str, field_name):
                         value_type = "xsd:string"
 
             choices_value_type.add(value_type)
-            
+
             # Create choice object
             choice_obj = {
                 "name": parse_html(label_part) or {"en": label_part},
-                "value": value
+                "value": value,
             }
             choices.append(choice_obj)
 
@@ -382,21 +412,22 @@ def process_choices(choices_str, field_name):
         print(f"Error processing choices for {field_name}: {str(e)}")
         return None, None
 
+
 def parse_html(input_string, default_language="en"):
     """
     Parse HTML content and extract language-specific text.
-    
+
     Args:
         input_string: The HTML string to parse
         default_language: Default language code (default: "en")
-        
+
     Returns:
         dict: Dictionary of language codes to text content, or None if invalid
     """
     try:
         if pd.isna(input_string):
             return None
-            
+
         result = {}
 
         # Handle non-string input
@@ -405,7 +436,7 @@ def parse_html(input_string, default_language="en"):
                 input_string = str(input_string)
             except:
                 return None
-                
+
         # Clean input string
         input_string = input_string.strip()
         if not input_string:
@@ -413,7 +444,7 @@ def parse_html(input_string, default_language="en"):
 
         # Parse HTML
         soup = BeautifulSoup(input_string, "html.parser")
-        
+
         # Find elements with lang attribute
         lang_elements = soup.find_all(True, {"lang": True})
 
@@ -424,7 +455,7 @@ def parse_html(input_string, default_language="en"):
                 text = element.get_text(strip=True)
                 if text:
                     result[lang] = text
-            
+
             # If no text was extracted but elements exist, try getting default text
             if not result:
                 text = soup.get_text(strip=True)
@@ -447,6 +478,7 @@ def parse_html(input_string, default_language="en"):
         except:
             pass
         return None
+
 
 def process_row(
     abs_folder_path,
@@ -478,8 +510,12 @@ def process_row(
     annotation = field.get("Field Annotation")
     if annotation is not None and not pd.isna(annotation):
         annotation = str(annotation).upper()
-        if ("@READONLY" in annotation or "@HIDDEN" in annotation or 
-            "@CALCTEXT" in annotation or field_type in COMPUTE_LIST):
+        if (
+            "@READONLY" in annotation
+            or "@HIDDEN" in annotation
+            or "@CALCTEXT" in annotation
+            or field_type in COMPUTE_LIST
+        ):
             ui_obj["readonlyValue"] = True
 
     rowData["ui"] = ui_obj
@@ -505,7 +541,7 @@ def process_row(
             parsed_value = parse_html(value)
             if parsed_value:
                 rowData[schema_key] = parsed_value
-                
+
         elif schema_key == "preamble" and add_preable:
             parsed_value = parse_html(value)
             if parsed_value:
@@ -515,27 +551,36 @@ def process_row(
             ui_obj["allow"] = value.split(", ")
 
         # choices are only for some input_types
-        elif (schema_key == "choices" and 
-              input_type in ["radio", "select", "slider"]):
+        elif schema_key == "choices" and input_type in [
+            "radio",
+            "select",
+            "slider",
+        ]:
             choices, choices_val_type_l = process_choices(
                 value, field_name=field["Variable / Field Name"]
             )
             if choices is not None:
                 if input_type == "slider":
-                    rowData["responseOptions"].update({
-                        "choices": choices,
-                        "valueType": choices_val_type_l,
-                        "minValue": 0,
-                        "maxValue": 100,
-                    })
+                    rowData["responseOptions"].update(
+                        {
+                            "choices": choices,
+                            "valueType": choices_val_type_l,
+                            "minValue": 0,
+                            "maxValue": 100,
+                        }
+                    )
                 else:
-                    rowData["responseOptions"].update({
-                        "choices": choices,
-                        "valueType": choices_val_type_l,
-                    })
+                    rowData["responseOptions"].update(
+                        {
+                            "choices": choices,
+                            "valueType": choices_val_type_l,
+                        }
+                    )
         # for now adding only for numerics, sometimes can be string or date.. TODO
-        elif (schema_key in RESPONSE_COND and 
-              value_type in ["xsd:integer", "xsd:decimal"]):
+        elif schema_key in RESPONSE_COND and value_type in [
+            "xsd:integer",
+            "xsd:decimal",
+        ]:
             try:
                 if value_type == "xsd:integer":
                     parsed_value = int(value)
@@ -569,7 +614,7 @@ def process_row(
     cleaned_data = clean_dict_nans(rowData)
     if not cleaned_data or "id" not in cleaned_data:
         raise ValueError(f"Missing required fields for item {item_id}")
-    
+
     it = Item(**rowData)
     file_path_item = os.path.join(
         f"{abs_folder_path}",
@@ -593,11 +638,11 @@ def create_form_schema(
     bl_list,
     matrix_list,
     compute_list,
-    preamble=None
+    preamble=None,
 ):
     """
     Create the JSON-LD schema for an Activity.
-    
+
     Args:
         abs_folder_path (str/Path): Path to the output directory
         schema_context_url (str): URL for the schema context
@@ -614,20 +659,26 @@ def create_form_schema(
         # Validate inputs
         if not form_name or pd.isna(form_name):
             raise ValueError("Form name is required")
-            
+
         if not activity_display_name or pd.isna(activity_display_name):
             activity_display_name = form_name.replace("_", " ").title()
 
         # Clean and validate order list
         clean_order = []
         if order:
-            clean_order = [str(item).strip() for item in order if pd.notna(item)]
-            clean_order = list(dict.fromkeys(clean_order))  # Remove duplicates while preserving order
+            clean_order = [
+                str(item).strip() for item in order if pd.notna(item)
+            ]
+            clean_order = list(
+                dict.fromkeys(clean_order)
+            )  # Remove duplicates while preserving order
 
         # Clean and validate bl_list
         clean_bl_list = []
         if bl_list:
-            clean_bl_list = [prop for prop in bl_list if prop and isinstance(prop, dict)]
+            clean_bl_list = [
+                prop for prop in bl_list if prop and isinstance(prop, dict)
+            ]
 
         # Initialize schema
         json_ld = {
@@ -640,7 +691,7 @@ def create_form_schema(
                 "order": clean_order,
                 "addProperties": clean_bl_list,
                 "shuffle": False,
-            }
+            },
         }
 
         # Process preamble if present
@@ -676,15 +727,17 @@ def create_form_schema(
         act = Activity(**cleaned_json_ld)
         path = Path(abs_folder_path) / "activities" / form_name
         path.mkdir(parents=True, exist_ok=True)
-        
+
         write_obj_jsonld(
-            act, 
-            path / f"{form_name}_schema", 
-            contextfile_url=schema_context_url
+            act,
+            path / f"{form_name}_schema",
+            contextfile_url=schema_context_url,
         )
 
     except Exception as e:
-        raise Exception(f"Error creating form schema for {form_name}: {str(e)}")
+        raise Exception(
+            f"Error creating form schema for {form_name}: {str(e)}"
+        )
 
 
 def process_activities(activity_name, protocol_visibility_obj, protocol_order):
@@ -745,6 +798,7 @@ def create_protocol_schema(
     write_obj_jsonld(prot, file_path, contextfile_url=schema_context_url)
     print(f"Protocol schema created in {file_path}")
 
+
 def process_csv(csv_file, abs_folder_path, protocol_name):
     datas = {}
     order = {}
@@ -752,7 +806,7 @@ def process_csv(csv_file, abs_folder_path, protocol_name):
 
     # TODO: add languages
 
-    try:    
+    try:
         # Read CSV with explicit BOM handling, and maintain original order
         df = pd.read_csv(
             csv_file, encoding="utf-8-sig"
@@ -762,12 +816,16 @@ def process_csv(csv_file, abs_folder_path, protocol_name):
         df.columns = df.columns.map(
             lambda x: x.strip().strip('"').lstrip("\ufeff")
         )
-        
+
         # Validate required columns
         required_columns = ["Form Name", "Variable / Field Name", "Field Type"]
-        missing_columns = [col for col in required_columns if col not in df.columns]
+        missing_columns = [
+            col for col in required_columns if col not in df.columns
+        ]
         if missing_columns:
-            raise ValueError(f"Missing required columns: {', '.join(missing_columns)}")
+            raise ValueError(
+                f"Missing required columns: {', '.join(missing_columns)}"
+            )
 
         # Initialize structures for each unique form
         unique_forms = [f for f in df["Form Name"].unique() if not pd.isna(f)]
@@ -783,7 +841,9 @@ def process_csv(csv_file, abs_folder_path, protocol_name):
             order[form_name] = []
             compute[form_name] = []
 
-            form_dir = Path(abs_folder_path) / "activities" / form_name / "items"
+            form_dir = (
+                Path(abs_folder_path) / "activities" / form_name / "items"
+            )
             form_dir.mkdir(parents=True, exist_ok=True)
 
         # TODO: should we bring back the language
@@ -797,7 +857,9 @@ def process_csv(csv_file, abs_folder_path, protocol_name):
 
                 # Skip rows with missing essential data
                 if pd.isna(form_name) or pd.isna(field_name):
-                    print(f"Warning: Skipping row {idx+2} with missing form name or field name")
+                    print(
+                        f"Warning: Skipping row {idx+2} with missing form name or field name"
+                    )
                     continue
 
                 form_name = str(form_name).strip()
@@ -814,27 +876,38 @@ def process_csv(csv_file, abs_folder_path, protocol_name):
                 # Handle compute fields
                 field_type = row.get("Field Type", "")
                 field_annotation = row.get("Field Annotation", "")
-                
-                if pd.notna(field_type) and str(field_type).strip() in COMPUTE_LIST:
-                    calculations = row.get("Choices, Calculations, OR Slider Labels")
+
+                if (
+                    pd.notna(field_type)
+                    and str(field_type).strip() in COMPUTE_LIST
+                ):
+                    calculations = row.get(
+                        "Choices, Calculations, OR Slider Labels"
+                    )
                     if pd.notna(calculations):
                         condition = normalize_condition(calculations)
                         if condition:
-                            compute[form_name].append({
-                                "variableName": field_name,
-                                "jsExpression": condition,
-                            })
+                            compute[form_name].append(
+                                {
+                                    "variableName": field_name,
+                                    "jsExpression": condition,
+                                }
+                            )
                 elif pd.notna(field_annotation):
                     field_annotation = str(field_annotation).upper()
                     if "@CALCTEXT" in field_annotation:
-                        match = re.search(r"@CALCTEXT\((.*)\)", field_annotation)
+                        match = re.search(
+                            r"@CALCTEXT\((.*)\)", field_annotation
+                        )
                         if match:
                             js_expression = normalize_condition(match.group(1))
                             if js_expression:
-                                compute[form_name].append({
-                                    "variableName": field_name,
-                                    "jsExpression": js_expression,
-                                })
+                                compute[form_name].append(
+                                    {
+                                        "variableName": field_name,
+                                        "jsExpression": js_expression,
+                                    }
+                                )
                 else:
                     order[form_name].append(f"items/{field_name}")
 
@@ -846,7 +919,9 @@ def process_csv(csv_file, abs_folder_path, protocol_name):
             if not datas[form_name]:
                 print(f"Warning: Form '{form_name}' has no valid fields")
             if not order[form_name] and not compute[form_name]:
-                print(f"Warning: Form '{form_name}' has no order or compute fields")
+                print(
+                    f"Warning: Form '{form_name}' has no order or compute fields"
+                )
 
         # Create protocol directory
         protocol_dir = Path(abs_folder_path) / protocol_name
@@ -858,12 +933,11 @@ def process_csv(csv_file, abs_folder_path, protocol_name):
         raise ValueError("The CSV file is empty")
     except Exception as e:
         raise Exception(f"Error processing CSV file: {str(e)}")
+
+
 # todo adding output path
 def redcap2reproschema(
-    csv_file,
-    yaml_file,
-    output_path,
-    schema_context_url=None
+    csv_file, yaml_file, output_path, schema_context_url=None
 ):
     """
     Convert a REDCap data dictionary to Reproschema format.
@@ -892,7 +966,7 @@ def redcap2reproschema(
 
         # Read and validate YAML configuration
         try:
-            with open(yaml_path, "r", encoding='utf-8') as f:
+            with open(yaml_path, "r", encoding="utf-8") as f:
                 protocol = yaml.safe_load(f)
         except yaml.YAMLError as e:
             raise ValueError(f"Invalid YAML file: {str(e)}")
@@ -902,7 +976,9 @@ def redcap2reproschema(
         if not protocol_name:
             raise ValueError("Protocol name not specified in the YAML file")
 
-        protocol_display_name = protocol.get("protocol_display_name", protocol_name)
+        protocol_display_name = protocol.get(
+            "protocol_display_name", protocol_name
+        )
         protocol_description = protocol.get("protocol_description", "")
         redcap_version = protocol.get("redcap_version", "1.0.0")
 
@@ -918,9 +994,7 @@ def redcap2reproschema(
         # Process CSV file
         print(f"Processing CSV file: {csv_path}")
         datas, order, compute = process_csv(
-            csv_path,
-            abs_folder_path,
-            protocol_name
+            csv_path, abs_folder_path, protocol_name
         )
 
         if not datas:
@@ -945,8 +1019,13 @@ def redcap2reproschema(
             # Process fields in the form
             for field in rows:
                 # Validate field data
-                if not isinstance(field, dict) or "Variable / Field Name" not in field:
-                    print(f"Warning: Invalid field data in form {form_name}, skipping")
+                if (
+                    not isinstance(field, dict)
+                    or "Variable / Field Name" not in field
+                ):
+                    print(
+                        f"Warning: Invalid field data in form {form_name}, skipping"
+                    )
                     continue
 
                 # Process field properties
@@ -1004,7 +1083,7 @@ def redcap2reproschema(
                 bl_list=bl_list,
                 matrix_list=matrix_list,
                 compute_list=compute[form_name],
-                preamble=preamble_act  # Note: using correct parameter name
+                preamble=preamble_act,  # Note: using correct parameter name
             )
 
             # Process individual items
@@ -1016,12 +1095,14 @@ def redcap2reproschema(
                     schema_context_url=schema_context_url,
                     form_name=form_name,
                     field=field,
-                    add_preamble=preamble_itm  # Note: consistent parameter naming
+                    add_preamble=preamble_itm,  # Note: consistent parameter naming
                 )
 
             # Process form-level activities
             print(f"Processing activities for form: {form_name}")
-            process_activities(form_name, protocol_visibility_obj, protocol_order)
+            process_activities(
+                form_name, protocol_visibility_obj, protocol_order
+            )
 
         # Create final protocol schema
         print("\nCreating protocol schema")
@@ -1033,10 +1114,12 @@ def redcap2reproschema(
             protocol_display_name=protocol_display_name,
             protocol_description=protocol_description,
             protocol_order=protocol_order,
-            protocol_visibility_obj=protocol_visibility_obj
+            protocol_visibility_obj=protocol_visibility_obj,
         )
 
-        print(f"\nConversion completed successfully. Output directory: {abs_folder_path}")
+        print(
+            f"\nConversion completed successfully. Output directory: {abs_folder_path}"
+        )
 
     except Exception as e:
         raise Exception(f"Error during conversion: {str(e)}") from e
