@@ -230,27 +230,45 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
             for nm, el in act_props_final.items():
                 for key in ["isVis", "valueRequired"]:
                     error = False
-                    if (getattr(act_props_orig[nm], key) is not None) and (
-                        normalize_condition(getattr(el, key))
-                        != normalize_condition(
-                            getattr(act_props_orig[nm], key)
+                    orig_value = getattr(act_props_orig[nm], key)
+                    final_value = getattr(el, key)
+
+                    if key == "valueRequired":
+                        # Debug print
+                        print(f"\nDebug - Activity: {act_name}, Item: {nm}")
+                        print(
+                            f"Original valueRequired: {orig_value}, type: {type(orig_value)}"
                         )
-                    ):
-                        error = True
-                    elif (
-                        getattr(el, key)
-                        and getattr(act_props_orig[nm], key) is None
-                    ):
-                        if (
-                            key == "isVis"
-                            and normalize_condition(getattr(el, key)) != True
-                        ):
-                            error = True
+                        print(
+                            f"Final valueRequired: {final_value}, type: {type(final_value)}"
+                        )
+
+                        # Compare only True values
+                        if orig_value is True:
+                            if final_value is not True:
+                                error = True
+                                print(
+                                    f"Error case 1: orig=True, final={final_value}"
+                                )
+                        elif final_value is True:
+                            if orig_value is not True:
+                                error = True
+                                print(
+                                    f"Error case 2: orig={orig_value}, final=True"
+                                )
+
+                    elif key == "isVis":
+                        # Original isVis handling
+                        if orig_value is not None:
+                            if normalize_condition(
+                                orig_value
+                            ) != normalize_condition(final_value):
+                                error = True
                         elif (
-                            key == "valueRequired"
-                            and normalize_condition(getattr(el, key)) != False
+                            final_value is not None and final_value is not True
                         ):
                             error = True
+
                     if error:
                         errors_list.append(
                             print(
@@ -317,20 +335,33 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                 ) != normalize_condition(
                     act_items_orig[nm]["obj"].question.get("en", "")
                 ):
-                    if "<br><br>" in normalize_condition(
-                        act_items_orig[nm]["obj"].question.get("en", "")
+                    # Handle cases where one might be NaN/None and the other empty string
+                    orig_q = act_items_orig[nm]["obj"].question.get("en", "")
+                    final_q = el["obj"].question.get("en", "")
+
+                    # Convert None/NaN to empty string for comparison
+                    orig_q = (
+                        "" if pd.isna(orig_q) or orig_q is None else orig_q
+                    )
+                    final_q = (
+                        "" if pd.isna(final_q) or final_q is None else final_q
+                    )
+
+                    if normalize_condition(orig_q) != normalize_condition(
+                        final_q
                     ):
-                        warnings_list.append(
-                            print_return_msg(
-                                f"Activity {act_name}: items {nm} have different question, FIX normalized function!!!"
+                        if "<br><br>" in normalize_condition(orig_q):
+                            warnings_list.append(
+                                print_return_msg(
+                                    f"Activity {act_name}: items {nm} have different question, FIX normalized function!!!"
+                                )
                             )
-                        )
-                    else:
-                        errors_list.append(
-                            print_return_msg(
-                                f"Activity {act_name}: items {nm} have different question"
+                        else:
+                            errors_list.append(
+                                print_return_msg(
+                                    f"Activity {act_name}: items {nm} have different question"
+                                )
                             )
-                        )
                 elif (
                     el["obj"].ui.inputType
                     != act_items_orig[nm]["obj"].ui.inputType
