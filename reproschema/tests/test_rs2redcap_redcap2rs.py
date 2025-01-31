@@ -220,11 +220,10 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                     )
                 )
             else:
-                print(
-                    f"Activity {act_name}: addProperties have different elements"
-                )
                 errors_list.append(
-                    f"Activity {act_name}: addProperties have different elements"
+                    print_return_msg(
+                        f"Activity {act_name}: addProperties have different elements, orig: {act_props_orig} and final: {act_props_final}"
+                    )
                 )
         else:
             for nm, el in act_props_final.items():
@@ -253,8 +252,8 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                             error = True
                     if error:
                         errors_list.append(
-                            print(
-                                f"Activity {act_name}: addProperties {nm} have different {key}"
+                            print_return_msg(
+                                f"Activity {act_name}: addProperties {nm} have different {key}, orig: {getattr(act_props_orig[nm], key)}, final: {normalize_condition(getattr(el, key))}"
                             )
                         )
         # check compute
@@ -268,9 +267,10 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                     )
                 )
             else:
-                print(f"Activity {act_name}: compute have different elements")
                 errors_list.append(
-                    f"Activity {act_name}: compute have different elements"
+                    print_return_msg(
+                        f"Activity {act_name}: compute have different elements, orig: {act_comp_orig}, final: {act_comp_final}"
+                    )
                 )
         else:
             for nm, el in act_comp_final.items():
@@ -280,7 +280,7 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                     getattr(act_comp_orig[nm], "jsExpression")
                 ):
                     errors_list.append(
-                        print(
+                        print_return_msg(
                             f"Activity {act_name}: compute {nm} have different jsExpression"
                         )
                     )
@@ -296,7 +296,7 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
             else:
                 errors_list.append(
                     print_return_msg(
-                        f"Activity {act_name}: items have different elements"
+                        f"Activity {act_name}: items have different elements, orig: {act_items_orig}, final: {act_items_final}"
                     )
                 )
         else:
