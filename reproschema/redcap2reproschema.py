@@ -569,9 +569,7 @@ def process_csv(csv_file, abs_folder_path, schema_context_url, protocol_name):
     )
 
     # Clean string values in the dataframe
-    object_columns = df.select_dtypes(include=["object"]).columns
-    for col in object_columns:
-        df[col] = df[col].astype(str).replace("nan", "")
+    df = df.astype(str).replace("nan", "")
 
     # Initialize structures for each unique form
     unique_forms = df["Form Name"].unique()
