@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from shutil import copytree, rmtree
 
+import pandas as pd
 import pytest
 from click.testing import CliRunner
 
@@ -99,16 +100,14 @@ def errors_check(cat, atr, orig, final):
         print(f"Attribute {atr} is missing in the original {cat}")
     elif orig != final:
         print(f"Attribute {atr} is different in the final {cat}")
-        print(f"Original: {orig}")
-        print(f"Final: {final}")
+        # print(f"Original: {orig}")
+        # print(f"Final: {final}")
     error_shortmsg = f"{cat}: {atr} is different"
     return error_shortmsg
 
-
 def print_return_msg(error_msg):
-    print(error_msg)
+    # print(error_msg)
     return error_msg
-
 
 def compare_protocols(prot_tree_orig, prot_tree_final):
     # compare the two dictionaries
@@ -338,6 +337,12 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                     # Handle cases where one might be NaN/None and the other empty string
                     orig_q = act_items_orig[nm]["obj"].question.get("en", "")
                     final_q = el["obj"].question.get("en", "")
+                    
+                    print(f"\nDebug - Comparing questions for {act_name}/{nm}:")
+                    print(f"Original question: {repr(orig_q)}")
+                    print(f"Final question: {repr(final_q)}")
+                    print(f"Original normalized: {repr(normalize_condition(orig_q))}")
+                    print(f"Final normalized: {repr(normalize_condition(final_q))}")
 
                     # Convert None/NaN to empty string for comparison
                     orig_q = (
@@ -409,7 +414,7 @@ def test_rs2redcap_redcap2rs(tmpdir):
             "output_nimh.csv",
         ],
     )
-    print("\n results of reproschema2redcap", result1.output)
+    # # print("\n results of reproschema2redcap", result1.output)
 
     result2 = runner.invoke(
         main,
@@ -422,7 +427,7 @@ def test_rs2redcap_redcap2rs(tmpdir):
         ],
     )
 
-    print("\n results of redcap2reproschema", result2.output)
+    # print("\n results of redcap2reproschema", result2.output)
 
     protocol_schema_orig = (
         "nimh_minimal_orig/nimh_minimal/nimh_minimal/nimh_minimal_schema"
@@ -451,5 +456,10 @@ def test_rs2redcap_redcap2rs(tmpdir):
         prot_tree_orig, prot_tree_final
     )
 
-    assert not errors_list, f"Errors: {errors_list}"
-    print("No errors, but found warnings: ", warnings_list)
+    # More informative assertion
+    real_errors = [err for err in errors_list if err is not None]
+    if real_errors:
+        print("\nDetailed errors:")
+        for err in real_errors:
+            print(f"- {err}")
+        assert not real_errors, f"Found {len(real_errors)} errors"

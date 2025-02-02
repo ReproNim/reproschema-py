@@ -1,5 +1,6 @@
 import csv
 from pathlib import Path
+import logging
 
 import requests
 
@@ -7,6 +8,8 @@ from .context_url import CONTEXTFILE_URL
 from .jsonldutils import _is_url, load_file
 from .models import Activity, Item, Protocol, ResponseOption
 from .utils import start_server, stop_server
+
+logger = logging.getLogger(__name__)
 
 
 def fetch_choices_from_url(url):
@@ -37,6 +40,17 @@ def fetch_choices_from_url(url):
 
 
 def find_Ftype_and_colH(item, row_data, response_options):
+    """
+    Determine field type and column H value.
+    
+    Args:
+        item: Item object containing UI information
+        row_data: Dictionary to store field data
+        response_options: Response options object
+        
+    Returns:
+        dict: Updated row_data with field type and validation info
+    """
     # Extract the input type from the item_json
     f_type = item.ui.inputType
     col_h = ""
@@ -58,16 +72,15 @@ def find_Ftype_and_colH(item, row_data, response_options):
         f_type = "text"
         col_h = "date_mdy"
     elif f_type == "select":
-        multiple_choice = response_options.multipleChoice
-        print("mult", multiple_choice)
+        multiple_choice = getattr(response_options, 'multipleChoice', False)
+        logger.debug(f"Multiple choice setting for {item.id}: {multiple_choice}")
         f_type = "checkbox" if multiple_choice else "dropdown"
     elif f_type == "radio":
-        if response_options.multipleChoice:
+        if getattr(response_options, 'multipleChoice', False):
             f_type = "checkbox"
-    elif f_type.startswith("select"):  # TODO: this should be reviewed
-        # Adjusting for selectCountry, selectLanguage, selectState types
+    elif f_type.startswith("select"):
         f_type = "radio"
-        choices_url = response_options.choices
+        choices_url = getattr(response_options, 'choices', None)
         if choices_url and isinstance(choices_url, str):
             choices_data = fetch_choices_from_url(choices_url)
             if choices_data:
@@ -78,7 +91,6 @@ def find_Ftype_and_colH(item, row_data, response_options):
         f_type = "text"
 
     row_data["field_type"] = f_type.lower()
-
     if col_h:
         row_data["val_type_OR_slider"] = col_h.lower()
 
@@ -139,58 +151,29 @@ def process_item(
         choices = response_options.choices
         if choices and not isinstance(choices, str):
             if isinstance(choices, list):
-                item_choices = [
-                    f"{ch.value}, {ch.name.get('en', '')}"
-                    for ch in choices
-                    if ch.value is not None
-                ]
+                # Handle the case where choices is a list
+                item_choices = []
+                for ch in choices:
+                    if hasattr(ch, 'value') and ch.value is not None:
+                        name = ch.name.get('en', '') if hasattr(ch, 'name') else ''
+                        item_choices.append(f"{ch.value}, {name}")
                 if item_choices:
                     row_data["choices"] = " | ".join(item_choices)
 
     # Add valueRequired if explicitly True
     if (
         item_properties
-        and "valueRequired" in item_properties
-        and item_properties["valueRequired"] is True
+        and isinstance(item_properties, dict)  # Ensure it's a dictionary
+        and item_properties.get("valueRequired") is True
     ):
         row_data["required"] = "y"
 
     var_name = str(item.id).split("/")[-1]  # Get the last part of the id path
-    if var_name.endswith("_total_score"):
-        row_data["isVis_logic"] = False  # This will make the field hidden
-    # Regular isVis handling for other fields
-    elif "isVis" in item_properties and item_properties["isVis"] is not True:
-        row_data["isVis_logic"] = item_properties["isVis"]
-
-    # Handle description
-    if (
-        item.description
-        and "en" in item.description
-        and item.description["en"]
-    ):
-        row_data["field_notes"] = item.description["en"]
-
-    # Handle preamble
-    if item.preamble and "en" in item.preamble and item.preamble["en"]:
-        row_data["preamble"] = item.preamble["en"]
-    elif activity_preamble:
-        row_data["preamble"] = activity_preamble
-
-    # Handle question/field label
-    if compute_item:
-        question = item.description
-    else:
-        question = item.question
-
-    if isinstance(question, dict) and "en" in question and question["en"]:
-        row_data["field_label"] = question["en"]
-    elif isinstance(question, str) and question:
-        row_data["field_label"] = question
-
+    
     # Handle compute items
     if compute_item and compute_expr:
-        print(f"\nDebug - Compute Item: {var_name}")
-        print(f"Compute Expression: {compute_expr}")
+        logger.debug(f"Processing compute item: {var_name}")
+        logger.debug(f"Compute expression: {compute_expr}")
         row_data["choices"] = compute_expr
         row_data["field_type"] = "calc"
         # For computed fields, we may need to set visibility to false by default
@@ -204,20 +187,56 @@ def process_item(
         if field_info.get("val_type_OR_slider"):
             row_data["val_type_OR_slider"] = field_info["val_type_OR_slider"]
 
+    # Handle visibility
+    if var_name.endswith("_total_score"):
+        row_data["isVis_logic"] = False
+    elif (
+        item_properties 
+        and isinstance(item_properties, dict)  # Ensure it's a dictionary
+        and "isVis" in item_properties 
+        and item_properties["isVis"] is not True
+    ):
+        row_data["isVis_logic"] = item_properties["isVis"]
+
+    # Handle description
+    if (
+        hasattr(item, 'description')
+        and isinstance(item.description, dict)
+        and item.description.get("en")
+    ):
+        row_data["field_notes"] = item.description["en"]
+
+    # Handle preamble
+    if (
+        hasattr(item, 'preamble')
+        and isinstance(item.preamble, dict)
+        and item.preamble.get("en")
+    ):
+        row_data["preamble"] = item.preamble["en"]
+    elif activity_preamble:
+        row_data["preamble"] = activity_preamble
+
+    # Handle question/field label
+    if compute_item:
+        question = item.description
+    else:
+        question = item.question if hasattr(item, 'question') else None
+
+    if isinstance(question, dict) and question.get("en"):
+        row_data["field_label"] = question["en"]
+    elif isinstance(question, str) and question:
+        row_data["field_label"] = question
+
     return row_data
 
 
 def get_csv_data(dir_path, contextfile, http_kwargs):
     csv_data = []
 
-    # Iterate over directories in dir_path
     for protocol_dir in dir_path.iterdir():
         if protocol_dir.is_dir():
-            # Check for a _schema file in each directory
             schema_file = next(protocol_dir.glob("*_schema"), None)
-            print(f"Found schema file: {schema_file}")
             if schema_file:
-                # Process the found _schema file
                 parsed_protocol_json = load_file(
                     schema_file,
                     started=True,
@@ -234,6 +253,7 @@ def get_csv_data(dir_path, contextfile, http_kwargs):
                 for activity_path in activity_order:
                     if not _is_url(activity_path):
                         activity_path = protocol_dir / activity_path
+                        
                     parsed_activity_json = load_file(
                         activity_path,
                         started=True,
@@ -244,112 +264,73 @@ def get_csv_data(dir_path, contextfile, http_kwargs):
                     )
                     del parsed_activity_json["@context"]
                     act = Activity(**parsed_activity_json)
-                    items_properties = {
-                        el["variableName"]: el
-                        for el in parsed_activity_json["ui"]["addProperties"]
-                    }
 
-                    # Get activity name without adding extra _schema
+                    # Get activity name
                     activity_name = act.id.split("/")[-1]
                     if activity_name.endswith("_schema.jsonld"):
-                        activity_name = activity_name[
-                            :-12
-                        ]  # Remove _schema.jsonld
+                        activity_name = activity_name[:-12]
                     elif activity_name.endswith(".jsonld"):
-                        activity_name = activity_name[:-7]  # Remove .jsonld
+                        activity_name = activity_name[:-7]
 
-                    items_properties.update(
-                        {
-                            el["isAbout"]: el
-                            for el in parsed_activity_json["ui"][
-                                "addProperties"
-                            ]
-                        }
-                    )
-
-                    if parsed_activity_json:
-                        item_order = [("ord", el) for el in act.ui.order]
-                        item_calc = [("calc", el) for el in act.compute]
-
-                        computed_fields = {
-                            calc_item.variableName
-                            for _, calc_item in item_calc
+                    # Create a map of computed items
+                    compute_map = {}
+                    if hasattr(act, 'compute'):
+                        compute_map = {
+                            comp.variableName: comp.jsExpression 
+                            for comp in act.compute
                         }
 
-                        for tp, item in item_order + item_calc:
-                            try:
-                                if tp == "calc":
-                                    js_expr = item.jsExpression
-                                    var_name = item.variableName
+                    # Process each item defined in addProperties
+                    for item_def in parsed_activity_json["ui"]["addProperties"]:
+                        item_path = item_def["isAbout"]
+                        var_name = item_def["variableName"]
+                        
+                        # Get the item file path
+                        if not _is_url(item_path):
+                            full_item_path = Path(activity_path).parent / item_path
+                        else:
+                            full_item_path = item_path
 
-                                    # Find the corresponding item properties
-                                    if var_name in items_properties:
-                                        item = items_properties[var_name][
-                                            "isAbout"
-                                        ]
-                                        # Ensure computed fields are marked as hidden
-                                        items_properties[var_name][
-                                            "isVis"
-                                        ] = False
-                                    else:
-                                        print(
-                                            f"WARNING: no item properties found for computed field {var_name} in {activity_name}"
-                                        )
-                                        continue
-                                    item_calc = True
-                                else:
-                                    item_calc = False
-                                    js_expr = None
-                                it_prop = items_properties.get(item)
-                                if not _is_url(item):
-                                    item = Path(activity_path).parent / item
+                        try:
+                            item_json = load_file(
+                                full_item_path,
+                                started=True,
+                                http_kwargs=http_kwargs,
+                                fixoldschema=True,
+                                compact=True,
+                                compact_context=contextfile,
+                            )
+                            item_json.pop("@context", "")
+                            item = Item(**item_json)
 
-                                try:
-                                    item_json = load_file(
-                                        item,
-                                        started=True,
-                                        http_kwargs=http_kwargs,
-                                        fixoldschema=True,
-                                        compact=True,
-                                        compact_context=contextfile,
-                                    )
-                                    item_json.pop("@context", "")
-                                    itm = Item(**item_json)
-                                except Exception as e:
-                                    print(f"Error loading item: {item}")
-                                    print(f"Error details: {str(e)}")
-                                    continue
+                            activity_preamble = (
+                                act.preamble.get("en", "").strip()
+                                if hasattr(act, "preamble")
+                                else ""
+                            )
 
-                                activity_name = act.id.split("/")[-1].split(
-                                    "."
-                                )[0]
-                                activity_preamble = (
-                                    act.preamble.get("en", "").strip()
-                                    if hasattr(act, "preamble")
-                                    else ""
-                                )
+                            # Check if this is a computed item
+                            compute_expr = compute_map.get(var_name)
+                            is_computed = compute_expr is not None
 
-                                row_data = process_item(
-                                    itm,
-                                    it_prop,
-                                    activity_name,
-                                    activity_preamble,
-                                    contextfile,
-                                    http_kwargs,
-                                    item_calc,
-                                    js_expr,
-                                )
-                                csv_data.append(row_data)
+                            row_data = process_item(
+                                item,
+                                item_def,
+                                activity_name,
+                                activity_preamble,
+                                contextfile,
+                                http_kwargs,
+                                is_computed,
+                                compute_expr
+                            )
+                            csv_data.append(row_data)
+                            
+                        except Exception as e:
+                            print(f"Error processing item {item_path} for activity {activity_name}")
+                            print(f"Error details: {str(e)}")
+                            continue
 
-                            except Exception as e:
-                                print(
-                                    f"Error processing item {item}: {str(e)}"
-                                )
-                                continue
-                # Break after finding the first _schema file
-                break
     return csv_data
-
 
 def write_to_csv(csv_data, output_csv_filename):
     # REDCap-specific headers
