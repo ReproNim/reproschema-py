@@ -436,18 +436,18 @@ def parse_html(input_string, default_language="en"):
             # Process elements with language tags
             for element in lang_elements:
                 lang = element.get("lang", default_language).lower()
-                text = element.get_text(strip=True)
+                text = element.get_text(strip=False)
                 if text:
                     result[lang] = text
 
             # If no text was extracted but elements exist, try getting default text
             if not result:
-                text = soup.get_text(strip=True)
+                text = soup.get_text(strip=False)
                 if text:
                     result[default_language] = text
         else:
             # No language tags found, use default language
-            text = soup.get_text(strip=True)
+            text = soup.get_text(strip=False)
             if text:
                 result[default_language] = text
 
