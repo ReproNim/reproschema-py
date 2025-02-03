@@ -1,6 +1,6 @@
 import csv
-from pathlib import Path
 import logging
+from pathlib import Path
 
 import requests
 
@@ -42,12 +42,12 @@ def fetch_choices_from_url(url):
 def find_Ftype_and_colH(item, row_data, response_options):
     """
     Determine field type and column H value.
-    
+
     Args:
         item: Item object containing UI information
         row_data: Dictionary to store field data
         response_options: Response options object
-        
+
     Returns:
         dict: Updated row_data with field type and validation info
     """
@@ -72,15 +72,17 @@ def find_Ftype_and_colH(item, row_data, response_options):
         f_type = "text"
         col_h = "date_mdy"
     elif f_type == "select":
-        multiple_choice = getattr(response_options, 'multipleChoice', False)
-        logger.debug(f"Multiple choice setting for {item.id}: {multiple_choice}")
+        multiple_choice = getattr(response_options, "multipleChoice", False)
+        logger.debug(
+            f"Multiple choice setting for {item.id}: {multiple_choice}"
+        )
         f_type = "checkbox" if multiple_choice else "dropdown"
     elif f_type == "radio":
-        if getattr(response_options, 'multipleChoice', False):
+        if getattr(response_options, "multipleChoice", False):
             f_type = "checkbox"
     elif f_type.startswith("select"):
         f_type = "radio"
-        choices_url = getattr(response_options, 'choices', None)
+        choices_url = getattr(response_options, "choices", None)
         if choices_url and isinstance(choices_url, str):
             choices_data = fetch_choices_from_url(choices_url)
             if choices_data:
@@ -154,8 +156,12 @@ def process_item(
                 # Handle the case where choices is a list
                 item_choices = []
                 for ch in choices:
-                    if hasattr(ch, 'value') and ch.value is not None:
-                        name = ch.name.get('en', '') if hasattr(ch, 'name') else ''
+                    if hasattr(ch, "value") and ch.value is not None:
+                        name = (
+                            ch.name.get("en", "")
+                            if hasattr(ch, "name")
+                            else ""
+                        )
                         item_choices.append(f"{ch.value}, {name}")
                 if item_choices:
                     row_data["choices"] = " | ".join(item_choices)
@@ -169,7 +175,7 @@ def process_item(
         row_data["required"] = "y"
 
     var_name = str(item.id).split("/")[-1]  # Get the last part of the id path
-    
+
     # Handle compute items
     if compute_item and compute_expr:
         logger.debug(f"Processing compute item: {var_name}")
@@ -191,16 +197,16 @@ def process_item(
     if var_name.endswith("_total_score"):
         row_data["isVis_logic"] = False
     elif (
-        item_properties 
+        item_properties
         and isinstance(item_properties, dict)  # Ensure it's a dictionary
-        and "isVis" in item_properties 
+        and "isVis" in item_properties
         and item_properties["isVis"] is not True
     ):
         row_data["isVis_logic"] = item_properties["isVis"]
 
     # Handle description
     if (
-        hasattr(item, 'description')
+        hasattr(item, "description")
         and isinstance(item.description, dict)
         and item.description.get("en")
     ):
@@ -208,7 +214,7 @@ def process_item(
 
     # Handle preamble
     if (
-        hasattr(item, 'preamble')
+        hasattr(item, "preamble")
         and isinstance(item.preamble, dict)
         and item.preamble.get("en")
     ):
@@ -220,7 +226,7 @@ def process_item(
     if compute_item:
         question = item.description
     else:
-        question = item.question if hasattr(item, 'question') else None
+        question = item.question if hasattr(item, "question") else None
 
     if isinstance(question, dict) and question.get("en"):
         row_data["field_label"] = question["en"]
@@ -253,7 +259,7 @@ def get_csv_data(dir_path, contextfile, http_kwargs):
                 for activity_path in activity_order:
                     if not _is_url(activity_path):
                         activity_path = protocol_dir / activity_path
-                        
+
                     parsed_activity_json = load_file(
                         activity_path,
                         started=True,
@@ -274,20 +280,24 @@ def get_csv_data(dir_path, contextfile, http_kwargs):
 
                     # Create a map of computed items
                     compute_map = {}
-                    if hasattr(act, 'compute'):
+                    if hasattr(act, "compute"):
                         compute_map = {
-                            comp.variableName: comp.jsExpression 
+                            comp.variableName: comp.jsExpression
                             for comp in act.compute
                         }
 
                     # Process each item defined in addProperties
-                    for item_def in parsed_activity_json["ui"]["addProperties"]:
+                    for item_def in parsed_activity_json["ui"][
+                        "addProperties"
+                    ]:
                         item_path = item_def["isAbout"]
                         var_name = item_def["variableName"]
-                        
+
                         # Get the item file path
                         if not _is_url(item_path):
-                            full_item_path = Path(activity_path).parent / item_path
+                            full_item_path = (
+                                Path(activity_path).parent / item_path
+                            )
                         else:
                             full_item_path = item_path
 
@@ -321,16 +331,19 @@ def get_csv_data(dir_path, contextfile, http_kwargs):
                                 contextfile,
                                 http_kwargs,
                                 is_computed,
-                                compute_expr
+                                compute_expr,
                             )
                             csv_data.append(row_data)
-                            
+
                         except Exception as e:
-                            print(f"Error processing item {item_path} for activity {activity_name}")
+                            print(
+                                f"Error processing item {item_path} for activity {activity_name}"
+                            )
                             print(f"Error details: {str(e)}")
                             continue
 
     return csv_data
+
 
 def write_to_csv(csv_data, output_csv_filename):
     # REDCap-specific headers

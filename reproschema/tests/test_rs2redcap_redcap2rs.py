@@ -105,9 +105,11 @@ def errors_check(cat, atr, orig, final):
     error_shortmsg = f"{cat}: {atr} is different"
     return error_shortmsg
 
+
 def print_return_msg(error_msg):
     # print(error_msg)
     return error_msg
+
 
 def compare_protocols(prot_tree_orig, prot_tree_final):
     # compare the two dictionaries
@@ -337,12 +339,18 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                     # Handle cases where one might be NaN/None and the other empty string
                     orig_q = act_items_orig[nm]["obj"].question.get("en", "")
                     final_q = el["obj"].question.get("en", "")
-                    
-                    print(f"\nDebug - Comparing questions for {act_name}/{nm}:")
+
+                    print(
+                        f"\nDebug - Comparing questions for {act_name}/{nm}:"
+                    )
                     print(f"Original question: {repr(orig_q)}")
                     print(f"Final question: {repr(final_q)}")
-                    print(f"Original normalized: {repr(normalize_condition(orig_q))}")
-                    print(f"Final normalized: {repr(normalize_condition(final_q))}")
+                    print(
+                        f"Original normalized: {repr(normalize_condition(orig_q))}"
+                    )
+                    print(
+                        f"Final normalized: {repr(normalize_condition(final_q))}"
+                    )
 
                     # Convert None/NaN to empty string for comparison
                     orig_q = (
