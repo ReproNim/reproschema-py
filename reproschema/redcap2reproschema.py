@@ -88,18 +88,11 @@ def clean_dict_nans(obj):
 
 # TODO: normalized condition should depend on the field type, e.g., for SQL
 def normalize_condition(condition_str, field_type=None):
-    """
-    Enhanced normalization of condition strings with specific handling for calc fields.
-
-    Args:
-        condition_str: The condition string to normalize
-        field_type: The type of field (e.g., 'calc', 'sql')
-
-    Returns:
-        str: Normalized condition string, or None if invalid
-    """
+    """Normalize condition strings with specific handling for calc fields."""
     if condition_str is None or pd.isna(condition_str):
         return None
+
+    # Handle boolean values
     if isinstance(condition_str, bool):
         return condition_str
     if isinstance(condition_str, str):
@@ -108,6 +101,7 @@ def normalize_condition(condition_str, field_type=None):
         if condition_str.lower() == "false":
             return False
 
+    # Convert to string if needed
     if not isinstance(condition_str, str):
         try:
             condition_str = str(condition_str)
@@ -115,36 +109,52 @@ def normalize_condition(condition_str, field_type=None):
             return None
 
     try:
+        
+        # Clean HTML
         condition_str = BeautifulSoup(condition_str, "html.parser").get_text()
+        condition_str = condition_str.strip()
+        
+        if not condition_str:
+            return None
 
-        # SQL/calc specific handling
-        if field_type in ["sql", "calc"]:
-            # For calc fields, we want to preserve function calls like Math.max
-            # but normalize the spacing around operators and arguments
-            replacements = [
-                (r"\s*\(\s*", "("),  # Remove spaces after opening parenthesis
-                (r"\s*\)\s*", ")"),  # Remove spaces before closing parenthesis
-                (r"\s*,\s*", ", "),  # Normalize spaces around commas
-                (r"\s+", " "),  # Normalize multiple spaces to single space
-                (r'"', "'"),  # Standardize quotes
-            ]
-        else:
-            # Standard REDCap logic replacements for non-calc fields
-            replacements = [
-                (r"\(([0-9]*)\)", r"___\1"),
-                (r"([^>|<])=", r"\1 =="),
-                (r"\[([^\]]*)\]", r" \1 "),
-                (r"\bor\b", "||"),
-                (r"\band\b", "&&"),
-                (r"\s+", " "),
-                (r'"', "'"),
-            ]
+        # Common operator normalizations for all types
+        operator_replacements = [
+            (r"\s*\+\s*", " + "),      # Normalize spacing around +
+            (r"\s*-\s*", " - "),       # Normalize spacing around -
+            (r"\s*\*\s*", " * "),      # Normalize spacing around *
+            (r"\s*\/\s*", " / "),      # Normalize spacing around /
+            (r"\s*\(\s*", "("),        # Remove spaces after opening parenthesis
+            (r"\s*\)\s*", ")"),        # Remove spaces before closing parenthesis
+            (r"\s*,\s*", ","),         # Normalize spaces around commas
+            (r"\s+", " "),             # Normalize multiple spaces
+        ]
 
-        for pattern, repl in replacements:
+        # Apply operator normalizations first
+        for pattern, repl in operator_replacements:
             condition_str = re.sub(pattern, repl, condition_str)
 
-        return condition_str.strip() or None
-    except:
+        # Then apply type-specific replacements
+        if field_type in ["sql", "calc"]:
+            # For calc fields, just remove brackets from field references
+            condition_str = re.sub(r"\[([^\]]+)\]", r"\1", condition_str)
+        else:
+            # For branching logic
+            replacements = [
+                (r"\(([0-9]*)\)", r"___\1"),
+                (r"([^>|<])=", r"\1=="),
+                (r"\[([^\]]*)\]", r"\1"),  # Remove brackets and extra spaces
+                (r"\bor\b", "||"),
+                (r"\band\b", "&&"),
+                (r'"', "'")
+            ]
+            for pattern, repl in replacements:
+                condition_str = re.sub(pattern, repl, condition_str)
+
+        result = condition_str.strip()
+        return result
+
+    except Exception as e:
+        print(f"Error normalizing condition: {str(e)}")
         return None
 
 
@@ -184,12 +194,7 @@ def process_field_properties(data):
         ...     "Branching Logic (Show field only if...)": "[gender] = '1'"
         ... }
         >>> process_field_properties(data)
-        {
-            'variableName': 'age',
-            'isAbout': 'items/age',
-            'isVis': 'gender == 1',
-            'valueRequired': True
-        }
+        {'variableName': 'age', 'isAbout': 'items/age', 'valueRequired': True, 'isVis': "gender == '1'"}
     """
     if not isinstance(data, dict):
         return {"variableName": "unknown", "isAbout": "items/unknown"}
@@ -811,9 +816,7 @@ def process_csv(csv_file, abs_folder_path, protocol_name):
 
     try:
         df = pd.read_csv(csv_file, encoding="utf-8-sig")
-        df.columns = df.columns.map(
-            lambda x: x.strip().strip('"').lstrip("\ufeff")
-        )
+        df.columns = df.columns.map(lambda x: x.strip().strip('"').lstrip("\ufeff"))
 
         required_columns = ["Form Name", "Variable / Field Name", "Field Type"]
         missing_columns = [
@@ -868,60 +871,49 @@ def process_csv(csv_file, abs_folder_path, protocol_name):
                 continue
 
             datas[form_name].append(row_dict)
-
-            # Always add to order list to preserve sequence
             field_path = f"items/{field_name}"
 
             field_type = row_dict.get("Field Type", "").strip().lower()
             field_annotation = row_dict.get("Field Annotation", "")
 
-            # Add to compute list if needed
-            if field_type in COMPUTE_LIST and row_dict.get(
-                "Choices, Calculations, OR Slider Labels"
-            ):
-                condition = normalize_condition(
-                    row_dict["Choices, Calculations, OR Slider Labels"],
-                    field_type=field_type,
-                )
-                if condition:
-                    compute[form_name].append(
-                        {"variableName": field_name, "jsExpression": condition}
-                    )
-            elif (
-                field_annotation
-                and "@CALCTEXT" in str(field_annotation).upper()
-            ):
+            # Handle compute fields
+            is_compute = False
+
+            # Case 1: Field is calc type
+            if field_type in COMPUTE_LIST:
+                calc_value = row_dict.get("Choices, Calculations, OR Slider Labels", "")
+                if calc_value and str(calc_value).strip():
+                    compute_expression = normalize_condition(calc_value, field_type=field_type)
+                    if compute_expression:
+                        is_compute = True
+                        compute[form_name].append({
+                            "variableName": field_name,
+                            "jsExpression": compute_expression
+                        })
+                    else:
+                        print(f"Warning: Could not normalize calc expression for {field_name}: {calc_value}")
+
+            # Case 2: Field has @CALCTEXT
+            elif field_annotation and "@CALCTEXT" in str(field_annotation).upper():
                 match = re.search(r"@CALCTEXT\((.*)\)", field_annotation)
                 if match:
-                    js_expression = normalize_condition(match.group(1))
-                    if js_expression:
-                        compute[form_name].append(
-                            {
-                                "variableName": field_name,
-                                "jsExpression": js_expression,
-                            }
-                        )
-            else:
-                order[form_name].append(f"items/{field_name}")
+                    compute_expression = normalize_condition(match.group(1))
+                    if compute_expression:
+                        is_compute = True
+                        compute[form_name].append({
+                            "variableName": field_name,
+                            "jsExpression": compute_expression
+                        })
 
-        # Validate results
-        for form_name in datas:
-            if not datas[form_name]:
-                print(f"Warning: Form '{form_name}' has no valid fields")
-            if not order[form_name] and not compute[form_name]:
-                print(
-                    f"Warning: Form '{form_name}' has no order or compute fields"
-                )
-
-        # Create protocol directory
-        protocol_dir = Path(abs_folder_path) / protocol_name
-        protocol_dir.mkdir(parents=True, exist_ok=True)
+            # Add to order list only if not a compute field
+            if not is_compute:
+                order[form_name].append(field_path)
 
         return datas, order, compute
 
-    except pd.errors.EmptyDataError:
-        raise ValueError("The CSV file is empty")
-
+    except Exception as e:
+        print(f"Error processing CSV: {str(e)}")
+        raise
 
 # todo adding output path
 def redcap2reproschema(
