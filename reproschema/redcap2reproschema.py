@@ -109,24 +109,24 @@ def normalize_condition(condition_str, field_type=None):
             return None
 
     try:
-        
+
         # Clean HTML
         condition_str = BeautifulSoup(condition_str, "html.parser").get_text()
         condition_str = condition_str.strip()
-        
+
         if not condition_str:
             return None
 
         # Common operator normalizations for all types
         operator_replacements = [
-            (r"\s*\+\s*", " + "),      # Normalize spacing around +
-            (r"\s*-\s*", " - "),       # Normalize spacing around -
-            (r"\s*\*\s*", " * "),      # Normalize spacing around *
-            (r"\s*\/\s*", " / "),      # Normalize spacing around /
-            (r"\s*\(\s*", "("),        # Remove spaces after opening parenthesis
-            (r"\s*\)\s*", ")"),        # Remove spaces before closing parenthesis
-            (r"\s*,\s*", ","),         # Normalize spaces around commas
-            (r"\s+", " "),             # Normalize multiple spaces
+            (r"\s*\+\s*", " + "),  # Normalize spacing around +
+            (r"\s*-\s*", " - "),  # Normalize spacing around -
+            (r"\s*\*\s*", " * "),  # Normalize spacing around *
+            (r"\s*\/\s*", " / "),  # Normalize spacing around /
+            (r"\s*\(\s*", "("),  # Remove spaces after opening parenthesis
+            (r"\s*\)\s*", ")"),  # Remove spaces before closing parenthesis
+            (r"\s*,\s*", ","),  # Normalize spaces around commas
+            (r"\s+", " "),  # Normalize multiple spaces
         ]
 
         # Apply operator normalizations first
@@ -145,7 +145,7 @@ def normalize_condition(condition_str, field_type=None):
                 (r"\[([^\]]*)\]", r"\1"),  # Remove brackets and extra spaces
                 (r"\bor\b", "||"),
                 (r"\band\b", "&&"),
-                (r'"', "'")
+                (r'"', "'"),
             ]
             for pattern, repl in replacements:
                 condition_str = re.sub(pattern, repl, condition_str)
@@ -816,7 +816,9 @@ def process_csv(csv_file, abs_folder_path, protocol_name):
 
     try:
         df = pd.read_csv(csv_file, encoding="utf-8-sig")
-        df.columns = df.columns.map(lambda x: x.strip().strip('"').lstrip("\ufeff"))
+        df.columns = df.columns.map(
+            lambda x: x.strip().strip('"').lstrip("\ufeff")
+        )
 
         required_columns = ["Form Name", "Variable / Field Name", "Field Type"]
         missing_columns = [
@@ -881,29 +883,42 @@ def process_csv(csv_file, abs_folder_path, protocol_name):
 
             # Case 1: Field is calc type
             if field_type in COMPUTE_LIST:
-                calc_value = row_dict.get("Choices, Calculations, OR Slider Labels", "")
+                calc_value = row_dict.get(
+                    "Choices, Calculations, OR Slider Labels", ""
+                )
                 if calc_value and str(calc_value).strip():
-                    compute_expression = normalize_condition(calc_value, field_type=field_type)
+                    compute_expression = normalize_condition(
+                        calc_value, field_type=field_type
+                    )
                     if compute_expression:
                         is_compute = True
-                        compute[form_name].append({
-                            "variableName": field_name,
-                            "jsExpression": compute_expression
-                        })
+                        compute[form_name].append(
+                            {
+                                "variableName": field_name,
+                                "jsExpression": compute_expression,
+                            }
+                        )
                     else:
-                        print(f"Warning: Could not normalize calc expression for {field_name}: {calc_value}")
+                        print(
+                            f"Warning: Could not normalize calc expression for {field_name}: {calc_value}"
+                        )
 
             # Case 2: Field has @CALCTEXT
-            elif field_annotation and "@CALCTEXT" in str(field_annotation).upper():
+            elif (
+                field_annotation
+                and "@CALCTEXT" in str(field_annotation).upper()
+            ):
                 match = re.search(r"@CALCTEXT\((.*)\)", field_annotation)
                 if match:
                     compute_expression = normalize_condition(match.group(1))
                     if compute_expression:
                         is_compute = True
-                        compute[form_name].append({
-                            "variableName": field_name,
-                            "jsExpression": compute_expression
-                        })
+                        compute[form_name].append(
+                            {
+                                "variableName": field_name,
+                                "jsExpression": compute_expression,
+                            }
+                        )
 
             # Add to order list only if not a compute field
             if not is_compute:
@@ -914,6 +929,7 @@ def process_csv(csv_file, abs_folder_path, protocol_name):
     except Exception as e:
         print(f"Error processing CSV: {str(e)}")
         raise
+
 
 # todo adding output path
 def redcap2reproschema(
