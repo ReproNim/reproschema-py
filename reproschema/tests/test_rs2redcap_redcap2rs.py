@@ -263,9 +263,13 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                             # If original is True and final is None/missing, don't count as error
                             pass
                         elif orig_value is not None:
-                            if normalize_condition(orig_value) != normalize_condition(final_value):
+                            if normalize_condition(
+                                orig_value
+                            ) != normalize_condition(final_value):
                                 error = True
-                        elif final_value is not None and final_value is not True:
+                        elif (
+                            final_value is not None and final_value is not True
+                        ):
                             error = True
 
                     if error:
