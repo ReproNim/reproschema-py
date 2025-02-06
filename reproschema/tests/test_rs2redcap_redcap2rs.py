@@ -109,6 +109,7 @@ def print_return_msg(error_msg):
     print(error_msg)
     return error_msg
 
+
 def compare_protocols(prot_tree_orig, prot_tree_final):
     # compare the two dictionaries
     errors_list = []
@@ -230,11 +231,19 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                     error = False
                     orig_val = getattr(act_props_orig[nm], key)
                     final_val = getattr(el, key)
-                    
+
                     if key == "isVis":
-                        orig_norm = normalize_condition(orig_val) if orig_val is not None else None
-                        final_norm = normalize_condition(final_val) if final_val is not None else None
-                        
+                        orig_norm = (
+                            normalize_condition(orig_val)
+                            if orig_val is not None
+                            else None
+                        )
+                        final_norm = (
+                            normalize_condition(final_val)
+                            if final_val is not None
+                            else None
+                        )
+
                         # Case 1: original is True - final can be None or True
                         if orig_norm is True:
                             if not (final_norm is None or final_norm is True):
@@ -256,7 +265,7 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                         elif final_val and orig_val is None:
                             if normalize_condition(final_val) != False:
                                 error = True
-                                
+
                     if error:
                         errors_list.append(
                             print_return_msg(
