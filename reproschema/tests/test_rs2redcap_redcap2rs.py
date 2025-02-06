@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 from shutil import copytree, rmtree
 
-import pandas as pd
 import pytest
 from click.testing import CliRunner
 
@@ -100,16 +99,15 @@ def errors_check(cat, atr, orig, final):
         print(f"Attribute {atr} is missing in the original {cat}")
     elif orig != final:
         print(f"Attribute {atr} is different in the final {cat}")
-        # print(f"Original: {orig}")
-        # print(f"Final: {final}")
+        print(f"Original: {orig}")
+        print(f"Final: {final}")
     error_shortmsg = f"{cat}: {atr} is different"
     return error_shortmsg
 
 
 def print_return_msg(error_msg):
-    # print(error_msg)
+    print(error_msg)
     return error_msg
-
 
 def compare_protocols(prot_tree_orig, prot_tree_final):
     # compare the two dictionaries
@@ -221,57 +219,49 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                     )
                 )
             else:
-                print(
-                    f"Activity {act_name}: addProperties have different elements"
-                )
                 errors_list.append(
-                    f"Activity {act_name}: addProperties have different elements"
+                    print_return_msg(
+                        f"Activity {act_name}: addProperties have different elements, orig: {act_props_orig} and final: {act_props_final}"
+                    )
                 )
         else:
             for nm, el in act_props_final.items():
                 for key in ["isVis", "valueRequired"]:
                     error = False
-                    orig_value = getattr(act_props_orig[nm], key)
-                    final_value = getattr(el, key)
-
-                    if key == "valueRequired":
-                        # Debug print
-                        print(f"\nDebug - Activity: {act_name}, Item: {nm}")
-                        print(
-                            f"Original valueRequired: {orig_value}, type: {type(orig_value)}"
-                        )
-                        print(
-                            f"Final valueRequired: {final_value}, type: {type(final_value)}"
-                        )
-
-                        # Compare only True values
-                        if orig_value is True:
-                            if final_value is not True:
+                    orig_val = getattr(act_props_orig[nm], key)
+                    final_val = getattr(el, key)
+                    
+                    if key == "isVis":
+                        orig_norm = normalize_condition(orig_val) if orig_val is not None else None
+                        final_norm = normalize_condition(final_val) if final_val is not None else None
+                        
+                        # Case 1: original is True - final can be None or True
+                        if orig_norm is True:
+                            if not (final_norm is None or final_norm is True):
                                 error = True
-                                print(
-                                    f"Error case 1: orig=True, final={final_value}"
-                                )
-                        elif final_value is True:
-                            if orig_value is not True:
+                        # Case 2: original is False - final must be False
+                        elif orig_norm is False:
+                            if final_norm is not False:
                                 error = True
-                                print(
-                                    f"Error case 2: orig={orig_value}, final=True"
-                                )
-
-                    elif key == "isVis":
-                        if orig_value is True:
-                            # If original is True and final is None/missing, don't count as error
-                            pass
-                        elif orig_value is not None:
-                            if normalize_condition(orig_value) != normalize_condition(final_value):
+                        # Case 3: original is something else - must match exactly
+                        elif orig_norm is not None:
+                            if orig_norm != final_norm:
                                 error = True
-                        elif final_value is not None and final_value is not True:
+                    else:  # handle valueRequired
+                        if (orig_val is not None) and (
+                            normalize_condition(final_val)
+                            != normalize_condition(orig_val)
+                        ):
                             error = True
-
+                        elif final_val and orig_val is None:
+                            if normalize_condition(final_val) != False:
+                                error = True
+                                
                     if error:
                         errors_list.append(
-                            print(
-                                f"Activity {act_name}: addProperties {nm} have different {key}"
+                            print_return_msg(
+                                f"Activity {act_name}: addProperties {nm} have different {key}, "
+                                f"orig: {orig_val}, final: {normalize_condition(final_val)}"
                             )
                         )
         # check compute
@@ -285,9 +275,10 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                     )
                 )
             else:
-                print(f"Activity {act_name}: compute have different elements")
                 errors_list.append(
-                    f"Activity {act_name}: compute have different elements"
+                    print_return_msg(
+                        f"Activity {act_name}: compute have different elements, orig: {act_comp_orig}, final: {act_comp_final}"
+                    )
                 )
         else:
             for nm, el in act_comp_final.items():
@@ -297,7 +288,7 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                     getattr(act_comp_orig[nm], "jsExpression")
                 ):
                     errors_list.append(
-                        print(
+                        print_return_msg(
                             f"Activity {act_name}: compute {nm} have different jsExpression"
                         )
                     )
@@ -313,7 +304,7 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
             else:
                 errors_list.append(
                     print_return_msg(
-                        f"Activity {act_name}: items have different elements"
+                        f"Activity {act_name}: items have different elements, orig: {act_items_orig}, final: {act_items_final}"
                     )
                 )
         else:
@@ -334,45 +325,20 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                 ) != normalize_condition(
                     act_items_orig[nm]["obj"].question.get("en", "")
                 ):
-                    # Handle cases where one might be NaN/None and the other empty string
-                    orig_q = act_items_orig[nm]["obj"].question.get("en", "")
-                    final_q = el["obj"].question.get("en", "")
-
-                    print(
-                        f"\nDebug - Comparing questions for {act_name}/{nm}:"
-                    )
-                    print(f"Original question: {repr(orig_q)}")
-                    print(f"Final question: {repr(final_q)}")
-                    print(
-                        f"Original normalized: {repr(normalize_condition(orig_q))}"
-                    )
-                    print(
-                        f"Final normalized: {repr(normalize_condition(final_q))}"
-                    )
-
-                    # Convert None/NaN to empty string for comparison
-                    orig_q = (
-                        "" if pd.isna(orig_q) or orig_q is None else orig_q
-                    )
-                    final_q = (
-                        "" if pd.isna(final_q) or final_q is None else final_q
-                    )
-
-                    if normalize_condition(orig_q) != normalize_condition(
-                        final_q
+                    if "<br><br>" in normalize_condition(
+                        act_items_orig[nm]["obj"].question.get("en", "")
                     ):
-                        if "<br><br>" in normalize_condition(orig_q):
-                            warnings_list.append(
-                                print_return_msg(
-                                    f"Activity {act_name}: items {nm} have different question, FIX normalized function!!!"
-                                )
+                        warnings_list.append(
+                            print_return_msg(
+                                f"Activity {act_name}: items {nm} have different question, FIX normalized function!!!"
                             )
-                        else:
-                            errors_list.append(
-                                print_return_msg(
-                                    f"Activity {act_name}: items {nm} have different question"
-                                )
+                        )
+                    else:
+                        errors_list.append(
+                            print_return_msg(
+                                f"Activity {act_name}: items {nm} have different question"
                             )
+                        )
                 elif (
                     el["obj"].ui.inputType
                     != act_items_orig[nm]["obj"].ui.inputType
@@ -420,7 +386,7 @@ def test_rs2redcap_redcap2rs(tmpdir):
             "output_nimh.csv",
         ],
     )
-    # # print("\n results of reproschema2redcap", result1.output)
+    print("\n results of reproschema2redcap", result1.output)
 
     result2 = runner.invoke(
         main,
@@ -433,7 +399,7 @@ def test_rs2redcap_redcap2rs(tmpdir):
         ],
     )
 
-    # print("\n results of redcap2reproschema", result2.output)
+    print("\n results of redcap2reproschema", result2.output)
 
     protocol_schema_orig = (
         "nimh_minimal_orig/nimh_minimal/nimh_minimal/nimh_minimal_schema"
@@ -462,10 +428,5 @@ def test_rs2redcap_redcap2rs(tmpdir):
         prot_tree_orig, prot_tree_final
     )
 
-    # More informative assertion
-    real_errors = [err for err in errors_list if err is not None]
-    if real_errors:
-        print("\nDetailed errors:")
-        for err in real_errors:
-            print(f"- {err}")
-        assert not real_errors, f"Found {len(real_errors)} errors"
+    assert not errors_list, f"Errors: {errors_list}"
+    print("No errors, but found warnings: ", warnings_list)
