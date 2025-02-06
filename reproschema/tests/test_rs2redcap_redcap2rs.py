@@ -467,7 +467,6 @@ def test_rs2redcap_redcap2rs(tmpdir):
     )
 
     # More informative assertion
-    real_errors = [err for err in errors_list if err is not None]
     if real_errors:
         print("\nDetailed errors:")
         for err in real_errors:
