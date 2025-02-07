@@ -243,8 +243,12 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                         elif orig_norm is False:
                             if final_norm is not False:
                                 error = True
-                        # Case 3: original is something else - must match exactly
-                        elif orig_norm is not None:
+                        # Case 3: original is None - final can be None or True
+                        elif orig_norm is None:
+                            if not (final_norm is None or final_norm is True):
+                                error = True
+                        # Case 4: original is something else - must match exactly
+                        else:
                             if orig_norm != final_norm:
                                 error = True
                     else:  # handle valueRequired
