@@ -6,6 +6,7 @@ import yaml
 from click.testing import CliRunner
 
 from ..cli import main
+from ..redcap2reproschema import process_field_properties
 
 CSV_FILE_NAME = "redcap_dict.csv"
 YAML_FILE_NAME = "redcap2rs.yaml"
@@ -51,3 +52,35 @@ def test_redcap2reproschema(tmpdir):
         assert os.path.isdir(
             protocol_name
         ), f"Expected output directory '{protocol_name}' does not exist"
+
+
+def test_process_field_properties_visibility():
+    # Test case 1: No branching logic or annotations
+    field_data = {"Variable / Field Name": "test_field"}
+    result = process_field_properties(field_data)
+    assert "isVis" not in result
+
+    # Test case 2: With branching logic
+    field_data = {
+        "Variable / Field Name": "test_field",
+        "Branching Logic (Show field only if...)": "[age] > 18",
+    }
+    result = process_field_properties(field_data)
+    assert result["isVis"] == "age > 18"
+
+    # Test case 3: With @HIDDEN annotation
+    field_data = {
+        "Variable / Field Name": "test_field",
+        "Field Annotation": "@HIDDEN",
+    }
+    result = process_field_properties(field_data)
+    assert result["isVis"] is False
+
+    # Test case 4: With both branching logic and @HIDDEN
+    field_data = {
+        "Variable / Field Name": "test_field",
+        "Branching Logic (Show field only if...)": "[age] > 18",
+        "Field Annotation": "@HIDDEN",
+    }
+    result = process_field_properties(field_data)
+    assert result["isVis"] is False
