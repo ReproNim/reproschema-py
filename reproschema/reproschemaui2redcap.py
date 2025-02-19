@@ -1,10 +1,13 @@
-from pathlib import Path
-import re
-import pandas as pd
-from datetime import datetime
-import requests
 import logging
+import re
+from datetime import datetime
+from pathlib import Path
+
+import pandas as pd
+import requests
+
 _LOGGER = logging.getLogger(__name__)
+
 
 def fetch_json_options_number(raw_url):
     """
@@ -30,10 +33,11 @@ def fetch_json_options_number(raw_url):
     except ValueError:
         _LOGGER.info("Error parsing JSON data")
 
+
 def parse_survey(survey_data, record_id, session_path):
     """
     Function that generates a list of data frames in order to generate a redcap csv
-    Args: 
+    Args:
         survey_data is the raw json generated from reproschema ui
         record_id is the id that identifies the participant
         session_path is the path containing the session id
@@ -58,11 +62,13 @@ def parse_survey(survey_data, record_id, session_path):
                 for options in range(num):
                     if options in answer:
                         questions_answers[f"""{question}___{options}"""] = [
-                            "Checked"]
+                            "Checked"
+                        ]
 
                     else:
                         questions_answers[f"""{question}___{options}"""] = [
-                            "Unchecked"]
+                            "Unchecked"
+                        ]
 
         else:
             end_time = survey_data[i]["endedAtTime"]

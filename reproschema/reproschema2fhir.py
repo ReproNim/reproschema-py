@@ -1,10 +1,8 @@
+import re as r
 from abc import ABC
 from collections import OrderedDict
-from pathlib import Path
-
 from datetime import datetime, timezone
-
-import re as r
+from pathlib import Path
 
 
 def add_enable_when(condition: str):
@@ -22,32 +20,34 @@ def add_enable_when(condition: str):
     # we are trying to clean up the condition string so we can apply regex to it
     # special characters like '||' is a regex specific character
     condition = condition.replace(" or", " or ")
-    condition = condition.replace("\"", "")
+    condition = condition.replace('"', "")
     condition = condition.replace("||", " or ")
     condition = condition.replace("! == ", "!=")
 
-    condition = r.split(r'&&|and | or ', condition)
+    condition = r.split(r"&&|and | or ", condition)
 
     for i in condition:
         # the exact order of the regex matters as otherwise '<' will be parsed instead of of '<='
-        (id, operator, ans) = r.split(r'(==|>=|<=|!=|>|<)', i)
+        (id, operator, ans) = r.split(r"(==|>=|<=|!=|>|<)", i)
         if operator == "==":
             operator = "="
         # regex to that removes parentheses left over from the redcap csv
         # id's should now match
-        id = r.sub(r'\([^()]*\)', '', id.strip())
+        id = r.sub(r"\([^()]*\)", "", id.strip())
 
         # visibility is based on which button was checked checked
         # eg. current_neuro_dx checks if neurological_history between to 1-6.
         # isVis lists it as neurological_history___{1-6} == 1.
         #  We replace the underscores and re-assign question and answerSting
         if "___" in id:
-            id, ans = r.split(r'___+', id)
-        enable_when.append({
-            "question": id.strip(),
-            "operator": operator.strip(),
-            "answerString": ans.strip()
-        })
+            id, ans = r.split(r"___+", id)
+        enable_when.append(
+            {
+                "question": id.strip(),
+                "operator": operator.strip(),
+                "answerString": ans.strip(),
+            }
+        )
 
     return (enable_when, behave)
 
@@ -71,9 +71,12 @@ def add_options(options_json) -> list:
         else:
             choice = j["value"]
 
-        if (choice and not isinstance(choice, int)
-                and "en" in choice
-                and isinstance(choice, dict)):
+        if (
+            choice
+            and not isinstance(choice, int)
+            and "en" in choice
+            and isinstance(choice, dict)
+        ):
             choice = choice["en"]
 
         choice = str(choice).strip()
@@ -96,8 +99,9 @@ class QuestionnaireGenerator(Generator):
     Class for generating FHIR questionnaire resource.
     """
 
-    def parse_reproschema_items(self, reproschema_items: OrderedDict,
-                                reproschema_content: OrderedDict):
+    def parse_reproschema_items(
+        self, reproschema_items: OrderedDict, reproschema_content: OrderedDict
+    ):
         """
         Helper function to parse reproschema items into fhir items
 
@@ -120,12 +124,15 @@ class QuestionnaireGenerator(Generator):
         # 2. responseOptions is a dict, which is a list of options
         items = []
         schema_name = [
-            name for name in list(reproschema_content.keys())
+            name
+            for name in list(reproschema_content.keys())
             if name.endswith("_schema")
         ][0]
         question_visibility = dict()
 
-        reproschema_schema_properties = reproschema_content[schema_name]["ui"]["addProperties"]
+        reproschema_schema_properties = reproschema_content[schema_name]["ui"][
+            "addProperties"
+        ]
         for property in reproschema_schema_properties:
             question_visibility[property["variableName"]] = property["isVis"]
 
@@ -141,25 +148,32 @@ class QuestionnaireGenerator(Generator):
                     item_type = "choice"
                 elif item_json["ui"]["inputType"] in ("number", "xsd:int"):
                     item_type = "integer"
-                elif item_json["ui"]["inputType"] in ("audioImageRecord", "audioRecord"):
+                elif item_json["ui"]["inputType"] in (
+                    "audioImageRecord",
+                    "audioRecord",
+                ):
                     item_type = "attachment"
                 else:
                     item_type = "string"
 
             curr_item["type"] = item_type
             preamble = ""
-            if "preamble" in item_json and isinstance(item_json["preamble"], dict):
+            if "preamble" in item_json and isinstance(
+                item_json["preamble"], dict
+            ):
                 preamble = item_json["preamble"]["en"]
-            elif "preamble" in item_json and isinstance(item_json["preamble"], str):
+            elif "preamble" in item_json and isinstance(
+                item_json["preamble"], str
+            ):
                 preamble = item_json["preamble"]
 
             if preamble != "":
                 preamble = f"{preamble}: "
 
-            if "question" in item_json and isinstance(item_json["question"],
-                                                      dict):
-                curr_item["text"] = preamble + str(
-                    item_json["question"]["en"])
+            if "question" in item_json and isinstance(
+                item_json["question"], dict
+            ):
+                curr_item["text"] = preamble + str(item_json["question"]["en"])
 
             elif "prefLabel" in item_json:
                 curr_item["text"] = str(item_json["prefLabel"])
@@ -173,12 +187,14 @@ class QuestionnaireGenerator(Generator):
             if "responseOptions" in item_json:
                 if isinstance(item_json["responseOptions"], str):
                     # resolve the path relative to the items folder to load in the dict
-                    options_path = Path(
-                        item_path).parent / item_json['responseOptions']
+                    options_path = (
+                        Path(item_path).parent / item_json["responseOptions"]
+                    )
                     options_path = options_path.resolve()
 
-                    options_json = reproschema_content[(
-                        str(options_path)).split("/")[-1]]
+                    options_json = reproschema_content[
+                        (str(options_path)).split("/")[-1]
+                    ]
 
                     options = add_options(options_json)
 
@@ -186,41 +202,53 @@ class QuestionnaireGenerator(Generator):
                     curr_item["type"] = "string"
                     if "question" in item_json:
                         curr_item["text"] = preamble + str(
-                            item_json["question"]["en"])
+                            item_json["question"]["en"]
+                        )
                     else:
                         curr_item["text"] = preamble
                     curr_item["answerOption"] = [
-                        {"valueString": option.strip()} for option in options]
+                        {"valueString": option.strip()} for option in options
+                    ]
                     # VERSION 0.0.1
                 elif isinstance(item_json["responseOptions"], dict):
-                    if "choices" not in item_json[
-                            "responseOptions"] or item_json["responseOptions"][
-                                "choices"] is None:
+                    if (
+                        "choices" not in item_json["responseOptions"]
+                        or item_json["responseOptions"]["choices"] is None
+                    ):
                         curr_item["linkId"] = var_name
-                        if "valueType" in item_json[
-                                "responseOptions"] and "int" in item_json[
-                                    "responseOptions"]["valueType"]:
+                        if (
+                            "valueType" in item_json["responseOptions"]
+                            and "int"
+                            in item_json["responseOptions"]["valueType"]
+                        ):
                             curr_item["type"] = "integer"
-                        elif "valueType" in item_json[
-                                "responseOptions"] and "date" in item_json[
-                                    "responseOptions"]["valueType"]:
+                        elif (
+                            "valueType" in item_json["responseOptions"]
+                            and "date"
+                            in item_json["responseOptions"]["valueType"]
+                        ):
                             curr_item["type"] = "date"
-                        elif "valueType" in item_json[
-                                "responseOptions"] and "audio" in item_json[
-                                    "responseOptions"]["valueType"]:
+                        elif (
+                            "valueType" in item_json["responseOptions"]
+                            and "audio"
+                            in item_json["responseOptions"]["valueType"]
+                        ):
                             curr_item["type"] = "attachment"
                         else:
                             curr_item["type"] = "string"
                         if "question" not in item_json:
                             if "prefLabel" in item_json:
-                                curr_item["text"] = preamble + \
-                                    str(item_json["prefLabel"])
+                                curr_item["text"] = preamble + str(
+                                    item_json["prefLabel"]
+                                )
                             else:
-                                curr_item["text"] = preamble + \
-                                    curr_item["linkId"]
+                                curr_item["text"] = (
+                                    preamble + curr_item["linkId"]
+                                )
                         else:
-                            curr_item["text"] = preamble + \
-                                str(item_json["question"]["en"])
+                            curr_item["text"] = preamble + str(
+                                item_json["question"]["en"]
+                            )
 
                     elif "choices" in item_json["responseOptions"]:
                         options_json = item_json["responseOptions"]
@@ -230,14 +258,18 @@ class QuestionnaireGenerator(Generator):
                         curr_item["type"] = "choice"
                         if "question" in item_json:
                             curr_item["text"] = preamble + str(
-                                item_json["question"]["en"])
+                                item_json["question"]["en"]
+                            )
                         else:
                             curr_item["text"] = preamble
                         curr_item["answerOption"] = [
-                            {"valueString": option.strip()} for option in options]
+                            {"valueString": option.strip()}
+                            for option in options
+                        ]
 
             if curr_item["linkId"] in question_visibility and isinstance(
-                    question_visibility[curr_item["linkId"]], str):
+                question_visibility[curr_item["linkId"]], str
+            ):
                 isVis = question_visibility[curr_item["linkId"]]
                 (enable_when, behave) = add_enable_when(isVis)
                 curr_item["enableWhen"] = enable_when
@@ -258,7 +290,8 @@ class QuestionnaireGenerator(Generator):
 
         # reference to the main schema file
         schema_name = [
-            name for name in list(reproschema_content.keys())
+            name
+            for name in list(reproschema_content.keys())
             if name.endswith("_schema")
         ][0]
         reproschema_schema = reproschema_content[schema_name]
@@ -274,22 +307,30 @@ class QuestionnaireGenerator(Generator):
 
         fhir_questionnaire["version"] = "1.4.0"
         fhir_questionnaire["status"] = "active"
-        fhir_questionnaire["date"] = (datetime.now(
-            timezone.utc)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        fhir_questionnaire["date"] = (datetime.now(timezone.utc)).strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        )
         # create a pointer to the reproschema_items jsons and match the question
-        reproschema_items = OrderedDict([
-            (i, value) for (i, value) in reproschema_content.items()
-            if i.startswith("items/")
-        ])
+        reproschema_items = OrderedDict(
+            [
+                (i, value)
+                for (i, value) in reproschema_content.items()
+                if i.startswith("items/")
+            ]
+        )
 
-        question_order = [("items/" + sub.replace("items/", ""))
-                          for sub in reproschema_schema["ui"]["order"]]
+        question_order = [
+            ("items/" + sub.replace("items/", ""))
+            for sub in reproschema_schema["ui"]["order"]
+        ]
 
         reproschema_items = OrderedDict(
-            (key, reproschema_items[key]) for key in question_order)
+            (key, reproschema_items[key]) for key in question_order
+        )
 
         items = self.parse_reproschema_items(
-            reproschema_items, reproschema_content)
+            reproschema_items, reproschema_content
+        )
 
         fhir_questionnaire["item"] = items
         return fhir_questionnaire
