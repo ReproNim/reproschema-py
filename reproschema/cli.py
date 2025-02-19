@@ -1,23 +1,19 @@
-import os
-from pathlib import Path
-from collections import OrderedDict
-import json
-import click
-
-from collections import OrderedDict
 import json
 import os
 import shutil
+from collections import OrderedDict
 from pathlib import Path
+
+import click
+import pandas as pd
+from fhir.resources.questionnaire import Questionnaire
+
 from . import __version__, get_logger, set_logger_level
 from .migrate import migrate2newschema
 from .redcap2reproschema import redcap2reproschema as redcap2rs
+from .reproschema2fhir import QuestionnaireGenerator
 from .reproschema2redcap import reproschema2redcap as rs2redcap
 from .reproschemaui2redcap import parse_survey
-from .reproschema2fhir import QuestionnaireGenerator
-from fhir.resources.questionnaire import Questionnaire
-import pandas as pd
-
 
 lgr = get_logger()
 
@@ -198,10 +194,10 @@ def reproschema2redcap(input_path, output_csv_path):
 def reproschema_ui_to_redcap(survey_file, redcap_csv):
     """
     Generates redcap csv given the audio and survey data from reproschema ui
-    
+
     survey_file is the location of the surveys generated from reproschem ui
     redcap_csv is the path to store the newly generated redcap csv
-    
+
     """
     merged_questionnaire_data = []
     # load each file recursively within the folder into its own key
@@ -209,15 +205,16 @@ def reproschema_ui_to_redcap(survey_file, redcap_csv):
     for file in Path(survey_file).rglob("*"):
         if file.is_file():
             filename = str(file.relative_to(survey_file))
-            with open(f"{survey_file}/{filename}", 'r') as f:
+            with open(f"{survey_file}/{filename}", "r") as f:
                 content[filename] = json.load(f)
 
-    for questionnaire in content.keys(): # activity files
+    for questionnaire in content.keys():  # activity files
         try:
             record_id = (survey_file.split("/")[-1]).split()[0]
             survey_data = content[questionnaire]
             merged_questionnaire_data += parse_survey(
-                survey_data, record_id, questionnaire)
+                survey_data, record_id, questionnaire
+            )
         except Exception:
             continue
 
@@ -230,13 +227,14 @@ def reproschema_ui_to_redcap(survey_file, redcap_csv):
         f"Converted reproschema-ui output from {survey_file} to Redcap CSV at {redcap_csv}"
     )
 
+
 @main.command()
 @click.argument("reproschema_questionnaire", type=str)
 @click.argument("output", type=str)
 def reproschema_to_fhir(reproschema_questionnaire, output):
     """
     Generates redcap csv given the audio and survey data from reproschema ui
-    
+
     reproschema_questionnaire is the location of all reproschema activities
     output is the path to store the newly generated fhir json
     """
@@ -246,7 +244,9 @@ def reproschema_to_fhir(reproschema_questionnaire, output):
         raise FileNotFoundError(
             f"{reproschema_folders} does not exist. Please check if folder exists and is located at the correct directory"
         )
-    reproschema_folders = [Path(f) for f in reproschema_folders.iterdir() if f.is_dir()]
+    reproschema_folders = [
+        Path(f) for f in reproschema_folders.iterdir() if f.is_dir()
+    ]
     for reproschema_folder in reproschema_folders:
         # load each file recursively within the folder into its own key in the reproschema_content dict
         reproschema_content = OrderedDict()
@@ -259,26 +259,36 @@ def reproschema_to_fhir(reproschema_questionnaire, output):
                     reproschema_content[filename] = json.loads(f.read())
 
         schema_name = [
-            name for name in (reproschema_content.keys())
+            name
+            for name in (reproschema_content.keys())
             if name.endswith("_schema")
         ][0]
         reproschema_schema = reproschema_content[schema_name]
 
-        if (f"schema:version" in reproschema_schema and
-                reproschema_schema["schema:version"] not in ("0.0.1", "1.0.0-rc1", "1.0.0")
-            ) or f"schemaVersion" in reproschema_schema and reproschema_schema[
-                "schemaVersion"] not in ("0.0.1", "1.0.0-rc1", "1.0.0-rc4", "1.0.0"):
+        if (
+            (
+                f"schema:version" in reproschema_schema
+                and reproschema_schema["schema:version"]
+                not in ("0.0.1", "1.0.0-rc1", "1.0.0")
+            )
+            or f"schemaVersion" in reproschema_schema
+            and reproschema_schema["schemaVersion"]
+            not in ("0.0.1", "1.0.0-rc1", "1.0.0-rc4", "1.0.0")
+        ):
             raise ValueError(
-                'Unable to work with reproschema versions other than 0.0.1, 1.0.0-rc1, and 1.0.0-rc4'
+                "Unable to work with reproschema versions other than 0.0.1, 1.0.0-rc1, and 1.0.0-rc4"
             )
 
         questionnaire_generator = QuestionnaireGenerator()
         fhir_questionnaire = questionnaire_generator.convert_to_fhir(
-            reproschema_content)
+            reproschema_content
+        )
 
         # validate the json using fhir resources
         try:
-            questionnaire_json = Questionnaire.model_validate(fhir_questionnaire)
+            questionnaire_json = Questionnaire.model_validate(
+                fhir_questionnaire
+            )
         except Exception:
             raise Exception("Fhir Questionnaire is not valid")
 
@@ -290,14 +300,10 @@ def reproschema_to_fhir(reproschema_questionnaire, output):
         if dirpath.exists() and dirpath.is_dir():
             shutil.rmtree(dirpath)
 
-        paths = [
-            output_path / file_name
-        ]
+        paths = [output_path / file_name]
 
         for folder in paths:
             folder.mkdir(parents=True, exist_ok=True)
 
         with open(output_path / f"{file_name}/{file_name}.json", "w+") as f:
             f.write(json.dumps(fhir_questionnaire))
-
-        

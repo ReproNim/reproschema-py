@@ -23,7 +23,12 @@ def test_reproschemaui2redcap(tmpdir):
         output_csv_path = os.path.join(tmpdir)
 
         result = runner.invoke(
-            main, ["reproschema-ui-to-redcap", str(input_path), str(output_csv_path)]
+            main,
+            [
+                "reproschema-ui-to-redcap",
+                str(input_path),
+                str(output_csv_path),
+            ],
         )
         print("input", original_data_dir)
         print("output", output_csv_path)
