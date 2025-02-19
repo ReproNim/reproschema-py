@@ -1,0 +1,52 @@
+{
+    "id": "trouble_relaxing",
+    "category": "reproschema:Item",
+    "additionalNotesObj": [
+        {
+            "column": "Question Number (surveys only)",
+            "source": "redcap",
+            "value": NaN
+        }
+    ],
+    "prefLabel": {
+        "en": "trouble_relaxing"
+    },
+    "question": {
+        "en": "Trouble relaxing."
+    },
+    "responseOptions": {
+        "choices": [
+            {
+                "name": {
+                    "en": "Not at all"
+                },
+                "value": 0
+            },
+            {
+                "name": {
+                    "en": "Several days"
+                },
+                "value": 1
+            },
+            {
+                "name": {
+                    "en": "More than half the days"
+                },
+                "value": 2
+            },
+            {
+                "name": {
+                    "en": "Nearly every day"
+                },
+                "value": 3
+            }
+        ],
+        "valueType": [
+            "xsd:integer"
+        ]
+    },
+    "ui": {
+        "inputType": "radio"
+    },
+    "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/main/releases/1.0.0/reproschema"
+}

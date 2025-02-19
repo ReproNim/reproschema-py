@@ -1,0 +1,52 @@
+{
+    "id": "worry_too_much",
+    "category": "reproschema:Item",
+    "additionalNotesObj": [
+        {
+            "column": "Question Number (surveys only)",
+            "source": "redcap",
+            "value": NaN
+        }
+    ],
+    "prefLabel": {
+        "en": "worry_too_much"
+    },
+    "question": {
+        "en": "Worrying too much about different things."
+    },
+    "responseOptions": {
+        "choices": [
+            {
+                "name": {
+                    "en": "Not at all"
+                },
+                "value": 0
+            },
+            {
+                "name": {
+                    "en": "Several days"
+                },
+                "value": 1
+            },
+            {
+                "name": {
+                    "en": "More than half the days"
+                },
+                "value": 2
+            },
+            {
+                "name": {
+                    "en": "Nearly every day"
+                },
+                "value": 3
+            }
+        ],
+        "valueType": [
+            "xsd:integer"
+        ]
+    },
+    "ui": {
+        "inputType": "radio"
+    },
+    "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/main/releases/1.0.0/reproschema"
+}
