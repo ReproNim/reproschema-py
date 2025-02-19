@@ -57,11 +57,11 @@ def add_options(options_json) -> list:
     Helper function to extract all answer choices to a list
     """
     options = []
-    for j in options_json[f"choices"]:
+    for j in options_json["choices"]:
         if "schema:name" in j and j["schema:name"] != "":
             choice = j["schema:name"]
         elif "name" in j and j["name"] != "":
-            choice = j[f"name"]
+            choice = j["name"]
             if "en" in j["name"] and isinstance(["name"], dict):
                 choice = choice["en"]
             else:
@@ -161,10 +161,10 @@ class QuestionnaireGenerator(Generator):
                 curr_item["text"] = preamble + str(
                     item_json["question"]["en"])
 
-            elif f"prefLabel" in item_json:
+            elif "prefLabel" in item_json:
                 curr_item["text"] = str(item_json["prefLabel"])
             else:
-                curr_item[f"text"] = curr_item[f"linkId"]
+                curr_item["text"] = curr_item["linkId"]
 
             id_str: str = var_name
             id_str = id_str.replace("_", "-")
@@ -200,7 +200,7 @@ class QuestionnaireGenerator(Generator):
                         if "valueType" in item_json[
                                 "responseOptions"] and "int" in item_json[
                                     "responseOptions"]["valueType"]:
-                            curr_item[f"type"] = f"integer"
+                            curr_item["type"] = "integer"
                         elif "valueType" in item_json[
                                 "responseOptions"] and "date" in item_json[
                                     "responseOptions"]["valueType"]:
@@ -283,7 +283,7 @@ class QuestionnaireGenerator(Generator):
         ])
 
         question_order = [("items/" + sub.replace("items/", ""))
-                          for sub in reproschema_schema[f"ui"][f"order"]]
+                          for sub in reproschema_schema["ui"]["order"]]
 
         reproschema_items = OrderedDict(
             (key, reproschema_items[key]) for key in question_order)

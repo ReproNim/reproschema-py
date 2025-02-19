@@ -264,9 +264,9 @@ def reproschema_to_fhir(reproschema_questionnaire, output):
         ][0]
         reproschema_schema = reproschema_content[schema_name]
 
-        if (f"schema:version" in reproschema_schema and
+        if ("schema:version" in reproschema_schema and
                 reproschema_schema["schema:version"] not in ("0.0.1", "1.0.0-rc1", "1.0.0")
-            ) or f"schemaVersion" in reproschema_schema and reproschema_schema[
+            ) or "schemaVersion" in reproschema_schema and reproschema_schema[
                 "schemaVersion"] not in ("0.0.1", "1.0.0-rc1", "1.0.0-rc4", "1.0.0"):
             raise ValueError(
                 'Unable to work with reproschema versions other than 0.0.1, 1.0.0-rc1, and 1.0.0-rc4'
@@ -278,7 +278,7 @@ def reproschema_to_fhir(reproschema_questionnaire, output):
 
         # validate the json using fhir resources
         try:
-            questionnaire_json = Questionnaire.model_validate(fhir_questionnaire)
+            Questionnaire.model_validate(fhir_questionnaire)
         except Exception:
             raise Exception("Fhir Questionnaire is not valid")
 
@@ -286,7 +286,7 @@ def reproschema_to_fhir(reproschema_questionnaire, output):
 
         file_name = reproschema_folder.parts[-1]
 
-        dirpath = Path(output_path / f"{file_name}")
+        dirpath = Path(output_path / file_name)
         if dirpath.exists() and dirpath.is_dir():
             shutil.rmtree(dirpath)
 
