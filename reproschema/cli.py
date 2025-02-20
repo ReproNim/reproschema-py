@@ -11,7 +11,7 @@ from fhir.resources.questionnaire import Questionnaire
 from . import __version__, get_logger, set_logger_level
 from .migrate import migrate2newschema
 from .redcap2reproschema import redcap2reproschema as redcap2rs
-from .reproschema2fhir import QuestionnaireGenerator
+from .reproschema2fhir import convert_to_fhir
 from .reproschema2redcap import reproschema2redcap as rs2redcap
 from .reproschemaui2redcap import parse_survey
 
@@ -279,16 +279,14 @@ def reproschema_to_fhir(reproschema_questionnaire, output):
                 "Unable to work with reproschema versions other than 0.0.1, 1.0.0-rc1, and 1.0.0-rc4"
             )
 
-        questionnaire_generator = QuestionnaireGenerator()
-        fhir_questionnaire = questionnaire_generator.convert_to_fhir(
+        
+        fhir_questionnaire = convert_to_fhir(
             reproschema_content
         )
 
         # validate the json using fhir resources
         try:
-            questionnaire_json = Questionnaire.model_validate(
-                fhir_questionnaire
-            )
+            Questionnaire.model_validate(fhir_questionnaire)
         except Exception:
             raise Exception("Fhir Questionnaire is not valid")
 
