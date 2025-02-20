@@ -83,7 +83,9 @@ def add_options(options_json) -> list:
     return options
 
 
-def parse_reproschema_items(reproschema_items: OrderedDict, reproschema_content: OrderedDict):
+def parse_reproschema_items(
+    reproschema_items: OrderedDict, reproschema_content: OrderedDict
+):
     """
     Helper function to parse reproschema items into fhir items
 
@@ -140,9 +142,7 @@ def parse_reproschema_items(reproschema_items: OrderedDict, reproschema_content:
 
         curr_item["type"] = item_type
         preamble = ""
-        if "preamble" in item_json and isinstance(
-            item_json["preamble"], dict
-        ):
+        if "preamble" in item_json and isinstance(item_json["preamble"], dict):
             preamble = item_json["preamble"]["en"]
         elif "preamble" in item_json and isinstance(
             item_json["preamble"], str
@@ -152,9 +152,7 @@ def parse_reproschema_items(reproschema_items: OrderedDict, reproschema_content:
         if preamble != "":
             preamble = f"{preamble}: "
 
-        if "question" in item_json and isinstance(
-            item_json["question"], dict
-        ):
+        if "question" in item_json and isinstance(item_json["question"], dict):
             curr_item["text"] = preamble + str(item_json["question"]["en"])
 
         elif "prefLabel" in item_json:
@@ -200,14 +198,12 @@ def parse_reproschema_items(reproschema_items: OrderedDict, reproschema_content:
                     curr_item["linkId"] = var_name
                     if (
                         "valueType" in item_json["responseOptions"]
-                        and "int"
-                        in item_json["responseOptions"]["valueType"]
+                        and "int" in item_json["responseOptions"]["valueType"]
                     ):
                         curr_item["type"] = "integer"
                     elif (
                         "valueType" in item_json["responseOptions"]
-                        and "date"
-                        in item_json["responseOptions"]["valueType"]
+                        and "date" in item_json["responseOptions"]["valueType"]
                     ):
                         curr_item["type"] = "date"
                     elif (
@@ -224,9 +220,7 @@ def parse_reproschema_items(reproschema_items: OrderedDict, reproschema_content:
                                 item_json["prefLabel"]
                             )
                         else:
-                            curr_item["text"] = (
-                                preamble + curr_item["linkId"]
-                            )
+                            curr_item["text"] = preamble + curr_item["linkId"]
                     else:
                         curr_item["text"] = preamble + str(
                             item_json["question"]["en"]
@@ -245,8 +239,7 @@ def parse_reproschema_items(reproschema_items: OrderedDict, reproschema_content:
                     else:
                         curr_item["text"] = preamble
                     curr_item["answerOption"] = [
-                        {"valueString": option.strip()}
-                        for option in options
+                        {"valueString": option.strip()} for option in options
                     ]
 
         if curr_item["linkId"] in question_visibility and isinstance(
@@ -260,6 +253,7 @@ def parse_reproschema_items(reproschema_items: OrderedDict, reproschema_content:
 
         items.append(curr_item)
     return items
+
 
 def convert_to_fhir(reproschema_content: dict):
     """
@@ -310,9 +304,7 @@ def convert_to_fhir(reproschema_content: dict):
         (key, reproschema_items[key]) for key in question_order
     )
 
-    items = parse_reproschema_items(
-        reproschema_items, reproschema_content
-    )
+    items = parse_reproschema_items(reproschema_items, reproschema_content)
 
     fhir_questionnaire["item"] = items
     return fhir_questionnaire
