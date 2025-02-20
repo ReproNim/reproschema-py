@@ -279,10 +279,7 @@ def reproschema_to_fhir(reproschema_questionnaire, output):
                 "Unable to work with reproschema versions other than 0.0.1, 1.0.0-rc1, and 1.0.0-rc4"
             )
 
-        
-        fhir_questionnaire = convert_to_fhir(
-            reproschema_content
-        )
+        fhir_questionnaire = convert_to_fhir(reproschema_content)
 
         # validate the json using fhir resources
         try:
