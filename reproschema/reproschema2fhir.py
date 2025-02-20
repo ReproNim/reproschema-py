@@ -1,5 +1,4 @@
 import re as r
-from abc import ABC
 from collections import OrderedDict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -28,24 +27,23 @@ def add_enable_when(condition: str):
 
     for i in condition:
         # the exact order of the regex matters as otherwise '<' will be parsed instead of '<='
-        (id, operator, ans) = r.split(r"(==|>=|<=|!=|>|<)", i)
+        (id, operator, answer_string) = r.split(r"(==|>=|<=|!=|>|<)", i)
         if operator == "==":
             operator = "="
-        # regex to that removes parentheses left over from the redcap csv
-        # id's should now match
+        # regex to that removes parentheses
         id = r.sub(r"\([^()]*\)", "", id.strip())
 
         # visibility is based on which button was checked checked
         # eg. current_neuro_dx checks if neurological_history between to 1-6.
         # isVis lists it as neurological_history___{1-6} == 1.
-        #  We replace the underscores and re-assign question and answerString
+        # We replace the underscores and re-assign question and answerString
         if "___" in id:
-            id, ans = r.split(r"___+", id)
+            id, answer_string = r.split(r"___+", id)
         enable_when.append(
             {
                 "question": id.strip(),
                 "operator": operator.strip(),
-                "answerString": ans.strip(),
+                "answerString": answer_string.strip(),
             }
         )
 
