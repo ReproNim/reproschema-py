@@ -56,8 +56,8 @@ Commands:
   reproschema2redcap  Converts reproschema protocol to REDCap CSV format.
   serve
   validate            Validates if the path has a valid reproschema format
-  reproschema-to-fhir       Generates FHIR questionnaire resources from reproschema activities
-  reproschema-ui-to-redcap  Generates redcap csv given the audio and survey data from reproschema ui
+  reproschema2fhir       Generates FHIR questionnaire resources from reproschema activities
+  output2redcap  Generates redcap csv given the audio and survey data from reproschema ui
 ```
 
 ## `reproschema2redcap`
@@ -138,22 +138,25 @@ output_path = "path-to/directory_you_want_to_save_output"
 redcap2reproschema(csv_file, yaml_file, output_path)
 ```
 
-## `reproschema-ui-to-redcap`
+## `output2redcap`
+The `output2redcap` function is designed to process the output from reproschema-ui into a REDCap CSV file as seen [here](reproschema/example/redcap).
+
 
 ### CLI Usage
 
-The `reproschema-ui-to-redcap` function has been integrated into a CLI tool, use the following command:
+The `output2redcap` function has been integrated into a CLI tool, use the following command:
 ```bash
-reproschema reproschema-ui-to-redcap ./path/to/your_reproschema-ui_files ./path/to/directory_you_want_to_save_output
+reproschema output2redcap ./path/to/your_reproschema-ui_files ./path/to/directory_you_want_to_save_output
 ```
 
-## `reproschema-to-fhir`
+## `reproschema2fhir`
+The `reproschema2fhir` function is designed to convert reproschema activities and items into a FHIR Questionnaire resource as seen [here](reproschema/example/fhir).
 
 ### CLI Usage
 
-The `reproschema-to-fhir` function has been integrated into a CLI tool, use the following command:
+The `reproschema2fhir` function has been integrated into a CLI tool, use the following command:
 ```bash
-reproschema reproschema-to-fhir ./path/to/your_reproschema_activities ./path/to/directory_you_want_to_save_output
+reproschema reproschema2fhir ./path/to/your_reproschema_activities ./path/to/directory_you_want_to_save_output
 ```
 ### Notes
 1. The script requires an active internet connection to access the GitHub repository.

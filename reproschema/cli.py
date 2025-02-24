@@ -13,7 +13,7 @@ from .migrate import migrate2newschema
 from .redcap2reproschema import redcap2reproschema as redcap2rs
 from .reproschema2fhir import convert_to_fhir
 from .reproschema2redcap import reproschema2redcap as rs2redcap
-from .reproschemaui2redcap import parse_survey
+from .output2redcap import parse_survey
 
 lgr = get_logger()
 
@@ -191,7 +191,7 @@ def reproschema2redcap(input_path, output_csv_path):
 @main.command()
 @click.argument("survey_file", type=str)
 @click.argument("redcap_csv", type=str)
-def reproschema_ui_to_redcap(survey_file, redcap_csv):
+def output2redcap(survey_file, redcap_csv):
     """
     Generates redcap csv given the audio and survey data from reproschema ui
 
@@ -231,7 +231,7 @@ def reproschema_ui_to_redcap(survey_file, redcap_csv):
 @main.command()
 @click.argument("reproschema_questionnaire", type=str)
 @click.argument("output", type=str)
-def reproschema_to_fhir(reproschema_questionnaire, output):
+def reproschema2fhir(reproschema_questionnaire, output):
     """
     Generates FHIR questionnaire resources from reproschema activities
 

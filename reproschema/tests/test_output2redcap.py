@@ -15,7 +15,7 @@ def test_reproschemaui2redcap(tmpdir):
     with runner.isolated_filesystem():
         # Copy necessary test data into the isolated filesystem
         original_data_dir = os.path.join(
-            os.path.dirname(__file__), "test_reproschema_ui_to_redcap"
+            os.path.dirname(__file__), "test_output2redcap"
         )
         copytree(original_data_dir, "input_data")
 
@@ -25,7 +25,7 @@ def test_reproschemaui2redcap(tmpdir):
         result = runner.invoke(
             main,
             [
-                "reproschema-ui-to-redcap",
+                "output2redcap",
                 str(input_path),
                 str(output_csv_path),
             ],

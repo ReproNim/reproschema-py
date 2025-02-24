@@ -22,7 +22,7 @@ def test_reproschemaui2redcap(tmpdir):
         output_path = os.path.join(tmpdir)
 
         result = runner.invoke(
-            main, ["reproschema-to-fhir", str(input_path), str(output_path)]
+            main, ["reproschema2fhir", str(input_path), str(output_path)]
         )
         print("input", original_data_dir)
         print("output", output_path)
