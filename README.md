@@ -56,7 +56,7 @@ Commands:
   reproschema2redcap  Converts reproschema protocol to REDCap CSV format.
   serve
   validate            Validates if the path has a valid reproschema format
-  reproschema-to-fhir       Generates FHIR questionnaire resources from reproschema activities 
+  reproschema-to-fhir       Generates FHIR questionnaire resources from reproschema activities
   reproschema-ui-to-redcap  Generates redcap csv given the audio and survey data from reproschema ui
 ```
 
