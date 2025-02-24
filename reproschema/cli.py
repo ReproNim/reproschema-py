@@ -195,7 +195,7 @@ def reproschema_ui_to_redcap(survey_file, redcap_csv):
     """
     Generates redcap csv given the audio and survey data from reproschema ui
 
-    survey_file is the location of the surveys generated from reproschem ui
+    survey_file is the location of the surveys generated from reproschema ui
     redcap_csv is the path to store the newly generated redcap csv
 
     """
@@ -233,7 +233,7 @@ def reproschema_ui_to_redcap(survey_file, redcap_csv):
 @click.argument("output", type=str)
 def reproschema_to_fhir(reproschema_questionnaire, output):
     """
-    Generates redcap csv given the audio and survey data from reproschema ui
+    Generates FHIR questionnaire resources from reproschema activities
 
     reproschema_questionnaire is the location of all reproschema activities
     output is the path to store the newly generated fhir json
