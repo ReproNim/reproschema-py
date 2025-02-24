@@ -10,10 +10,10 @@ from fhir.resources.questionnaire import Questionnaire
 
 from . import __version__, get_logger, set_logger_level
 from .migrate import migrate2newschema
+from .output2redcap import parse_survey
 from .redcap2reproschema import redcap2reproschema as redcap2rs
 from .reproschema2fhir import convert_to_fhir
 from .reproschema2redcap import reproschema2redcap as rs2redcap
-from .output2redcap import parse_survey
 
 lgr = get_logger()
 
