@@ -56,6 +56,8 @@ Commands:
   reproschema2redcap  Converts reproschema protocol to REDCap CSV format.
   serve
   validate            Validates if the path has a valid reproschema format
+  reproschema2fhir       Generates FHIR questionnaire resources from reproschema activities
+  output2redcap  Generates redcap csv given the audio and survey data from reproschema ui
 ```
 
 ## `reproschema2redcap`
@@ -116,7 +118,7 @@ redcap_version: "X.XX.X"
 ```
 ### CLI Usage
 
-The `redcap2reproschema`` function has been integrated into a CLI tool, use the following command:
+The `redcap2reproschema` function has been integrated into a CLI tool, use the following command:
 ```bash
 reproschema redcap2reproschema path/to/your_redcap_data_dic.csv path/to/your_redcap2rs.yaml
 ```
@@ -136,5 +138,25 @@ output_path = "path-to/directory_you_want_to_save_output"
 redcap2reproschema(csv_file, yaml_file, output_path)
 ```
 
+## `output2redcap`
+The `output2redcap` function is designed to process the output from reproschema-ui into a REDCap CSV file as seen [here](reproschema/example/redcap).
+
+
+### CLI Usage
+
+The `output2redcap` function has been integrated into a CLI tool, use the following command:
+```bash
+reproschema output2redcap ./path/to/your_reproschema-ui_files ./path/to/directory_you_want_to_save_output
+```
+
+## `reproschema2fhir`
+The `reproschema2fhir` function is designed to convert reproschema activities and items into a FHIR Questionnaire resource as seen [here](reproschema/example/fhir).
+
+### CLI Usage
+
+The `reproschema2fhir` function has been integrated into a CLI tool, use the following command:
+```bash
+reproschema reproschema2fhir ./path/to/your_reproschema_activities ./path/to/directory_you_want_to_save_output
+```
 ### Notes
 1. The script requires an active internet connection to access the GitHub repository.

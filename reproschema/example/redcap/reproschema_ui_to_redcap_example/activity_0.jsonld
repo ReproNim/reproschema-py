@@ -1,0 +1,205 @@
+[
+    {
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0/contexts/reproschema",
+        "@type": "reproschema:ResponseActivity",
+        "@id": "uuid:e624476e-3571-453b-973e-84dcd4e8ce34",
+        "used": [
+            "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/items/gad7_1",
+            "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/GAD7_schema",
+            "https://raw.githubusercontent.com/sensein/b2aiprotocol/6a18846c6f04ca986a5ad1541e9e3aa1231ae792/b2ai_protocol_schema"
+        ],
+        "inLanguage": "en",
+        "startedAtTime": "2025-02-24T16:55:03.139Z",
+        "endedAtTime": "2025-02-24T16:55:05.436Z",
+        "wasAssociatedWith": {
+            "version": "1.0.0",
+            "url": "https://sensein.group/b2aiprotocol/",
+            "@id": "https://github.com/ReproNim/reproschema-ui"
+        },
+        "generated": "uuid:076ee87e-bc3e-40e1-abca-83e3133ba124"
+    },
+    {
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0/contexts/reproschema",
+        "@type": "reproschema:Response",
+        "@id": "uuid:076ee87e-bc3e-40e1-abca-83e3133ba124",
+        "wasAttributedTo": {
+            "@id": "d0aee496-7bf4-478a-9f10-91e1409978e2"
+        },
+        "isAbout": "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/items/gad7_1",
+        "value": 1
+    },
+    {
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0/contexts/reproschema",
+        "@type": "reproschema:ResponseActivity",
+        "@id": "uuid:b677c21c-363a-4d05-a74d-0f08c4c518c4",
+        "used": [
+            "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/items/gad7_2",
+            "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/GAD7_schema",
+            "https://raw.githubusercontent.com/sensein/b2aiprotocol/6a18846c6f04ca986a5ad1541e9e3aa1231ae792/b2ai_protocol_schema"
+        ],
+        "inLanguage": "en",
+        "startedAtTime": "2025-02-24T16:55:05.436Z",
+        "endedAtTime": "2025-02-24T16:55:06.925Z",
+        "wasAssociatedWith": {
+            "version": "1.0.0",
+            "url": "https://sensein.group/b2aiprotocol/",
+            "@id": "https://github.com/ReproNim/reproschema-ui"
+        },
+        "generated": "uuid:3ec7c5a9-a63e-40e5-b559-d5fe6774ef68"
+    },
+    {
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0/contexts/reproschema",
+        "@type": "reproschema:Response",
+        "@id": "uuid:3ec7c5a9-a63e-40e5-b559-d5fe6774ef68",
+        "wasAttributedTo": {
+            "@id": "d0aee496-7bf4-478a-9f10-91e1409978e2"
+        },
+        "isAbout": "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/items/gad7_2",
+        "value": 0
+    },
+    {
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0/contexts/reproschema",
+        "@type": "reproschema:ResponseActivity",
+        "@id": "uuid:ae55b48b-2600-4eda-83f9-249f42b1f1ea",
+        "used": [
+            "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/items/gad7_3",
+            "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/GAD7_schema",
+            "https://raw.githubusercontent.com/sensein/b2aiprotocol/6a18846c6f04ca986a5ad1541e9e3aa1231ae792/b2ai_protocol_schema"
+        ],
+        "inLanguage": "en",
+        "startedAtTime": "2025-02-24T16:55:06.925Z",
+        "endedAtTime": "2025-02-24T16:55:08.300Z",
+        "wasAssociatedWith": {
+            "version": "1.0.0",
+            "url": "https://sensein.group/b2aiprotocol/",
+            "@id": "https://github.com/ReproNim/reproschema-ui"
+        },
+        "generated": "uuid:55fb2dcb-8970-4494-8972-76f7204e1817"
+    },
+    {
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0/contexts/reproschema",
+        "@type": "reproschema:Response",
+        "@id": "uuid:55fb2dcb-8970-4494-8972-76f7204e1817",
+        "wasAttributedTo": {
+            "@id": "d0aee496-7bf4-478a-9f10-91e1409978e2"
+        },
+        "isAbout": "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/items/gad7_3",
+        "value": 1
+    },
+    {
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0/contexts/reproschema",
+        "@type": "reproschema:ResponseActivity",
+        "@id": "uuid:0a777d0e-f1c3-4e60-8788-9b1d51ca498d",
+        "used": [
+            "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/items/gad7_4",
+            "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/GAD7_schema",
+            "https://raw.githubusercontent.com/sensein/b2aiprotocol/6a18846c6f04ca986a5ad1541e9e3aa1231ae792/b2ai_protocol_schema"
+        ],
+        "inLanguage": "en",
+        "startedAtTime": "2025-02-24T16:55:08.300Z",
+        "endedAtTime": "2025-02-24T16:55:09.687Z",
+        "wasAssociatedWith": {
+            "version": "1.0.0",
+            "url": "https://sensein.group/b2aiprotocol/",
+            "@id": "https://github.com/ReproNim/reproschema-ui"
+        },
+        "generated": "uuid:4eef190e-7c56-4d1b-976c-a6aec1cd1ff9"
+    },
+    {
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0/contexts/reproschema",
+        "@type": "reproschema:Response",
+        "@id": "uuid:4eef190e-7c56-4d1b-976c-a6aec1cd1ff9",
+        "wasAttributedTo": {
+            "@id": "d0aee496-7bf4-478a-9f10-91e1409978e2"
+        },
+        "isAbout": "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/items/gad7_4",
+        "value": 1
+    },
+    {
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0/contexts/reproschema",
+        "@type": "reproschema:ResponseActivity",
+        "@id": "uuid:f6024538-c3f3-4356-9379-0bae1f48a37d",
+        "used": [
+            "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/items/gad7_5",
+            "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/GAD7_schema",
+            "https://raw.githubusercontent.com/sensein/b2aiprotocol/6a18846c6f04ca986a5ad1541e9e3aa1231ae792/b2ai_protocol_schema"
+        ],
+        "inLanguage": "en",
+        "startedAtTime": "2025-02-24T16:55:09.687Z",
+        "endedAtTime": "2025-02-24T16:55:11.150Z",
+        "wasAssociatedWith": {
+            "version": "1.0.0",
+            "url": "https://sensein.group/b2aiprotocol/",
+            "@id": "https://github.com/ReproNim/reproschema-ui"
+        },
+        "generated": "uuid:66caf685-359d-4944-bfbb-aba4d90b9eff"
+    },
+    {
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0/contexts/reproschema",
+        "@type": "reproschema:Response",
+        "@id": "uuid:66caf685-359d-4944-bfbb-aba4d90b9eff",
+        "wasAttributedTo": {
+            "@id": "d0aee496-7bf4-478a-9f10-91e1409978e2"
+        },
+        "isAbout": "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/items/gad7_5",
+        "value": 3
+    },
+    {
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0/contexts/reproschema",
+        "@type": "reproschema:ResponseActivity",
+        "@id": "uuid:79a78c90-f876-48ce-954c-219ce9952cea",
+        "used": [
+            "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/items/gad7_6",
+            "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/GAD7_schema",
+            "https://raw.githubusercontent.com/sensein/b2aiprotocol/6a18846c6f04ca986a5ad1541e9e3aa1231ae792/b2ai_protocol_schema"
+        ],
+        "inLanguage": "en",
+        "startedAtTime": "2025-02-24T16:55:11.150Z",
+        "endedAtTime": "2025-02-24T16:55:12.870Z",
+        "wasAssociatedWith": {
+            "version": "1.0.0",
+            "url": "https://sensein.group/b2aiprotocol/",
+            "@id": "https://github.com/ReproNim/reproschema-ui"
+        },
+        "generated": "uuid:62de3796-36de-4bda-97ff-64da928b6d1a"
+    },
+    {
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0/contexts/reproschema",
+        "@type": "reproschema:Response",
+        "@id": "uuid:62de3796-36de-4bda-97ff-64da928b6d1a",
+        "wasAttributedTo": {
+            "@id": "d0aee496-7bf4-478a-9f10-91e1409978e2"
+        },
+        "isAbout": "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/items/gad7_6",
+        "value": 1
+    },
+    {
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0/contexts/reproschema",
+        "@type": "reproschema:ResponseActivity",
+        "@id": "uuid:a484cee3-aef0-4fb8-ac38-eb689253f2b9",
+        "used": [
+            "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/items/gad7_7",
+            "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/GAD7_schema",
+            "https://raw.githubusercontent.com/sensein/b2aiprotocol/6a18846c6f04ca986a5ad1541e9e3aa1231ae792/b2ai_protocol_schema"
+        ],
+        "inLanguage": "en",
+        "startedAtTime": "2025-02-24T16:55:12.870Z",
+        "endedAtTime": "2025-02-24T16:55:14.139Z",
+        "wasAssociatedWith": {
+            "version": "1.0.0",
+            "url": "https://sensein.group/b2aiprotocol/",
+            "@id": "https://github.com/ReproNim/reproschema-ui"
+        },
+        "generated": "uuid:c6b6c364-f6db-414e-9a13-948a86e5136c"
+    },
+    {
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0/contexts/reproschema",
+        "@type": "reproschema:Response",
+        "@id": "uuid:c6b6c364-f6db-414e-9a13-948a86e5136c",
+        "wasAttributedTo": {
+            "@id": "d0aee496-7bf4-478a-9f10-91e1409978e2"
+        },
+        "isAbout": "https://raw.githubusercontent.com/ReproNim/reproschema-library/8c11e4fad32d09f351b8a432d5d2666ea9709170/activities/GAD7/items/gad7_7",
+        "value": 2
+    }
+]

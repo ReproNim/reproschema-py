@@ -1,0 +1,64 @@
+[
+    {
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0/contexts/reproschema",
+        "@type": "reproschema:ResponseActivity",
+        "@id": "uuid:fa53fe26-fb71-4ae0-9e3d-8edc28b6e311",
+        "used": [
+            "https://raw.githubusercontent.com/ReproNim/demo-protocol/main/activities/responsesReferenceActivity/activities/conditionalRefereeActivity_schema",
+            "https://raw.githubusercontent.com/ReproNim/demo-protocol/main/activities/responsesReferenceActivity/responsesReferenceActivity_schema",
+            "https://raw.githubusercontent.com/ReproNim/demo-protocol/main/DemoProtocol/DemoProtocol_schema"
+        ],
+        "inLanguage": "en",
+        "startedAtTime": "2025-02-19T16:58:20.339Z",
+        "endedAtTime": "2025-02-19T16:58:22.752Z",
+        "wasAssociatedWith": {
+            "version": "1.0.0",
+            "url": "https://www.repronim.org/reproschema-ui/",
+            "@id": "https://github.com/ReproNim/reproschema-ui"
+        },
+        "generated": "uuid:5166d0e9-f5a2-4f9b-bced-7ead6f0b5ab2"
+    },
+    {
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0/contexts/reproschema",
+        "@type": "reproschema:Response",
+        "@id": "uuid:5166d0e9-f5a2-4f9b-bced-7ead6f0b5ab2",
+        "wasAttributedTo": {
+            "@id": "9047bf9a-9b2f-4763-ac90-e23a8ffb0c28"
+        },
+        "isAbout": "https://raw.githubusercontent.com/ReproNim/demo-protocol/main/activities/responsesReferenceActivity/activities/conditionalRefereeActivity_schema",
+        "value": {
+            "https://raw.githubusercontent.com/ReproNim/demo-protocol/main/activities/selectActivity/items/radio_item": 1
+        }
+    },
+    {
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0/contexts/reproschema",
+        "@type": "reproschema:ResponseActivity",
+        "@id": "uuid:f5b1b4cd-cd72-41ad-b362-cda8881df4f8",
+        "used": [
+            "https://raw.githubusercontent.com/ReproNim/demo-protocol/main/activities/responsesReferenceActivity/activities/conditionalRefererActivity_schema",
+            "https://raw.githubusercontent.com/ReproNim/demo-protocol/main/activities/responsesReferenceActivity/responsesReferenceActivity_schema",
+            "https://raw.githubusercontent.com/ReproNim/demo-protocol/main/DemoProtocol/DemoProtocol_schema"
+        ],
+        "inLanguage": "en",
+        "startedAtTime": "2025-02-19T16:58:22.752Z",
+        "endedAtTime": "2025-02-19T16:58:33.990Z",
+        "wasAssociatedWith": {
+            "version": "1.0.0",
+            "url": "https://www.repronim.org/reproschema-ui/",
+            "@id": "https://github.com/ReproNim/reproschema-ui"
+        },
+        "generated": "uuid:00e0e09e-8426-4d86-946c-3f7cdd6aa85d"
+    },
+    {
+        "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/1.0.0/contexts/reproschema",
+        "@type": "reproschema:Response",
+        "@id": "uuid:00e0e09e-8426-4d86-946c-3f7cdd6aa85d",
+        "wasAttributedTo": {
+            "@id": "9047bf9a-9b2f-4763-ac90-e23a8ffb0c28"
+        },
+        "isAbout": "https://raw.githubusercontent.com/ReproNim/demo-protocol/main/activities/responsesReferenceActivity/activities/conditionalRefererActivity_schema",
+        "value": {
+            "https://raw.githubusercontent.com/ReproNim/demo-protocol/main/activities/Activity3/items/text_item": "test"
+        }
+    }
+]

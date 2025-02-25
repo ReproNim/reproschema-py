@@ -1,0 +1,28 @@
+{
+    "id": "gad_7_duration",
+    "category": "reproschema:Item",
+    "additionalNotesObj": [
+        {
+            "column": "Question Number (surveys only)",
+            "source": "redcap",
+            "value": NaN
+        }
+    ],
+    "prefLabel": {
+        "en": "gad_7_duration"
+    },
+    "question": {
+        "en": "Questionnaire Duration (seconds)"
+    },
+    "responseOptions": {
+        "maxValue": NaN,
+        "valueType": [
+            "xsd:decimal"
+        ]
+    },
+    "ui": {
+        "inputType": "float",
+        "readonlyValue": true
+    },
+    "@context": "https://raw.githubusercontent.com/ReproNim/reproschema/main/releases/1.0.0/reproschema"
+}

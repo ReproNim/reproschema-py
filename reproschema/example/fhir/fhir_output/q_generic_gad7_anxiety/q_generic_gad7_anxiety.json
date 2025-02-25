@@ -1,0 +1,220 @@
+{
+    "resourceType": "Questionnaire",
+    "id": "qgenericgad7anxietyschema",
+    "title": "q_generic_gad7_anxiety_schema",
+    "version": "1.4.0",
+    "status": "active",
+    "date": "2025-02-24T16:41:06Z",
+    "item": [
+        {
+            "linkId": "gad_7_session_id",
+            "type": "string",
+            "text": "Questionnaire - Metadata: Session ID"
+        },
+        {
+            "linkId": "gad_7_started_at",
+            "type": "string",
+            "text": "Questionnaire Started At"
+        },
+        {
+            "linkId": "gad_7_completed_at",
+            "type": "string",
+            "text": "Questionnaire Completed At"
+        },
+        {
+            "linkId": "gad_7_duration",
+            "type": "string",
+            "text": "Questionnaire Duration (seconds)"
+        },
+        {
+            "linkId": "nervous_anxious",
+            "type": "choice",
+            "text": "Over the last two weeks, how often have you been bothered by the following problems?: Feeling nervous, anxious, or on edge.",
+            "answerOption": [
+                {
+                    "valueString": "Not at all"
+                },
+                {
+                    "valueString": "Several days"
+                },
+                {
+                    "valueString": "More than half the days"
+                },
+                {
+                    "valueString": "Nearly every day"
+                }
+            ]
+        },
+        {
+            "linkId": "cant_control_worry",
+            "type": "choice",
+            "text": "Not being able to stop or control worrying.",
+            "answerOption": [
+                {
+                    "valueString": "Not at all"
+                },
+                {
+                    "valueString": "Several days"
+                },
+                {
+                    "valueString": "More than half the days"
+                },
+                {
+                    "valueString": "Nearly every day"
+                }
+            ]
+        },
+        {
+            "linkId": "worry_too_much",
+            "type": "choice",
+            "text": "Worrying too much about different things.",
+            "answerOption": [
+                {
+                    "valueString": "Not at all"
+                },
+                {
+                    "valueString": "Several days"
+                },
+                {
+                    "valueString": "More than half the days"
+                },
+                {
+                    "valueString": "Nearly every day"
+                }
+            ]
+        },
+        {
+            "linkId": "trouble_relaxing",
+            "type": "choice",
+            "text": "Trouble relaxing.",
+            "answerOption": [
+                {
+                    "valueString": "Not at all"
+                },
+                {
+                    "valueString": "Several days"
+                },
+                {
+                    "valueString": "More than half the days"
+                },
+                {
+                    "valueString": "Nearly every day"
+                }
+            ]
+        },
+        {
+            "linkId": "hard_to_sit_still",
+            "type": "choice",
+            "text": "Being so restless that it is hard to sit still.",
+            "answerOption": [
+                {
+                    "valueString": "Not at all"
+                },
+                {
+                    "valueString": "Several days"
+                },
+                {
+                    "valueString": "More than half the days"
+                },
+                {
+                    "valueString": "Nearly every day"
+                }
+            ]
+        },
+        {
+            "linkId": "easily_agitated",
+            "type": "choice",
+            "text": "Becoming easily annoyed or irritable.",
+            "answerOption": [
+                {
+                    "valueString": "Not at all"
+                },
+                {
+                    "valueString": "Several days"
+                },
+                {
+                    "valueString": "More than half the days"
+                },
+                {
+                    "valueString": "Nearly every day"
+                }
+            ]
+        },
+        {
+            "linkId": "afraid_of_things",
+            "type": "choice",
+            "text": "Feeling afraid, as if something awful might happen.",
+            "answerOption": [
+                {
+                    "valueString": "Not at all"
+                },
+                {
+                    "valueString": "Several days"
+                },
+                {
+                    "valueString": "More than half the days"
+                },
+                {
+                    "valueString": "Nearly every day"
+                }
+            ]
+        },
+        {
+            "linkId": "tough_to_work",
+            "type": "choice",
+            "text": "How difficult have they made it for you to do your work, take care of things at home, or get along with other people?",
+            "answerOption": [
+                {
+                    "valueString": "Not difficult at all"
+                },
+                {
+                    "valueString": "Somewhat difficult"
+                },
+                {
+                    "valueString": "Very difficult"
+                },
+                {
+                    "valueString": "Extremely difficult"
+                }
+            ],
+            "enableWhen": [
+                {
+                    "question": "nervous_anxious",
+                    "operator": ">",
+                    "answerString": "0"
+                },
+                {
+                    "question": "cant_control_worry",
+                    "operator": ">",
+                    "answerString": "0"
+                },
+                {
+                    "question": "worry_too_much",
+                    "operator": ">",
+                    "answerString": "0"
+                },
+                {
+                    "question": "trouble_relaxing",
+                    "operator": ">",
+                    "answerString": "0"
+                },
+                {
+                    "question": "hard_to_sit_still",
+                    "operator": ">",
+                    "answerString": "0"
+                },
+                {
+                    "question": "easily_agitated",
+                    "operator": ">",
+                    "answerString": "0"
+                },
+                {
+                    "question": "afraid_of_things",
+                    "operator": ">",
+                    "answerString": "0"
+                }
+            ],
+            "enableBehavior": "any"
+        }
+    ]
+}
