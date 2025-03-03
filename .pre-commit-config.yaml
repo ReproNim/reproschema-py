@@ -26,7 +26,7 @@ repos:
     rev: v2.4.0
     hooks:
     -   id: codespell
-        args: [--toml, pyproject.toml, --skip="CHANGELOG.md"]
+        args: [--toml, pyproject.toml, "--skip=CHANGELOG.md,*.csv"]
         additional_dependencies: [tomli]
 
 # Format TOML files
