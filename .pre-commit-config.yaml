@@ -1,5 +1,9 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+
+# excluding fixes for csv data files
+exclude: ".*\\.csv$"
+
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -26,7 +30,7 @@ repos:
     rev: v2.4.0
     hooks:
     -   id: codespell
-        args: [--toml, pyproject.toml, "--skip=CHANGELOG.md,*.csv"]
+        args: [--toml, pyproject.toml, "--skip=CHANGELOG.md"]
         additional_dependencies: [tomli]
 
 # Format TOML files
