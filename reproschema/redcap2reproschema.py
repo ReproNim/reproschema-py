@@ -106,20 +106,17 @@ def process_response_options(row, input_type_rc, value_type) -> Dict[str, Any]:
         response_options["multipleChoice"] = True
 
     if row.get("choices") and input_type:
-        if input_type in [
-            "radio",
-            "select",
-            "slider",
-        ]:
+        if input_type in ["radio", "select", "slider", "text"]:
             choices, choices_val_type_l = process_choices(
                 row.get("choices"), item_name=row["item_name"]
             )
-            response_options.update(
-                {
-                    "choices": choices,
-                    "valueType": choices_val_type_l,
-                }
-            )
+            if choices:
+                response_options.update(
+                    {
+                        "choices": choices,
+                        "valueType": choices_val_type_l,
+                    }
+                )
             if input_type == "slider":
                 response_options.update(
                     {
@@ -181,7 +178,7 @@ def process_choices(choices_str, item_name):
         parts = choice.split(",", 1)
         if len(parts) < 2:
             print(f"Warning: Invalid choice format '{choice}' in {item_name}")
-            continue
+            parts = parts * 2  # assuming the same value as label
 
         value_part = parts[0].strip()
         label_part = parts[1].strip()
