@@ -76,7 +76,7 @@ def process_input_value_types(input_type_rc, value_type_rc) -> (str, str):
         value_type = "xsd:string"
 
     return input_type, value_type
-    return input_type, value_type
+
 def process_response_options(row, input_type_rc, value_type) -> Dict[str, Any]:
     """
     Process response options from the row and return a dictionary of response options
@@ -98,7 +98,7 @@ def process_response_options(row, input_type_rc, value_type) -> Dict[str, Any]:
             {"name": {"en": "Yes"}, "value": 1},
             {"name": {"en": "No"}, "value": 0},
         ]
-    elif input_type_rc == "truefalse":  # Add this condition
+    elif input_type_rc == "truefalse": 
         response_options["choices"] = [
             {"name": {"en": "True"}, "value": 1},
             {"name": {"en": "False"}, "value": 0},
