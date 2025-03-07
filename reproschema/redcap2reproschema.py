@@ -20,8 +20,8 @@ from .redcap_mappings import (
     REDCAP_COLUMN_REQUIRED,
     RESPONSE_COND,
     VALUE_TYPE_MAP,
+    get_value_type,
 )
-
 
 def process_input_value_types(input_type_rc, value_type_rc) -> (str, str):
     """
@@ -47,31 +47,28 @@ def process_input_value_types(input_type_rc, value_type_rc) -> (str, str):
         input_type = INPUT_TYPE_MAP.get(input_type_rc)
 
     if value_type_rc:
-        if value_type_rc not in VALUE_TYPE_MAP:
-            raise ValueError(
-                f"Validation type '{value_type_rc}' is not supported, "
-                f"supported types are: {', '.join(VALUE_TYPE_MAP.keys())}"
-            )
-
-        value_type = VALUE_TYPE_MAP[value_type_rc]
+        # Get value type using the new function
+        value_type = get_value_type(value_type_rc)
 
         # Adjust input type based on validation
-        if value_type_rc == "integer" and input_type_rc == "text":
+        if value_type_rc.startswith("date") or value_type_rc.startswith("datetime"):
+            if input_type_rc == "text":
+                input_type = "date"
+        elif value_type_rc.startswith("time"):
+            if input_type_rc == "text":
+                input_type = "time"
+        elif value_type_rc == "integer" and input_type_rc == "text":
             input_type = "number"
         elif value_type_rc in ["float", "number"] and input_type_rc == "text":
             input_type = "float"
-        elif (
-            value_type_rc == "email" and input_type_rc == "text"
-        ):  # todo: what if input type is not text
+        elif value_type_rc == "email" and input_type_rc == "text":
             input_type = "email"
         elif value_type_rc == "signature" and input_type_rc == "text":
             input_type = "sign"
-        elif (
-            value_type == "xsd:date" and input_type_rc == "text"
-        ):  # anything that maps to date in RS #todo: what about time?
-            input_type = "date"
 
     elif input_type_rc == "yesno":
+        value_type = "xsd:boolean"
+    elif input_type_rc == "truefalse":
         value_type = "xsd:boolean"
     elif input_type_rc in COMPUTE_LIST:
         value_type = "xsd:integer"
@@ -79,8 +76,7 @@ def process_input_value_types(input_type_rc, value_type_rc) -> (str, str):
         value_type = "xsd:string"
 
     return input_type, value_type
-
-
+    return input_type, value_type
 def process_response_options(row, input_type_rc, value_type) -> Dict[str, Any]:
     """
     Process response options from the row and return a dictionary of response options
@@ -101,6 +97,11 @@ def process_response_options(row, input_type_rc, value_type) -> Dict[str, Any]:
         response_options["choices"] = [
             {"name": {"en": "Yes"}, "value": 1},
             {"name": {"en": "No"}, "value": 0},
+        ]
+    elif input_type_rc == "truefalse":  # Add this condition
+        response_options["choices"] = [
+            {"name": {"en": "True"}, "value": 1},
+            {"name": {"en": "False"}, "value": 0},
         ]
     elif input_type_rc == "checkbox":
         response_options["multipleChoice"] = True
@@ -418,7 +419,7 @@ def process_row(
 def process_csv(csv_file) -> (Dict[str, Any], list):
 
     df = pd.read_csv(
-        csv_file, encoding="utf-8-sig"
+        csv_file, encoding="utf-8-sig", low_memory=False
     )  # utf-8-sig handles BOM automatically
 
     df.columns = df.columns.map(

@@ -34,6 +34,7 @@ INPUT_TYPE_MAP = {
     "sql": "number",
     "yesno": "radio",
     "radio": "radio",
+    "truefalse": "radio",
     "checkbox": "radio",
     "descriptive": "static",
     "dropdown": "select",
@@ -45,23 +46,23 @@ INPUT_TYPE_MAP = {
 
 # Map certain field types directly to xsd types
 VALUE_TYPE_MAP = {
+    # Basic types
     "text": "xsd:string",
-    "date_": "xsd:date",
-    "date_mdy": "xsd:date",  # it's not exactly xsd:date
-    "datetime_seconds_mdy": "xsd:date",  # it's not exactly xsd:date
-    "date_ymd": "xsd:date",
-    "date_dmy": "xsd:date",
-    "datetime_": "xsd:dateTime",
-    "datetime_ymd": "xsd:dateTime",
-    "time_": "xsd:time",
     "email": "xsd:string",
     "phone": "xsd:string",
-    "number": "xsd:decimal",  # could be an integer, but have no idea of knowing)
+    "signature": "xsd:string",
+    "zipcode": "xsd:string",
+    "autocomplete": "xsd:string",
+    
+    # Numeric types
+    "number": "xsd:decimal",
     "float": "xsd:decimal",
     "integer": "xsd:integer",
-    "signature": "xsd: string",
-    "zipcode": "xsd: string",
-    "autocomplete": "xsd: string",
+    
+    # Date and time types will be handled by pattern matching in process_input_value_types
+    # These entries are kept for backward compatibility
+    "date_": "xsd:date",
+    "time_": "xsd:time",
 }
 
 # field types that should be used as compute
@@ -80,3 +81,27 @@ ADDITIONAL_NOTES_LIST = [
     "Question Number (surveys only)",
     "Field Annotation",
 ]
+
+def get_value_type(validation_type):
+    """
+    Determine the XSD value type based on REDCap validation type
+    
+    Args:
+        validation_type (str): Validation type from REDCap
+        
+    Returns:
+        str: XSD value type for ReproSchema
+    """
+    if validation_type is None:
+        return "xsd:string"
+        
+    # Handle date and time formats with pattern matching
+    if validation_type.startswith("date_"):
+        return "xsd:date"
+    elif validation_type.startswith("datetime_"):
+        return "xsd:dateTime"
+    elif validation_type.startswith("time"):
+        return "xsd:time"
+    
+    # For other types, use the mapping
+    return VALUE_TYPE_MAP.get(validation_type, "xsd:string")
