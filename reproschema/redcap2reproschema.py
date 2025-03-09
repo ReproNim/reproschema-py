@@ -23,6 +23,7 @@ from .redcap_mappings import (
     get_value_type,
 )
 
+
 def process_input_value_types(input_type_rc, value_type_rc) -> (str, str):
     """
     Process input type and value type to determine the final input type and value type,
@@ -51,7 +52,9 @@ def process_input_value_types(input_type_rc, value_type_rc) -> (str, str):
         value_type = get_value_type(value_type_rc)
 
         # Adjust input type based on validation
-        if value_type_rc.startswith("date") or value_type_rc.startswith("datetime"):
+        if value_type_rc.startswith("date") or value_type_rc.startswith(
+            "datetime"
+        ):
             if input_type_rc == "text":
                 input_type = "date"
         elif value_type_rc.startswith("time"):
@@ -77,6 +80,7 @@ def process_input_value_types(input_type_rc, value_type_rc) -> (str, str):
 
     return input_type, value_type
 
+
 def process_response_options(row, input_type_rc, value_type) -> Dict[str, Any]:
     """
     Process response options from the row and return a dictionary of response options
@@ -98,7 +102,7 @@ def process_response_options(row, input_type_rc, value_type) -> Dict[str, Any]:
             {"name": {"en": "Yes"}, "value": 1},
             {"name": {"en": "No"}, "value": 0},
         ]
-    elif input_type_rc == "truefalse": 
+    elif input_type_rc == "truefalse":
         response_options["choices"] = [
             {"name": {"en": "True"}, "value": 1},
             {"name": {"en": "False"}, "value": 0},
