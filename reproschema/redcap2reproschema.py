@@ -19,7 +19,6 @@ from .redcap_mappings import (
     REDCAP_COLUMN_MAP,
     REDCAP_COLUMN_REQUIRED,
     RESPONSE_COND,
-    VALUE_TYPE_MAP,
     get_value_type,
 )
 
@@ -52,14 +51,8 @@ def process_input_value_types(input_type_rc, value_type_rc) -> (str, str):
         value_type = get_value_type(value_type_rc)
 
         # Adjust input type based on validation
-        if value_type_rc.startswith("date") or value_type_rc.startswith(
-            "datetime"
-        ):
-            if input_type_rc == "text":
-                input_type = "date"
-        elif value_type_rc.startswith("time"):
-            if input_type_rc == "text":
-                input_type = "time"
+        if value_type == "xsd:date" and input_type_rc == "text":
+            input_type = "date"
         elif value_type_rc == "integer" and input_type_rc == "text":
             input_type = "number"
         elif value_type_rc in ["float", "number"] and input_type_rc == "text":

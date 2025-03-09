@@ -91,9 +91,6 @@ def get_value_type(validation_type):
     Returns:
         str: XSD value type for ReproSchema
     """
-    if validation_type is None:
-        return "xsd:string"
-
     # Handle date and time formats with pattern matching
     if validation_type.startswith("date_"):
         return "xsd:date"
@@ -101,6 +98,10 @@ def get_value_type(validation_type):
         return "xsd:dateTime"
     elif validation_type.startswith("time"):
         return "xsd:time"
-
-    # For other types, use the mapping
-    return VALUE_TYPE_MAP.get(validation_type, "xsd:string")
+    elif validation_type in VALUE_TYPE_MAP:
+        return VALUE_TYPE_MAP[validation_type]
+    else:
+        raise ValueError(
+            f"Validation type: {validation_type} is not supported yet. "
+            "Please add it to VALUE_TYPE_MAP."
+        )
