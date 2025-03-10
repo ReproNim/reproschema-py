@@ -1,937 +1,500 @@
-import os
 import re
 from pathlib import Path
+from typing import Any, Dict
 
-import numpy as np
 import pandas as pd
-import yaml
-from bs4 import BeautifulSoup
 
 from .context_url import CONTEXTFILE_URL
-from .jsonldutils import get_context_version
-from .models import Activity, Item, Protocol, write_obj_jsonld
-
-# All the mapping used in the code
-SCHEMA_MAP = {
-    "Variable / Field Name": "@id",  # column A
-    # "Item Display Name": "prefLabel", # there is no column for this
-    "Field Note": "description",
-    # TODO: often "Field Annotation" has "@HIDDEN" and other markers
-    # TODO: not sure if this can be every treated as description
-    # "Field Annotation": "isVis",  # column R
-    "Section Header": "preamble",  # column C (need double-check)
-    "Field Label": "question",  # column E
-    "Field Type": "inputType",  # column D
-    "Allow": "allow",  # TODO: I don't see this column in the examples
-    "Required Field?": "valueRequired",  # column M
-    "Text Validation Min": "minValue",  # column I
-    "Text Validation Max": "maxValue",  # column J
-    "Choices, Calculations, OR Slider Labels": "choices",  # column F
-    "Branching Logic (Show field only if...)": "visibility",  # column L
-    "Custom Alignment": "customAlignment",  # column N
-    # "Identifier?": "identifiable",  # column K # todo: should we remove the identifiers completely?
-    "responseType": "@type",  # not sre what to do with it
-}
-
-INPUT_TYPE_MAP = {
-    "calc": "number",
-    "sql": "number",
-    "yesno": "radio",
-    "radio": "radio",
-    "checkbox": "radio",
-    "descriptive": "static",
-    "dropdown": "select",
-    "text": "text",
-    "notes": "text",
-    "file": "documentUpload",
-    "slider": "slider",
-}
-
-# Map certain field types directly to xsd types
-VALUE_TYPE_MAP = {
-    "text": "xsd:string",
-    "date_": "xsd:date",
-    "date_mdy": "xsd:date",  # ?? new one TODO: not sure what to do with it, it's not xsd:date
-    "datetime_seconds_mdy": "xsd:date",  # ?? new one TODO: not sure what to do with it, it's not xsd:date
-    "date_ymd": "xsd:date",  # new one
-    "date_dmy": "xsd:date",
-    "datetime_": "xsd:dateTime",
-    "datetime_ymd": "xsd:dateTime",
-    "time_": "xsd:time",
-    "email": "xsd:string",
-    "phone": "xsd:string",
-    "number": "xsd:decimal",  # new one (TODO: could be integer, but have no idea of knowing)
-    "float": "xsd:decimal",  # new one
-    "integer": "xsd:integer",  # new one
-    "signature": "xsd: string",  # ?? new one
-    "zipcode": "xsd: string",  # new one
-    "autocomplete": "xsd: string",  # ?? new one
-}
-
-# TODO: removing for now, since it's not used
-# TODO: inputType is treated separately,
-# TODO: I don't see allow and shuffle in the redcap csv
-# TODO: I don't know what to do with customAlignment
-# UI_LIST = ["shuffle", "allow", "customAlignment"]
-COMPUTE_LIST = ["calc", "sql"]  # field types that should be used as compute
-# TODO:  minValue and max Value can be smteims str, ignored for now
-RESPONSE_COND = ["minValue", "maxValue"]
-ADDITIONAL_NOTES_LIST = ["Field Note", "Question Number (surveys only)"]
+from .convertutils import (
+    create_activity_schema,
+    create_protocol_schema,
+    normalize_condition,
+    parse_html,
+    read_check_yaml_config,
+)
+from .redcap_mappings import (
+    ADDITIONAL_NOTES_LIST,
+    COMPUTE_LIST,
+    INPUT_TYPE_MAP,
+    REDCAP_COLUMN_MAP,
+    REDCAP_COLUMN_REQUIRED,
+    RESPONSE_COND,
+    get_value_type,
+)
 
 
-def clean_dict_nans(obj):
-    """Remove NaN values from a dictionary."""
-    if not isinstance(obj, dict):
-        return obj
-    return {k: v for k, v in obj.items() if pd.notna(v)}
-
-
-# TODO: normalized condition should depend on the field type, e.g., for SQL
-def normalize_condition(condition_str, field_type=None):
-    """Normalize condition strings with specific handling for calc fields."""
-    if condition_str is None or pd.isna(condition_str):
-        return None
-
-    # Handle boolean values
-    if isinstance(condition_str, bool):
-        return condition_str
-    if isinstance(condition_str, str):
-        if condition_str.lower() == "true":
-            return True
-        if condition_str.lower() == "false":
-            return False
-
-    # Convert to string if needed
-    if not isinstance(condition_str, str):
-        try:
-            condition_str = str(condition_str)
-        except:
-            return None
-
-    try:
-
-        # Clean HTML
-        condition_str = BeautifulSoup(condition_str, "html.parser").get_text()
-        condition_str = condition_str.strip()
-
-        if not condition_str:
-            return None
-
-        # Common operator normalizations for all types
-        operator_replacements = [
-            (r"\s*\+\s*", " + "),  # Normalize spacing around +
-            (r"\s*-\s*", " - "),  # Normalize spacing around -
-            (r"\s*\*\s*", " * "),  # Normalize spacing around *
-            (r"\s*\/\s*", " / "),  # Normalize spacing around /
-            (r"\s*\(\s*", "("),  # Remove spaces after opening parenthesis
-            (r"\s*\)\s*", ")"),  # Remove spaces before closing parenthesis
-            (r"\s*,\s*", ","),  # Normalize spaces around commas
-            (r"\s+", " "),  # Normalize multiple spaces
-        ]
-
-        # Apply operator normalizations first
-        for pattern, repl in operator_replacements:
-            condition_str = re.sub(pattern, repl, condition_str)
-
-        # Then apply type-specific replacements
-        if field_type in ["sql", "calc"]:
-            # For calc fields, just remove brackets from field references
-            condition_str = re.sub(r"\[([^\]]+)\]", r"\1", condition_str)
-        else:
-            # For branching logic
-            replacements = [
-                (r"\(([0-9]*)\)", r"___\1"),
-                (r"([^>|<])=", r"\1=="),
-                (r"\[([^\]]*)\]", r"\1"),  # Remove brackets and extra spaces
-                (r"\bor\b", "||"),
-                (r"\band\b", "&&"),
-                (r'"', "'"),
-            ]
-            for pattern, repl in replacements:
-                condition_str = re.sub(pattern, repl, condition_str)
-
-        result = condition_str.strip()
-        return result
-
-    except Exception as e:
-        print(f"Error normalizing condition: {str(e)}")
-        return None
-
-
-def process_field_properties(data):
+def process_input_value_types(input_type_rc, value_type_rc) -> (str, str):
     """
-    Process field properties from REDCap data dictionary to create a property object.
-
-    This function extracts and processes field properties from a REDCap data dictionary row,
-    handling variable names, visibility conditions, field annotations, required fields,
-    and matrix group information.
+    Process input type and value type to determine the final input type and value type,
+    that can be used by ReproSchema.
 
     Args:
-        data (dict): A dictionary containing field data from the REDCap data dictionary.
-            Expected keys include:
-            - "Variable / Field Name": The field's variable name
-            - "Branching Logic (Show field only if...)": Conditional display logic
-            - "Field Annotation": Special field annotations (e.g., @READONLY, @HIDDEN)
-            - "Required Field?": Whether the field is required
-            - "Matrix Group Name": Matrix group identifier
-            - "Matrix Ranking?": Matrix ranking information
-
-    Returns:
-        dict: A property object containing processed field information with the following structure:
-            {
-                "variableName": str,  # The field's variable name
-                "isAbout": str,       # Reference to the item (e.g., "items/variable_name")
-                "isVis": str/bool,    # Visibility condition or False if hidden
-                "valueRequired": bool, # Optional, present if field is required
-                "matrixGroupName": str,# Optional, present if field is part of a matrix
-                "matrixRanking": bool  # Optional, present if matrix has ranking
-            }
-
-    Examples:
-        >>> data = {
-        ...     "Variable / Field Name": "age",
-        ...     "Required Field?": "y",
-        ...     "Branching Logic (Show field only if...)": "[gender] = '1'"
-        ... }
-        >>> process_field_properties(data)
-        {'variableName': 'age', 'isAbout': 'items/age', 'valueRequired': True, 'isVis': "gender == '1'"}
-    """
-    if not isinstance(data, dict):
-        return {"variableName": "unknown", "isAbout": "items/unknown"}
-
-    var_name = str(data.get("Variable / Field Name", "unknown")).strip()
-    prop_obj = {"variableName": var_name, "isAbout": f"items/{var_name}"}
-
-    # Handle required field consistently
-    if data.get("Required Field?", "").strip().lower() == "y":
-        prop_obj["valueRequired"] = True
-
-    # Set isVis only when needed
-    condition = data.get("Branching Logic (Show field only if...)")
-    if pd.notna(condition):
-        normalized = normalize_condition(condition)
-        if normalized:
-            prop_obj["isVis"] = normalized
-
-    # Handle field annotations that affect visibility
-    annotation = data.get("Field Annotation", "").strip().upper()
-    if annotation:
-        if (
-            "@HIDDEN" in annotation
-            or "@READONLY" in annotation
-            or "@CALCTEXT" in annotation
-        ):
-            prop_obj["isVis"] = False
-
-    field_type = data.get("Field Type", "").strip().lower()
-    if field_type in ["calc", "sql"]:
-        prop_obj["isVis"] = False
-
-    matrix_group = data.get("Matrix Group Name")
-    if pd.notna(matrix_group):
-        prop_obj["matrixGroupName"] = str(matrix_group).strip()
-        if pd.notna(data.get("Matrix Ranking?")):
-            prop_obj["matrixRanking"] = data["Matrix Ranking?"]
-
-    return prop_obj
-
-
-def parse_field_type_and_value(field):
-    """
-    Parse field type and determine appropriate value type.
-
-    Args:
-        field: Dictionary containing field information
+        input_type_rc (str): Input type from redcap form
+        value_type_rc (str): Value type from redcap form
 
     Returns:
         tuple: (input_type, value_type)
+        input_type (str): Final input type for ReproSchema
+        value_type (str): Final value type for ReproSchema
     """
-    try:
-        # Get and validate field type
-        field_type = field.get("Field Type", "")
-        if pd.isna(field_type):
-            field_type = ""
-        field_type = str(field_type).strip().lower()
-
-        # Validate field type
-        if field_type and field_type not in INPUT_TYPE_MAP:
-            raise ValueError(
-                f"Field type '{field_type}' is not currently supported, "
-                f"supported types are: {', '.join(INPUT_TYPE_MAP.keys())}"
-            )
-
-        input_type = INPUT_TYPE_MAP.get(field_type, "text")
-        value_type = "xsd:string"  # Default value type
-
-        # Get validation type
-        validation_type = field.get(
-            "Text Validation Type OR Show Slider Number"
+    # If input type in redcap is set but not recognized, raise an error
+    if input_type_rc not in INPUT_TYPE_MAP:
+        raise ValueError(
+            f"Input type '{input_type_rc}' from redcap is not currently supported, "
+            f"supported types are: {', '.join(INPUT_TYPE_MAP.keys())}"
         )
-        if pd.notna(validation_type):
-            validation_type = str(validation_type).strip().lower()
+    elif input_type_rc:
+        input_type = INPUT_TYPE_MAP.get(input_type_rc)
 
-            if validation_type:
-                if validation_type not in VALUE_TYPE_MAP:
-                    raise ValueError(
-                        f"Validation type '{validation_type}' is not supported, "
-                        f"supported types are: {', '.join(VALUE_TYPE_MAP.keys())}"
-                    )
+    if value_type_rc:
+        # Get value type using the new function
+        value_type = get_value_type(value_type_rc)
 
-                value_type = VALUE_TYPE_MAP[validation_type]
+        # Adjust input type based on validation
+        if value_type == "xsd:date" and input_type_rc == "text":
+            input_type = "date"
+        elif value_type_rc == "integer" and input_type_rc == "text":
+            input_type = "number"
+        elif value_type_rc in ["float", "number"] and input_type_rc == "text":
+            input_type = "float"
+        elif value_type_rc == "email" and input_type_rc == "text":
+            input_type = "email"
+        elif value_type_rc == "signature" and input_type_rc == "text":
+            input_type = "sign"
 
-                # Adjust input type based on validation
-                if validation_type == "integer" and field_type == "text":
-                    input_type = "number"
-                elif (
-                    validation_type in ["float", "number"]
-                    and field_type == "text"
-                ):
-                    input_type = "float"
-                elif validation_type == "email" and field_type == "text":
-                    input_type = "email"
-                elif validation_type == "signature" and field_type == "text":
-                    input_type = "sign"
-                elif value_type == "xsd:date" and field_type == "text":
-                    input_type = "date"
+    elif input_type_rc == "yesno":
+        value_type = "xsd:boolean"
+    elif input_type_rc == "truefalse":
+        value_type = "xsd:boolean"
+    elif input_type_rc in COMPUTE_LIST:
+        value_type = "xsd:integer"
+    else:  # if no validation type is set, default to string
+        value_type = "xsd:string"
 
-        elif field_type == "yesno":
-            value_type = "xsd:boolean"
-        elif field_type in COMPUTE_LIST:
-            value_type = "xsd:integer"
-
-        # Handle radio/select fields with choices
-        if input_type in ["radio", "select", "slider"]:
-            choices = field.get("Choices, Calculations, OR Slider Labels")
-            if pd.notna(choices):
-                _, value_types = process_choices(
-                    choices, field.get("Variable / Field Name", "unknown")
-                )
-                if value_types:
-                    value_type = value_types[
-                        0
-                    ]  # Use first value type if multiple exist
-
-        return input_type, value_type
-
-    except Exception as e:
-        print(f"Error parsing field type: {str(e)}")
-        return "text", "xsd:string"  # Return defaults on error
+    return input_type, value_type
 
 
-def process_choices(choices_str, field_name):
+def process_response_options(row, input_type_rc, value_type) -> Dict[str, Any]:
     """
-    Process REDCap choice options into structured format.
+    Process response options from the row and return a dictionary of response options
 
     Args:
-        choices_str: String containing choice options
-        field_name: Field name for error reporting
-
+        row (dict): Dictionary containing all fields from the redcap csv row
+        input_type_rc (str): Input type from redcap form
+        value_type (str): ReproSchema value type
     Returns:
-        tuple: (choices list, value types list) or (None, None) if invalid
+        dict: Response options
     """
-    try:
-        if pd.isna(choices_str) or not isinstance(choices_str, str):
-            return None, None
+    input_type = INPUT_TYPE_MAP[input_type_rc]
+    # Default response options
+    response_options = {"valueType": [value_type]}
 
-        choices_str = choices_str.strip()
-        if not choices_str:
-            return None, None
+    # Handle specific input_type_rc that modify other properties (not only inputType and valueType)
+    if input_type_rc == "yesno":
+        response_options["choices"] = [
+            {"name": {"en": "Yes"}, "value": 1},
+            {"name": {"en": "No"}, "value": 0},
+        ]
+    elif input_type_rc == "truefalse":
+        response_options["choices"] = [
+            {"name": {"en": "True"}, "value": 1},
+            {"name": {"en": "False"}, "value": 0},
+        ]
+    elif input_type_rc == "checkbox":
+        response_options["multipleChoice"] = True
 
-        choices = []
-        choices_value_type = set()
-
-        # Split choices by pipe
-        choice_items = [c.strip() for c in choices_str.split("|") if c.strip()]
-
-        if len(choice_items) < 1:
-            print(f"Warning: No valid choices found in {field_name}")
-            return None, None
-
-        for choice in choice_items:
-            # Split on first comma only
-            parts = choice.split(",", 1)
-            if len(parts) < 2:
-                print(
-                    f"Warning: Invalid choice format '{choice}' in {field_name}"
+    if row.get("choices") and input_type:
+        if input_type in ["radio", "select", "slider", "text"]:
+            choices, choices_val_type_l = process_choices(
+                row.get("choices"), item_name=row["item_name"]
+            )
+            if choices:
+                response_options.update(
+                    {
+                        "choices": choices,
+                        "valueType": choices_val_type_l,
+                    }
                 )
-                continue
-
-            value_part = parts[0].strip()
-            label_part = parts[1].strip()
-
-            if not label_part:
-                print(
-                    f"Warning: Empty label in choice '{choice}' in {field_name}"
+            if input_type == "slider":
+                response_options.update(
+                    {
+                        "minValue": 0,
+                        "maxValue": 100,
+                    }
                 )
-                continue
+        elif input_type_rc in COMPUTE_LIST:
+            pass  # taken care below, it's not really choices
+        else:
+            print(
+                f"Warning/Error: Unexpected input type for choices in {row['item_name']}: input type {input_type} "
+                f"(original in redcap: {input_type_rc}), values: {row.get('choices')}"
+            )
+            # raise ValueError(
+            #     f"Unexpected input type '{input_type}' (original in redcap: {input_type_rc}) "
+            #     f"for item with choices in {item['item_name']}"
+            # )
 
-            # Determine value type and convert value
+    for key in RESPONSE_COND:
+        if row.get(key) is not None and str(row.get(key)).strip():
             try:
-                # First try integer conversion
-                if value_part == "0":
-                    value = 0
-                    value_type = "xsd:integer"
-                elif value_part.isdigit() and value_part[0] == "0":
-                    value = value_part
-                    value_type = "xsd:string"
+                if value_type == "xsd:integer":
+                    parsed_value = int(row[key])
+                elif value_type == "xsd:decimal":
+                    parsed_value = float(row[key])
                 else:
-                    try:
-                        value = int(value_part)
-                        value_type = "xsd:integer"
-                    except ValueError:
-                        try:
-                            value = float(value_part)
-                            value_type = "xsd:decimal"
-                        except ValueError:
-                            value = value_part
-                            value_type = "xsd:string"
-
-                choices_value_type.add(value_type)
-
-                # Create choice object
-                parsed_label = parse_html(label_part)
-                choice_obj = {
-                    "name": (
-                        parsed_label if parsed_label else {"en": label_part}
-                    ),
-                    "value": value,
-                }
-                choices.append(choice_obj)
-
-            except (ValueError, TypeError) as e:
+                    print(
+                        f"Warning: {key} is not supported for value types other than integer or decimal, value type provided is {value_type}"
+                    )
+                    continue
+                response_options[key] = parsed_value
+            except ValueError:
                 print(
-                    f"Warning: Error processing choice '{choice}' in {field_name}: {str(e)}"
+                    f"Warning/Error: Value {row[key]} is not a valid {value_type}"
                 )
                 continue
+    return response_options
 
-        if not choices:
-            return None, None
 
-        return choices, list(choices_value_type)
+def process_choices(choices_str, item_name):
+    if len(choices_str.split("|")) < 2:
+        print(
+            f"WARNING: {item_name}: I found only one option for choice: {choices_str}"
+        )
 
-    except Exception as e:
-        print(f"Error processing choices for {field_name}: {str(e)}")
+    choices = []
+    choices_value_type = set()
+
+    # Split choices by pipe
+    choice_items = [c.strip() for c in choices_str.split("|") if c.strip()]
+
+    if len(choice_items) < 1:
+        print(f"Warning: No valid choices found in {item_name}")
         return None, None
 
+    for choice in choice_items:
+        # Split on first comma only
+        parts = choice.split(",", 1)
+        if len(parts) < 2:
+            print(f"Warning: Invalid choice format '{choice}' in {item_name}")
+            parts = parts * 2  # assuming the same value as label
 
-def parse_html(input_string, default_language="en"):
+        value_part = parts[0].strip()
+        label_part = parts[1].strip()
+
+        if not label_part:
+            print(f"Warning: Empty label in choice '{choice}' in {item_name}")
+            continue
+
+        # Determine value type and convert value
+        if value_part == "0":
+            value = 0
+            value_type = "xsd:integer"
+        elif (
+            value_part.isdigit() and value_part[0] == "0"
+        ):  # and not choices_value_type.union({"xsd:decimal", "xsd:integer"}):
+            value = value_part
+            value_type = "xsd:string"
+        else:
+            try:
+                value = int(value_part)
+                value_type = "xsd:integer"
+            except ValueError:
+                try:
+                    value = float(value_part)
+                    value_type = "xsd:decimal"
+                except ValueError:
+                    value = value_part
+                    value_type = "xsd:string"
+        choices_value_type.add(value_type)
+
+        # Create choice object
+        choice_obj = {
+            "name": parse_html(label_part) or {"en": label_part},
+            "value": value,
+        }
+        choices.append(choice_obj)
+    # sorting to make sure the order is consistent
+    choices_value_type = list(choices_value_type)
+    choices_value_type.sort()
+    return (choices, choices_value_type) if choices else (None, None)
+
+
+def process_preamble(
+    row, prior_preamble_info, input_type_rc
+) -> (str, Dict[str, str]):
     """
-    Parse HTML content and extract language-specific text.
-
+    Function to get preamble information from the row and preamble from the previous row.
+    The preamble will be propagated it if necessary.
     Args:
-        input_string: The HTML string to parse
-        default_language: Default language code (default: "en")
+        row: Dictionary containing all fields from the redcap csv row
+        prior_preamble_info: Dictionary containing preamble information from the previous row
+        input_type_rc: Original input type from redcap form
 
     Returns:
-        dict: Dictionary of language codes to text content, or None if invalid
+        tuple: (item_preamble, preamble_info_propagate)
+        item_preamble: Preamble text for the current item
+        preamble_info_propagate: Dictionary containing preamble information to propagate to the next item
     """
-    try:
-        if pd.isna(input_string):
-            return None
+    preamble, preamble_gr, preamble_ind = None, None, None
+    # checking if preamble is set in the current row
+    if row.get("preamble") and str(row.get("preamble")).strip():
+        preamble = parse_html(row["preamble"])
+        # setting the preamble index to 0 for new preamble
+        preamble_ind = 0
+        # checking if a group is set in the current row
+        if row.get("matrixGroup") and str(row.get("matrixGroup")).strip():
+            preamble_gr = str(row.get("matrixGroup")).strip()
+        # if group is not set, and the item is a descriptive type, I use preamble only for this row, will not be propagated
+        elif input_type_rc == "descriptive":
+            preamble_ind = None
+    # if there is no preamble in the current row, check if there is a preamble from the previous row to propagate
+    elif prior_preamble_info and prior_preamble_info.get("preamble"):
+        preamble_previous, preamble_gr_previous, preamble_ind_previous = [
+            prior_preamble_info[key] for key in ["preamble", "group", "index"]
+        ]
+        # if there is no group set in the previous row, propagate the preamble
+        if preamble_gr_previous is None:
+            preamble = preamble_previous
+            # sometimes the group is set in the row after the preamble, so check again for the group
+            if preamble_ind_previous == 0:
+                if (
+                    row.get("matrixGroup")
+                    and str(row.get("matrixGroup")).strip()
+                ):
+                    preamble_gr = str(row.get("matrixGroup")).strip()
+            preamble_ind = preamble_ind_previous + 1
+        # if the preamble from the previous row is set to the specific group, the current row should be in the same group
+        elif (
+            row.get("matrixGroup")
+            and str(row.get("matrixGroup")).strip() == preamble_gr_previous
+        ):
+            preamble = preamble_previous
+            preamble_gr = preamble_gr_previous
+            preamble_ind = preamble_ind_previous + 1
 
-        result = {}
+    # setting the preamble used for the specific row/item
+    if preamble:
+        item_preamble = preamble
+    else:
+        item_preamble = None
 
-        # Handle non-string input
-        if not isinstance(input_string, str):
-            try:
-                input_string = str(input_string)
-            except:
-                return None
-
-        # Clean input string
-        input_string = input_string.strip()
-        if not input_string:
-            return None
-
-        # Parse HTML
-        soup = BeautifulSoup(input_string, "html.parser")
-
-        # Find elements with lang attribute
-        lang_elements = soup.find_all(True, {"lang": True})
-
-        if lang_elements:
-            # Process elements with language tags
-            for element in lang_elements:
-                lang = element.get("lang", default_language).lower()
-                text = element.get_text(strip=False)
-                if text:
-                    result[lang] = text
-
-            # If no text was extracted but elements exist, try getting default text
-            if not result:
-                text = soup.get_text(strip=False)
-                if text:
-                    result[default_language] = text
-        else:
-            # No language tags found, use default language
-            text = soup.get_text(strip=False)
-            if text:
-                result[default_language] = text
-
-        return result if result else None
-
-    except Exception as e:
-        print(f"Error parsing HTML: {str(e)}")
-        # Try to return plain text if HTML parsing fails
-        try:
-            if isinstance(input_string, str) and input_string.strip():
-                return {default_language: input_string.strip()}
-        except:
-            pass
-        return None
+    # setting preamble information to propagate to the next item
+    if preamble and preamble_ind is not None:
+        preamble_info_propagate = {
+            "preamble": preamble,
+            "group": preamble_gr,
+            "index": preamble_ind,
+        }
+    else:
+        preamble_info_propagate = None
+    return item_preamble, preamble_info_propagate
 
 
 def process_row(
-    abs_folder_path,
-    schema_context_url,
-    form_name,
-    field,
-    add_preamble=True,
-):
-    """Process a row of the REDCap data and generate the jsonld file for the item."""
-    item_id = field.get(
-        "Variable / Field Name", ""
-    )  # item_id should always be the Variable name in redcap
-    rowData = {
+    row: Dict[str, Any], prior_preamble_info=None
+) -> (Dict[str, Any], Dict[str, str], Dict[str, Any], Dict[str, Any]):
+    """
+    Process a single row of the CSV and return structured data for an item,
+    preamble information that can be propagated to the next item.
+    It also collects information needed for activity schema.
+    Args:
+        row: Dictionary containing all fields from the redcap csv row
+        prior_preamble_info: Dictionary containing preamble information from the previous row
+
+    Returns:
+        tuple: (item_data, preamble_info_propagate, compute, addProperties)
+        item_data: Dictionary containing structured data for the item
+        preamble_info_propagate: Dictionary containing preamble information to propagate to the next item
+        compute: Dictionary containing compute information for the activity schema
+        addProperties: Dictionary containing additional properties for the activity schema
+    """
+    # processing input type and value type that will be used by reproschema, and original one from redcap
+    input_type_rc = str(row.get("inputType", "")).strip().lower()
+    value_type_rc = str(row.get("validation", "")).strip().lower()
+    if not input_type_rc:
+        input_type_rc = "text"
+
+    input_type, value_type = process_input_value_types(
+        input_type_rc, value_type_rc
+    )
+    item_data = {
         "category": "reproschema:Item",
-        "id": item_id,
-        "prefLabel": {"en": item_id},  # there is no prefLabel in REDCap
-        # "description": {"en": f"{item_id} of {form_name}"},
+        "id": row["item_name"],
+        "prefLabel": {"en": row["item_name"]},
+        "question": parse_html(row["question"]),
+        "ui": {"inputType": input_type},
     }
 
-    field_type = field.get("Field Type")
-    if pd.isna(field_type):
-        field_type = ""
-    input_type, value_type = parse_field_type_and_value(field)
+    item_data["responseOptions"] = process_response_options(
+        row, input_type_rc, value_type
+    )
 
-    # Initialize ui object with common properties
-    ui_obj = {"inputType": input_type}
-
-    # Handle readonly status first - this affects UI behavior
-    annotation = field.get("Field Annotation")
-    if annotation is not None and not pd.isna(annotation):
-        annotation = str(annotation).upper()
+    # setting readonly to true based on annotation and field type
+    if row.get("annotation"):
+        annotation = row.get("annotation").upper()
         if (
             "@READONLY" in annotation
             or "@HIDDEN" in annotation
             or "@CALCTEXT" in annotation
-            or field_type in COMPUTE_LIST
         ):
-            ui_obj["readonlyValue"] = True
+            item_data["ui"]["readonlyValue"] = True
+    elif input_type_rc in COMPUTE_LIST + ["descriptive"]:
+        item_data["ui"]["readonlyValue"] = True
 
-    rowData["ui"] = ui_obj
-    rowData["responseOptions"] = {"valueType": [value_type]}
+    # adding information from all "unprocessed" columns to the additionalNotesObj
+    for key_orig in ADDITIONAL_NOTES_LIST:
+        key = REDCAP_COLUMN_MAP.get(key_orig)
+        if row.get(key) and str(row.get(key)).strip():
+            notes_obj = {
+                "source": "redcap",
+                "column": key_orig,
+                "value": str(row.get(key)).strip(),
+            }
+            item_data.setdefault("additionalNotesObj", []).append(notes_obj)
 
-    # Handle specific field type configurations
-    if field_type == "yesno":
-        rowData["responseOptions"]["choices"] = [
-            {"name": {"en": "Yes"}, "value": 1},
-            {"name": {"en": "No"}, "value": 0},
-        ]
-    elif field_type == "checkbox":
-        rowData["responseOptions"]["multipleChoice"] = True
-
-    for key, value in field.items():
-        if pd.isna(value):
-            continue
-        schema_key = SCHEMA_MAP.get(key)
-        if not schema_key:
-            continue
-
-        if schema_key in ["question", "description"]:
-            parsed_value = parse_html(value)
-            if parsed_value:
-                rowData[schema_key] = parsed_value
-
-        elif schema_key == "preamble" and add_preamble:
-            parsed_value = parse_html(value)
-            if parsed_value:
-                rowData[schema_key] = parsed_value
-
-        elif schema_key == "allow":
-            ui_obj["allow"] = value.split(", ")
-
-        # choices are only for some input_types
-        elif schema_key == "choices" and input_type in [
-            "radio",
-            "select",
-            "slider",
-        ]:
-            choices, choices_val_type_l = process_choices(
-                value, field_name=field["Variable / Field Name"]
-            )
-            if choices is not None:
-                if input_type == "slider":
-                    rowData["responseOptions"].update(
-                        {
-                            "choices": choices,
-                            "valueType": choices_val_type_l,
-                            "minValue": 0,
-                            "maxValue": 100,
-                        }
-                    )
-                else:
-                    rowData["responseOptions"].update(
-                        {
-                            "choices": choices,
-                            "valueType": choices_val_type_l,
-                        }
-                    )
-        # for now adding only for numerics, sometimes can be string or date.. TODO
-        elif schema_key in RESPONSE_COND and value_type in [
-            "xsd:integer",
-            "xsd:decimal",
-        ]:
-            try:
-                if value_type == "xsd:integer":
-                    parsed_value = int(value)
-                else:
-                    parsed_value = float(value)
-                rowData["responseOptions"][schema_key] = parsed_value
-            except ValueError:
-                print(f"Warning: Value {value} is not a valid {value_type}")
-                continue
-
-        # elif key == "Identifier?" and value:
-        #     identifier_val = value.lower() == "y"
-        #     rowData.update(
-        #         {
-        #             schema_map[key]: [
-        #                 {"legalStandard": "unknown", "isIdentifier": identifier_val}
-        #             ]
-        #         }
-        #     )
-
-        elif key in ADDITIONAL_NOTES_LIST:
-            value_str = str(value).strip()
-            if value_str:
-                notes_obj = {
-                    "source": "redcap",
-                    "column": key,
-                    "value": f'"{value_str}"',
-                }
-                rowData.setdefault("additionalNotesObj", []).append(notes_obj)
-
-    cleaned_data = clean_dict_nans(rowData)
-    if not cleaned_data or "id" not in cleaned_data:
-        raise ValueError(f"Missing required fields for item {item_id}")
-
-    it = Item(**rowData)
-    file_path_item = os.path.join(
-        f"{abs_folder_path}",
-        "activities",
-        form_name,
-        "items",
-        item_id,
+    # processing preamble
+    item_preamble, preamble_info_propagate = process_preamble(
+        row, prior_preamble_info, input_type_rc
     )
+    if item_preamble:
+        item_data["preamble"] = item_preamble
 
-    write_obj_jsonld(it, file_path_item, contextfile_url=schema_context_url)
+    # processing information needed for the activity schema
+    # checking compute
+    compute = None
+    if input_type_rc in COMPUTE_LIST:
+        condition = normalize_condition(row.get("choices"))
+        compute = {"variableName": row["item_name"], "jsExpression": condition}
+    elif (
+        row.get("annotation") and "@CALCTEXT" in row.get("annotation").upper()
+    ):
+        calc_text = row.get("annotation")
+        match = re.search(r"@CALCTEXT\((.*)\)", normalize_condition(calc_text))
+        if match:
+            js_expression = match.group(1)
+            compute = {
+                "variableName": row["item_name"],
+                "jsExpression": js_expression,
+            }
+        else:
+            print(
+                f"Warning/Error: Invalid @CALCTEXT annotation in {row['item_name']}: {calc_text}"
+            )
+    # for compute items, we should use description instead of question
+    if compute:
+        item_data["description"] = item_data.pop("question")
 
-
-# create activity
-def create_form_schema(
-    abs_folder_path,
-    schema_context_url,
-    redcap_version,
-    form_name,
-    activity_display_name,
-    order,
-    bl_list,
-    matrix_list,
-    compute_list,
-    preamble=None,
-):
-    """
-    Create the JSON-LD schema for an Activity.
-
-    Args:
-        abs_folder_path (str/Path): Path to the output directory
-        schema_context_url (str): URL for the schema context
-        redcap_version (str): Version of REDCap being used
-        form_name (str): Name of the form
-        activity_display_name (str): Display name for the activity
-        order (list): List of items in order
-        bl_list (list): List of branching logic properties
-        matrix_list (list): List of matrix group properties
-        compute_list (list): List of computation fields
-        preamble (str, optional): Form preamble text
-    """
-    try:
-        # Validate inputs
-        if (
-            pd.isna(form_name).any()
-            if isinstance(form_name, pd.Series)
-            else pd.isna(form_name)
-        ):
-            raise ValueError("Form name is required")
-
-        # Set default activity display name if not provided
-        if (
-            pd.isna(activity_display_name).any()
-            if isinstance(activity_display_name, pd.Series)
-            else pd.isna(activity_display_name)
-        ):
-            activity_display_name = str(form_name).replace("_", " ").title()
-
-        # Clean and validate order list
-        clean_order = []
-        if order is not None:
-            if isinstance(order, (list, pd.Series, np.ndarray)):
-                clean_order = [
-                    str(item).strip()
-                    for item in order
-                    if not (isinstance(item, pd.Series) and item.isna().any())
-                    and not pd.isna(item)
-                ]
-                clean_order = list(dict.fromkeys(clean_order))
-
-        # Clean and validate bl_list
-        clean_bl_list = []
-        if bl_list is not None:
-            if isinstance(bl_list, (list, pd.Series, np.ndarray)):
-                clean_bl_list = [
-                    prop
-                    for prop in bl_list
-                    if prop is not None and isinstance(prop, dict)
-                ]
-
-        # Initialize schema
-        json_ld = {
-            "category": "reproschema:Activity",
-            "id": f"{form_name}_schema",
-            "prefLabel": {"en": str(activity_display_name)},
-            "schemaVersion": get_context_version(schema_context_url),
-            "version": redcap_version,
-            "ui": {
-                "order": clean_order,
-                "addProperties": clean_bl_list,
-                "shuffle": False,
-            },
-        }
-
-        # Process preamble if present
-        if preamble is not None:
-            if isinstance(preamble, pd.Series):
-                if not preamble.isna().all():
-                    parsed_preamble = parse_html(
-                        preamble.iloc[0] if len(preamble) > 0 else None
-                    )
-                    if parsed_preamble:
-                        json_ld["preamble"] = parsed_preamble
-            elif not pd.isna(preamble):
-                parsed_preamble = parse_html(preamble)
-                if parsed_preamble:
-                    json_ld["preamble"] = parsed_preamble
-
-        # Process matrix info if present
-        if matrix_list and len(matrix_list) > 0:
-            json_ld["matrixInfo"] = matrix_list
-
-        # Process compute list if present
-        if compute_list and len(compute_list) > 0:
-            json_ld["compute"] = compute_list
-
-        # Create Activity object and write to file
-        act = Activity(**json_ld)
-        path = Path(abs_folder_path) / "activities" / str(form_name)
-        path.mkdir(parents=True, exist_ok=True)
-
-        write_obj_jsonld(
-            act,
-            path / f"{form_name}_schema",
-            contextfile_url=schema_context_url,
-        )
-
-    except Exception as e:
-        raise Exception(
-            f"Error creating form schema for {form_name}: {str(e)}"
-        )
-
-
-def process_activities(activity_name, protocol_visibility_obj, protocol_order):
-    # Set default visibility condition
-    protocol_visibility_obj[activity_name] = True
-
-    protocol_order.append(activity_name)
-
-
-def create_protocol_schema(
-    abs_folder_path,
-    schema_context_url,
-    redcap_version,
-    protocol_name,
-    protocol_display_name,
-    protocol_description,
-    protocol_order,
-    protocol_visibility_obj,
-):
-    # Construct the protocol schema
-    protocol_schema = {
-        "category": "reproschema:Protocol",
-        "id": f"{protocol_name}_schema",
-        "prefLabel": {"en": protocol_display_name},
-        # "altLabel": {"en": f"{protocol_name}_schema"}, todo: should we add this?
-        "description": {"en": protocol_description},
-        "schemaVersion": "1.0.0-rc4",
-        "version": redcap_version,
-        "ui": {
-            "addProperties": [],
-            "order": [],
-            "shuffle": False,
-        },
+    # setting default properties
+    addProperties = {
+        "variableName": item_data["id"],
+        "isAbout": f"items/{item_data['id']}",
+        "valueRequired": False,
+        "isVis": True,
     }
-
-    # Populate addProperties list
-    for activity in protocol_order:
-        full_path = f"../activities/{activity}/{activity}_schema"
-        add_property = {
-            "isAbout": full_path,
-            "variableName": f"{activity}_schema",
-            # Assuming activity name as prefLabel, update as needed
-            "prefLabel": {"en": activity.replace("_", " ").title()},
-            "isVis": protocol_visibility_obj.get(
-                activity, True
-            ),  # Default to True if not specified
-        }
-        protocol_schema["ui"]["addProperties"].append(add_property)
-        # Add the full path to the order list
-        protocol_schema["ui"]["order"].append(full_path)
-
-    prot = Protocol(**protocol_schema)
-    # Write the protocol schema to file
-    protocol_dir = f"{abs_folder_path}/{protocol_name}"
-    os.makedirs(protocol_dir, exist_ok=True)
-    schema_file = f"{protocol_name}_schema"
-    file_path = os.path.join(protocol_dir, schema_file)
-    write_obj_jsonld(prot, file_path, contextfile_url=schema_context_url)
-    print(f"Protocol schema created in {file_path}")
-
-
-def process_csv(csv_file, abs_folder_path, protocol_name):
-    datas = {}
-    order = {}
-    compute = {}
-
-    # TODO: add languages
-
-    try:
-        df = pd.read_csv(csv_file, encoding="utf-8-sig")
-        df.columns = df.columns.map(
-            lambda x: x.strip().strip('"').lstrip("\ufeff")
+    if row.get("valueRequired") and str(
+        row.get("valueRequired")
+    ).strip().lower() in ["y", "yes", "true"]:
+        addProperties["valueRequired"] = True
+    elif row.get("valueRequired") and str(
+        row.get("valueRequired")
+    ).strip().lower() not in ["n", "no", "false"]:
+        print(
+            f"Warning: Unexpected value for valueRequired in {row['item_name']}: {row.get('valueRequired')}"
         )
 
-        required_columns = ["Form Name", "Variable / Field Name", "Field Type"]
-        missing_columns = [
-            col for col in required_columns if col not in df.columns
-        ]
-        if missing_columns:
-            raise ValueError(
-                f"Missing required columns: {', '.join(missing_columns)}"
+    if row.get("annotation") and (
+        "@READONLY" in row.get("annotation").upper()
+        or "@HIDDEN" in row.get("annotation").upper()
+    ):
+        addProperties["isVis"] = False
+    elif compute:
+        addProperties["isVis"] = False
+    elif row.get("visibility"):
+        addProperties["isVis"] = normalize_condition(row.get("visibility"))
+
+    return item_data, preamble_info_propagate, compute, addProperties
+
+
+def process_csv(csv_file) -> (Dict[str, Any], list):
+
+    df = pd.read_csv(
+        csv_file, encoding="utf-8-sig", low_memory=False
+    )  # utf-8-sig handles BOM automatically
+
+    df.columns = df.columns.map(
+        lambda x: x.strip().strip('"')
+    )  # some cleaning might not be needed
+
+    # Clean NaNs values in the dataframe
+    df = df.astype(str).replace("nan", "")
+
+    # Validate required columns
+    missing_columns = set(REDCAP_COLUMN_REQUIRED) - set(df.columns)
+    if missing_columns:
+        raise ValueError(
+            f"Missing required columns: {', '.join(missing_columns)}"
+        )
+    different_columns = set(df.columns) - set(REDCAP_COLUMN_MAP.keys())
+    if different_columns:
+        print(
+            "Warning: Found columns that are not in the mapping: ",
+            different_columns,
+        )
+
+    df = df.rename(columns=REDCAP_COLUMN_MAP)
+    activities = {}
+    prot_actvities_order = []
+    for activity_name, group in df.groupby("activity_name", sort=False):
+        if not activity_name:
+            print("WARNING: Some rows in CSV have no activity name, skipping")
+            continue
+        items = []
+        item_preamble_info = None
+        act_addProperties = []
+        act_items_order = []
+        act_compute = []
+        act_preamble = []
+        for row in group.to_dict("records"):
+            item, item_preamble_info, compute, addProperty = process_row(
+                row, prior_preamble_info=item_preamble_info
             )
+            items.append(item)
+            act_addProperties.append(addProperty)
+            if compute:
+                act_compute.append(compute)
+            else:
+                act_items_order.append(f"items/{item['id']}")
+                if item.get("preamble"):
+                    act_preamble.append(item["preamble"]["en"])
 
-        # Initialize structures for each unique form
-        unique_forms = df["Form Name"].dropna().unique()
-        if len(unique_forms) == 0:
-            raise ValueError("No valid form names found in the CSV")
+        activities[activity_name] = {
+            "items": items,
+            "order": act_items_order,
+            "compute": act_compute,
+            "addProperties": act_addProperties,
+        }
+        prot_actvities_order.append(activity_name)
+        # checking if all preamble the same for all questions
+        # if they are, it should be treated as an activity preamble
+        act_compute_name = [c["variableName"] for c in act_compute]
+        if (
+            act_preamble
+            and len(set(act_preamble)) == 1
+            and len(act_preamble) == len(act_items_order)
+        ):
+            activities[activity_name]["preamble"] = {"en": act_preamble[0]}
+            for item in items:
+                # I was checking only for questions to see if this can be treated as an activity preamble,
+                # but if there is a preamble also for compute item it should be removed
+                if item["id"] in act_compute_name:
+                    if item.get("preamble") == {"en": act_preamble[0]}:
+                        del item["preamble"]
+                else:
+                    del item["preamble"]
 
-        for form_name in unique_forms:
-            form_name = str(form_name).strip()
-            if not form_name:
-                continue
-
-            datas[form_name] = []
-            order[form_name] = []
-            compute[form_name] = []
-
-            form_dir = (
-                Path(abs_folder_path) / "activities" / form_name / "items"
-            )
-            form_dir.mkdir(parents=True, exist_ok=True)
-
-        # TODO: should we bring back the language
-        # if not languages:
-        #    languages = parse_language_iso_codes(row["Field Label"])
-
-        for idx, row in df.iterrows():
-            form_name = row["Form Name"]
-            field_name = row["Variable / Field Name"]
-
-            # Skip rows with missing essential data
-            if pd.isna(form_name) or pd.isna(field_name):
-                print(
-                    f"Warning: Skipping row {idx+2} with missing form name or field name"
-                )
-                continue
-
-            form_name = str(form_name).strip()
-            field_name = str(field_name).strip()
-
-            # Convert row to dict and clean NaN values
-            row_dict = {k: v for k, v in row.to_dict().items() if pd.notna(v)}
-            if not row_dict:
-                print(f"Warning: Skipping empty row {idx+2}")
-                continue
-
-            datas[form_name].append(row_dict)
-            field_path = f"items/{field_name}"
-
-            field_type = row_dict.get("Field Type", "").strip().lower()
-            field_annotation = row_dict.get("Field Annotation", "")
-
-            # Handle compute fields
-            is_compute = False
-
-            # Case 1: Field is calc type
-            if field_type in COMPUTE_LIST:
-                calc_value = row_dict.get(
-                    "Choices, Calculations, OR Slider Labels", ""
-                )
-                if calc_value and str(calc_value).strip():
-                    compute_expression = normalize_condition(
-                        calc_value, field_type=field_type
-                    )
-                    if compute_expression:
-                        is_compute = True
-                        compute[form_name].append(
-                            {
-                                "variableName": field_name,
-                                "jsExpression": compute_expression,
-                            }
-                        )
-                    else:
-                        print(
-                            f"Warning: Could not normalize calc expression for {field_name}: {calc_value}"
-                        )
-
-            # Case 2: Field has @CALCTEXT
-            elif (
-                field_annotation
-                and "@CALCTEXT" in str(field_annotation).upper()
-            ):
-                match = re.search(r"@CALCTEXT\((.*)\)", field_annotation)
-                if match:
-                    compute_expression = normalize_condition(match.group(1))
-                    if compute_expression:
-                        is_compute = True
-                        compute[form_name].append(
-                            {
-                                "variableName": field_name,
-                                "jsExpression": compute_expression,
-                            }
-                        )
-
-            # Add to order list only if not a compute field
-            if not is_compute:
-                order[form_name].append(field_path)
-
-        return datas, order, compute
-
-    except Exception as e:
-        print(f"Error processing CSV: {str(e)}")
-        raise
+    return activities, prot_actvities_order
 
 
-# todo adding output path
 def redcap2reproschema(
     csv_file, yaml_file, output_path, schema_context_url=None
 ):
@@ -949,173 +512,41 @@ def redcap2reproschema(
         FileNotFoundError: If input files cannot be found
         Exception: For other processing errors
     """
-    try:
-        # Validate input files exist
-        csv_path = Path(csv_file)
-        yaml_path = Path(yaml_file)
-        output_dir = Path(output_path)
 
-        if not csv_path.exists():
-            raise FileNotFoundError(f"CSV file not found: {csv_file}")
-        if not yaml_path.exists():
-            raise FileNotFoundError(f"YAML file not found: {yaml_file}")
+    # Validate input files exist
+    csv_path = Path(csv_file)
+    yaml_path = Path(yaml_file)
+    output_dir = Path(output_path)
 
-        # Read and validate YAML configuration
-        try:
-            with open(yaml_path, "r", encoding="utf-8") as f:
-                protocol = yaml.safe_load(f)
-        except yaml.YAMLError as e:
-            raise ValueError(f"Invalid YAML file: {str(e)}")
+    if not csv_path.exists():
+        raise FileNotFoundError(f"CSV file not found: {csv_file}")
+    if not yaml_path.exists():
+        raise FileNotFoundError(f"YAML file not found: {yaml_file}")
 
-        # Extract and validate protocol information
-        protocol_name = protocol.get("protocol_name", "").strip()
-        if not protocol_name:
-            raise ValueError("Protocol name not specified in the YAML file")
+    protocol = read_check_yaml_config(yaml_path)
+    protocol_name = protocol.get("protocol_name").replace(" ", "_")
+    # Set up output directory
+    abs_folder_path = output_dir / protocol_name
+    abs_folder_path.mkdir(parents=True, exist_ok=True)
 
-        protocol_display_name = protocol.get(
-            "protocol_display_name", protocol_name
-        )
-        protocol_description = protocol.get("protocol_description", "")
-        redcap_version = protocol.get("redcap_version", "1.0.0")
+    # Set schema context URL
+    if schema_context_url is None:
+        schema_context_url = CONTEXTFILE_URL
 
-        # Set up output directory
-        protocol_name = protocol_name.replace(" ", "_")
-        abs_folder_path = output_dir / protocol_name
-        abs_folder_path.mkdir(parents=True, exist_ok=True)
+    # Process the CSV file and getting information about the activities and items
+    activities, prot_activities_order = process_csv(csv_path)
 
-        # Set schema context URL
-        if schema_context_url is None:
-            schema_context_url = CONTEXTFILE_URL
-
-        # Process CSV file
-        print(f"Processing CSV file: {csv_path}")
-        datas, order, compute = process_csv(
-            csv_path, abs_folder_path, protocol_name
+    for activity_name, activity_data in activities.items():
+        create_activity_schema(
+            activity_name,
+            activity_data,
+            abs_folder_path,
+            protocol.get("redcap_version"),
+            schema_context_url,
         )
 
-        if not datas:
-            raise ValueError("No valid data found in CSV file")
-
-        # Initialize protocol variables
-        protocol_visibility_obj = {}
-        protocol_order = []
-
-        # Process each form
-        for form_name, rows in datas.items():
-            print(f"\nProcessing form: {form_name}")
-            if not rows:
-                print(f"Warning: Empty form {form_name}, skipping")
-                continue
-
-            # Initialize form-level collections
-            bl_list = []
-            matrix_list = []
-            preambles_list = []
-
-            # Process fields in the form
-            for field in rows:
-                # Validate field data
-                if (
-                    not isinstance(field, dict)
-                    or "Variable / Field Name" not in field
-                ):
-                    print(
-                        f"Warning: Invalid field data in form {form_name}, skipping"
-                    )
-                    continue
-
-                # Process field properties
-                field_properties = process_field_properties(field)
-                if field_properties:
-                    bl_list.append(field_properties)
-
-                # Handle matrix groups
-                matrix_group = field.get("Matrix Group Name")
-                matrix_ranking = field.get("Matrix Ranking?")
-                if pd.notna(matrix_group) or pd.notna(matrix_ranking):
-                    matrix_info = {
-                        "variableName": field["Variable / Field Name"],
-                    }
-                    if pd.notna(matrix_group):
-                        matrix_info["matrixGroupName"] = matrix_group
-                    if pd.notna(matrix_ranking):
-                        matrix_info["matrixRanking"] = matrix_ranking
-                    matrix_list.append(matrix_info)
-
-                # Handle preambles (section headers)
-                preamble = field.get("Section Header")
-                if pd.notna(preamble):
-                    preamble = str(preamble).strip()
-                    if preamble:
-                        preambles_list.append(preamble)
-
-            # Determine preamble handling strategy
-            unique_preambles = set(preambles_list)
-            if len(unique_preambles) == 1:
-                # Single preamble for the whole form
-                preamble_act = preambles_list[0]
-                preamble_itm = False
-            elif len(unique_preambles) == 0:
-                # No preambles
-                preamble_act = None
-                preamble_itm = False
-            else:
-                # Multiple preambles, handle at item level
-                preamble_act = None
-                preamble_itm = True
-
-            # Get form display name
-            activity_display_name = rows[0].get("Form Name", form_name)
-
-            # Create form schema
-            print(f"Creating schema for form: {form_name}")
-            create_form_schema(
-                abs_folder_path=abs_folder_path,
-                schema_context_url=schema_context_url,
-                redcap_version=redcap_version,
-                form_name=form_name,
-                activity_display_name=activity_display_name,
-                order=order[form_name],
-                bl_list=bl_list,
-                matrix_list=matrix_list,
-                compute_list=compute[form_name],
-                preamble=preamble_act,  # Note: using correct parameter name
-            )
-
-            # Process individual items
-            for field in rows:
-                field_name = field["Variable / Field Name"]
-                print(f"Processing field: {field_name}")
-                process_row(
-                    abs_folder_path=abs_folder_path,
-                    schema_context_url=schema_context_url,
-                    form_name=form_name,
-                    field=field,
-                    add_preamble=preamble_itm,  # Note: consistent parameter naming
-                )
-
-            # Process form-level activities
-            print(f"Processing activities for form: {form_name}")
-            process_activities(
-                form_name, protocol_visibility_obj, protocol_order
-            )
-
-        # Create final protocol schema
-        print("\nCreating protocol schema")
-        create_protocol_schema(
-            abs_folder_path=abs_folder_path,
-            schema_context_url=schema_context_url,
-            redcap_version=redcap_version,
-            protocol_name=protocol_name,
-            protocol_display_name=protocol_display_name,
-            protocol_description=protocol_description,
-            protocol_order=protocol_order,
-            protocol_visibility_obj=protocol_visibility_obj,
-        )
-
-        print(
-            f"\nConversion completed successfully. Output directory: {abs_folder_path}"
-        )
-
-    except Exception as e:
-        raise Exception(f"Error during conversion: {str(e)}") from e
+    # Create protocol schema
+    create_protocol_schema(
+        protocol, prot_activities_order, abs_folder_path, schema_context_url
+    )
+    print("OUTPUT DIRECTORY: ", abs_folder_path)
