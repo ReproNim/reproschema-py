@@ -180,6 +180,8 @@ def create_activity_schema(
 
     if activity_data["compute"]:
         json_ld["compute"] = activity_data["compute"]
+    if activity_data.get("preamble"):
+        json_ld["preamble"] = activity_data["preamble"]
     act = Activity(**json_ld)
     path = output_path / "activities" / activity_name
     path.mkdir(parents=True, exist_ok=True)

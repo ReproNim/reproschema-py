@@ -360,6 +360,8 @@ def process_row(
         item_data["preamble"] = item_preamble
 
     # processing information needed for the activity schema
+    # checking compute
+    compute = None
     if input_type_rc in COMPUTE_LIST:
         condition = normalize_condition(row.get("choices"))
         compute = {"variableName": row["item_name"], "jsExpression": condition}
@@ -378,9 +380,9 @@ def process_row(
             print(
                 f"Warning/Error: Invalid @CALCTEXT annotation in {row['item_name']}: {calc_text}"
             )
-            compute = None
-    else:
-        compute = None
+    # for compute items, we should use description instead of question
+    if compute:
+        item_data["description"] = item_data.pop("question")
 
     # setting default properties
     addProperties = {
@@ -451,6 +453,7 @@ def process_csv(csv_file) -> (Dict[str, Any], list):
         act_addProperties = []
         act_items_order = []
         act_compute = []
+        act_preamble = []
         for row in group.to_dict("records"):
             item, item_preamble_info, compute, addProperty = process_row(
                 row, prior_preamble_info=item_preamble_info
@@ -461,6 +464,9 @@ def process_csv(csv_file) -> (Dict[str, Any], list):
                 act_compute.append(compute)
             else:
                 act_items_order.append(f"items/{item['id']}")
+                if item.get("preamble"):
+                    act_preamble.append(item["preamble"]["en"])
+
         activities[activity_name] = {
             "items": items,
             "order": act_items_order,
@@ -468,6 +474,24 @@ def process_csv(csv_file) -> (Dict[str, Any], list):
             "addProperties": act_addProperties,
         }
         prot_actvities_order.append(activity_name)
+        # checking if all preamble the same for all questions
+        # if they are, it should be treated as an activity preamble
+        act_compute_name = [c["variableName"] for c in act_compute]
+        if (
+            act_preamble
+            and len(set(act_preamble)) == 1
+            and len(act_preamble) == len(act_items_order)
+        ):
+            activities[activity_name]["preamble"] = {"en": act_preamble[0]}
+            for item in items:
+                # I was checking only for questions to see if this can be treated as an activity preamble,
+                # but if there is a preamble also for compute item it should be removed
+                if item["id"] in act_compute_name:
+                    if item.get("preamble") == {"en": act_preamble[0]}:
+                        del item["preamble"]
+                else:
+                    del item["preamble"]
+
     return activities, prot_actvities_order
 
 

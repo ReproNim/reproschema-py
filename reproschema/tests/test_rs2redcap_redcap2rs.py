@@ -181,7 +181,9 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
             ):
                 errors_list.append(error_shortmsg)
             else:  # differences only in the "_schema suffix
-                warnings_list.append(error_shortmsg)
+                warnings_list.append(
+                    error_shortmsg + ", but only differ in the _schema suffix"
+                )
 
         # check order
         act_order_orig = [
@@ -203,27 +205,13 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
         act_props_final = {
             el.variableName: el for el in act_final.ui.addProperties
         }
-        # issues with these schema reprorted in the reproschema-library
-        known_issues_nm = [
-            "dsm_5_parent_guardian_rated_level_1_crosscutting_s_schema_first_19",
-            "dsm_5_parent_guardian_rated_level_1_crosscutting_s_schema_20_to_25",
-            "RCADS25_caregiver_administered_schema",
-            "RCADS25_youth_administered_schema",
-            "DSM5_crosscutting_youth_schema",
-        ]
+
         if act_props_orig.keys() != act_props_final.keys():
-            if act_name in known_issues_nm:
-                warnings_list.append(
-                    print_return_msg(
-                        f"Activity {act_name}: addProperties have different elements"
-                    )
+            errors_list.append(
+                print_return_msg(
+                    f"Activity {act_name}: addProperties have different elements, orig: {act_props_orig} and final: {act_props_final}"
                 )
-            else:
-                errors_list.append(
-                    print_return_msg(
-                        f"Activity {act_name}: addProperties have different elements, orig: {act_props_orig} and final: {act_props_final}"
-                    )
-                )
+            )
         else:
             for nm, el in act_props_final.items():
                 for key in ["isVis", "valueRequired"]:
@@ -280,18 +268,11 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
         act_comp_orig = {el.variableName: el for el in act_orig.compute}
         act_comp_final = {el.variableName: el for el in act_final.compute}
         if act_comp_final.keys() != act_comp_orig.keys():
-            if act_name in known_issues_nm:
-                warnings_list.append(
-                    print_return_msg(
-                        f"Activity {act_name}: compute have different elements"
-                    )
+            errors_list.append(
+                print_return_msg(
+                    f"Activity {act_name}: compute have different elements, orig: {act_comp_orig}, final: {act_comp_final}"
                 )
-            else:
-                errors_list.append(
-                    print_return_msg(
-                        f"Activity {act_name}: compute have different elements, orig: {act_comp_orig}, final: {act_comp_final}"
-                    )
-                )
+            )
         else:
             for nm, el in act_comp_final.items():
                 if normalize_condition(
@@ -307,18 +288,11 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
 
         # check items:
         if act_items_final.keys() != act_items_orig.keys():
-            if act_name in known_issues_nm:
-                warnings_list.append(
-                    print_return_msg(
-                        f"Activity {act_name}: items have different elements"
-                    )
+            errors_list.append(
+                print_return_msg(
+                    f"Activity {act_name}: items have different elements, orig: {act_items_orig}, final: {act_items_final}"
                 )
-            else:
-                errors_list.append(
-                    print_return_msg(
-                        f"Activity {act_name}: items have different elements, orig: {act_items_orig}, final: {act_items_final}"
-                    )
-                )
+            )
         else:
             for nm, el in act_items_final.items():
                 if (
@@ -374,15 +348,17 @@ def compare_protocols(prot_tree_orig, prot_tree_final):
                 # check response options
                 respopt_orig = act_items_orig[nm]["obj"].responseOptions
                 respopt_final = el["obj"].responseOptions
+
                 # TODO: min val does not work
                 # TODO: check choices
                 # for key in ["minValue", "maxValue"]:
                 #     if getattr(respopt_final, key) != getattr(respopt_orig, key):
                 #         errors_list.append(print(f"Activity {act_name}: items {nm} have different {key}"))
+    print("Warnings: ", "check min/max values and choices not implemented")
+    warnings_list.append("TODO: check min/max values and choices")
     return errors_list, warnings_list
 
 
-@pytest.mark.skip(reason="fix activity preamble")
 def test_rs2redcap_redcap2rs(tmpdir):
     runner = CliRunner()
     copytree(
@@ -440,6 +416,5 @@ def test_rs2redcap_redcap2rs(tmpdir):
     errors_list, warnings_list = compare_protocols(
         prot_tree_orig, prot_tree_final
     )
-
     assert not errors_list, f"Errors: {errors_list}"
     print("No errors, but found warnings: ", warnings_list)

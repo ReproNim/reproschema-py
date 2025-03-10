@@ -19,7 +19,7 @@ REDCAP_COLUMN_MAP = {
     "Matrix Ranking?": "matrixRanking",  # column Q
     "Field Annotation": "annotation",  # column R
 }
-# REDCAP_COLUMN_MAP_REVERSE = {v: k for k, v in REDCAP_COLUMN_MAP.items()}
+REDCAP_COLUMN_MAP_REVERSE = {v: k for k, v in REDCAP_COLUMN_MAP.items()}
 
 REDCAP_COLUMN_REQUIRED = [
     "Variable / Field Name",
@@ -54,7 +54,7 @@ VALUE_TYPE_MAP = {
     "zipcode": "xsd:string",
     "autocomplete": "xsd:string",
     # Numeric types
-    "number": "xsd:decimal",
+    "number": "xsd:decimal",  # This includes both integer and float, redcap use for both
     "float": "xsd:decimal",
     "integer": "xsd:integer",
     # Date and time types will be handled by pattern matching in process_input_value_types
