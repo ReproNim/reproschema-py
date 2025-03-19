@@ -7,6 +7,7 @@ import requests
 from .context_url import CONTEXTFILE_URL
 from .jsonldutils import _is_url, load_file
 from .models import Activity, Item, Protocol, ResponseOption
+from .redcap_mappings import REDCAP_COLUMN_MAP, REDCAP_COLUMN_MAP_REVERSE
 from .utils import start_server, stop_server
 
 logger = logging.getLogger(__name__)
@@ -39,64 +40,52 @@ def fetch_choices_from_url(url):
         return ""
 
 
-def find_Ftype_and_colH(item, row_data, response_options):
+def find_input_type_value_type_rc(item, response_options):
     """
-    Determine field type and column H value.
+    Determine input type and value type that should be in RedCap
 
     Args:
         item: Item object containing UI information
-        row_data: Dictionary to store field data
         response_options: Response options object
 
     Returns:
         dict: Updated row_data with field type and validation info
     """
     # Extract the input type from the item_json
-    f_type = item.ui.inputType
-    col_h = ""
+    input_type = item.ui.inputType
+    value_type_rc = ""
 
-    if f_type in ["text", "textarea", "email"]:
-        f_type = "text"
-    elif f_type in ["static", "save"]:
-        f_type = "descriptive"
-    elif f_type == "integer":
-        f_type = "text"
-        col_h = "integer"
-    elif f_type == "number":
-        f_type = "text"
-        col_h = "integer"
-    elif f_type == "float":
-        f_type = "text"
-        col_h = "float"
-    elif f_type == "date":
-        f_type = "text"
-        col_h = "date_mdy"
-    elif f_type == "select":
-        multiple_choice = getattr(response_options, "multipleChoice", False)
-        logger.debug(
-            f"Multiple choice setting for {item.id}: {multiple_choice}"
-        )
-        f_type = "checkbox" if multiple_choice else "dropdown"
-    elif f_type == "radio":
+    if "text" in input_type:
+        input_type_rc = "text"
+    elif input_type in ["static", "save"]:
+        input_type_rc = "descriptive"
+    elif input_type == "number":
+        input_type_rc = "text"
+        value_type_rc = "integer"
+    elif input_type == "float":
+        input_type_rc = "text"
+        value_type_rc = "float"
+    elif input_type == "date":
+        input_type_rc = "text"
+        value_type_rc = "date_mdy"  # TODO: redcap has more types
+    elif input_type.startswith("select"):
+        input_type_rc = "dropdown"
+    elif input_type == "radio":
         if getattr(response_options, "multipleChoice", False):
-            f_type = "checkbox"
-    elif f_type.startswith("select"):
-        f_type = "radio"
-        choices_url = getattr(response_options, "choices", None)
-        if choices_url and isinstance(choices_url, str):
-            choices_data = fetch_choices_from_url(choices_url)
-            if choices_data:
-                row_data["choices"] = choices_data
-    elif f_type.startswith(("audio", "video", "image", "document")):
-        f_type = "file"
+            input_type_rc = "checkbox"
+        else:
+            input_type_rc = "radio"  # todo: should add yes, no?
+    elif input_type.startswith(("audio", "video", "image", "document")):
+        input_type_rc = "file"
     else:
-        f_type = "text"
+        print(f"Warning: Unknown input type: {input_type}, defaulting to text")
+        input_type_rc = "text"
 
-    row_data["field_type"] = f_type.lower()
-    if col_h:
-        row_data["val_type_OR_slider"] = col_h.lower()
+    info_rc = {"inputType": input_type_rc.lower()}
+    if value_type_rc:
+        info_rc["validation"] = value_type_rc.lower()
 
-    return row_data
+    return info_rc
 
 
 def process_item(
@@ -106,7 +95,6 @@ def process_item(
     activity_preamble,
     contextfile,
     http_kwargs,
-    compute_item=False,
     compute_expr=None,
 ):
     """
@@ -145,14 +133,18 @@ def process_item(
     # Only add values if they exist
     if response_options:
         if response_options.minValue is not None:
-            row_data["val_min"] = response_options.minValue
+            row_data["minValue"] = response_options.minValue
         if response_options.maxValue is not None:
-            row_data["val_max"] = response_options.maxValue
+            row_data["maxValue"] = response_options.maxValue
 
         # Handle choices
         choices = response_options.choices
-        if choices and not isinstance(choices, str):
-            if isinstance(choices, list):
+        if choices:
+            if isinstance(choices, str):
+                choices_data = fetch_choices_from_url(choices)
+                if choices_data:
+                    row_data["choices"] = choices_data
+            elif isinstance(choices, list):
                 # Handle the case where choices is a list
                 item_choices = []
                 for ch in choices:
@@ -165,6 +157,10 @@ def process_item(
                         item_choices.append(f"{ch.value}, {name}")
                 if item_choices:
                     row_data["choices"] = " | ".join(item_choices)
+            else:
+                raise Exception(
+                    f"Choices should be a string or list, got {choices}"
+                )
 
     # Add valueRequired if explicitly True
     if (
@@ -172,45 +168,30 @@ def process_item(
         and isinstance(item_properties, dict)  # Ensure it's a dictionary
         and item_properties.get("valueRequired") is True
     ):
-        row_data["required"] = "y"
+        row_data["valueRequired"] = "y"
 
     var_name = str(item.id).split("/")[-1]  # Get the last part of the id path
 
     # Handle compute items
-    if compute_item and compute_expr:
+    if compute_expr:
         logger.debug(f"Processing compute item: {var_name}")
         logger.debug(f"Compute expression: {compute_expr}")
         row_data["choices"] = compute_expr
-        row_data["field_type"] = "calc"
-        # For computed fields, we may need to set visibility to false by default
-        if any(score_type in var_name for score_type in ["_score", "_total"]):
-            row_data["isVis_logic"] = False
+        row_data["inputType"] = "calc"  # todo: we don't have sql
+        row_data["visibility"] = False
     else:
-        # Use find_Ftype_and_colH but only add non-empty values
-        field_info = find_Ftype_and_colH(item, {}, response_options)
-        if field_info.get("field_type"):
-            row_data["field_type"] = field_info["field_type"]
-        if field_info.get("val_type_OR_slider"):
-            row_data["val_type_OR_slider"] = field_info["val_type_OR_slider"]
+        field_info = find_input_type_value_type_rc(item, response_options)
+        row_data["inputType"] = field_info["inputType"]
+        if field_info.get("validation"):
+            row_data["validation"] = field_info["validation"]
 
-    # Handle visibility
-    if var_name.endswith("_total_score"):
-        row_data["isVis_logic"] = False
-    elif (
+    if (
         item_properties
         and isinstance(item_properties, dict)  # Ensure it's a dictionary
         and "isVis" in item_properties
         and item_properties["isVis"] is not True
     ):
-        row_data["isVis_logic"] = item_properties["isVis"]
-
-    # Handle description
-    if (
-        hasattr(item, "description")
-        and isinstance(item.description, dict)
-        and item.description.get("en")
-    ):
-        row_data["field_notes"] = item.description["en"]
+        row_data["visibility"] = item_properties["isVis"]
 
     # Handle preamble
     if (
@@ -223,15 +204,15 @@ def process_item(
         row_data["preamble"] = activity_preamble
 
     # Handle question/field label
-    if compute_item:
+    if compute_expr:
         question = item.description
     else:
         question = item.question if hasattr(item, "question") else None
 
     if isinstance(question, dict) and question.get("en"):
-        row_data["field_label"] = question["en"]
+        row_data["question"] = question["en"]
     elif isinstance(question, str) and question:
-        row_data["field_label"] = question
+        row_data["question"] = question
 
     return row_data
 
@@ -259,115 +240,88 @@ def get_csv_data(dir_path, contextfile, http_kwargs):
                 for activity_path in activity_order:
                     if not _is_url(activity_path):
                         activity_path = protocol_dir / activity_path
-
-                    parsed_activity_json = load_file(
-                        activity_path,
-                        started=True,
-                        http_kwargs=http_kwargs,
-                        fixoldschema=True,
-                        compact=True,
-                        compact_context=contextfile,
+                    act_data = process_activity(
+                        activity_path, contextfile, http_kwargs
                     )
-                    del parsed_activity_json["@context"]
-                    act = Activity(**parsed_activity_json)
-
-                    # Get activity name
-                    activity_name = act.id.split("/")[-1]
-                    if activity_name.endswith("_schema.jsonld"):
-                        activity_name = activity_name[:-12]
-                    elif activity_name.endswith(".jsonld"):
-                        activity_name = activity_name[:-7]
-
-                    # Create a map of computed items
-                    compute_map = {}
-                    if hasattr(act, "compute"):
-                        compute_map = {
-                            comp.variableName: comp.jsExpression
-                            for comp in act.compute
-                        }
-
-                    # Process each item defined in addProperties
-                    for item_def in parsed_activity_json["ui"][
-                        "addProperties"
-                    ]:
-                        item_path = item_def["isAbout"]
-                        var_name = item_def["variableName"]
-
-                        # Get the item file path
-                        if not _is_url(item_path):
-                            full_item_path = (
-                                Path(activity_path).parent / item_path
-                            )
-                        else:
-                            full_item_path = item_path
-
-                        try:
-                            item_json = load_file(
-                                full_item_path,
-                                started=True,
-                                http_kwargs=http_kwargs,
-                                fixoldschema=True,
-                                compact=True,
-                                compact_context=contextfile,
-                            )
-                            item_json.pop("@context", "")
-                            item = Item(**item_json)
-
-                            activity_preamble = (
-                                act.preamble.get("en", "").strip()
-                                if hasattr(act, "preamble")
-                                else ""
-                            )
-
-                            # Check if this is a computed item
-                            compute_expr = compute_map.get(var_name)
-                            is_computed = compute_expr is not None
-
-                            row_data = process_item(
-                                item,
-                                item_def,
-                                activity_name,
-                                activity_preamble,
-                                contextfile,
-                                http_kwargs,
-                                is_computed,
-                                compute_expr,
-                            )
-                            csv_data.append(row_data)
-
-                        except Exception as e:
-                            print(
-                                f"Error processing item {item_path} for activity {activity_name}"
-                            )
-                            print(f"Error details: {str(e)}")
-                            continue
-
+                    csv_data += act_data
     return csv_data
 
 
-def write_to_csv(csv_data, output_csv_filename):
-    # REDCap-specific headers
-    headers = [
-        "Variable / Field Name",
-        "Form Name",
-        "Section Header",
-        "Field Type",
-        "Field Label",
-        "Choices, Calculations, OR Slider Labels",
-        "Field Note",
-        "Text Validation Type OR Show Slider Number",
-        "Text Validation Min",
-        "Text Validation Max",
-        "Identifier?",
-        "Branching Logic (Show field only if...)",
-        "Required Field?",
-        "Custom Alignment",
-        "Question Number (surveys only)",
-        "Matrix Group Name",
-        "Matrix Ranking?",
-        "Field Annotation",
-    ]
+def process_activity(activity_path, contextfile, http_kwargs):
+    parsed_activity_json = load_file(
+        activity_path,
+        started=True,
+        http_kwargs=http_kwargs,
+        fixoldschema=True,
+        compact=True,
+        compact_context=contextfile,
+    )
+    del parsed_activity_json["@context"]
+    act = Activity(**parsed_activity_json)
 
+    # Get activity name
+    activity_name = act.id.split("/")[-1]
+    if activity_name.endswith("_schema.jsonld"):
+        activity_name = activity_name[:-12]
+    elif activity_name.endswith(".jsonld"):
+        activity_name = activity_name[:-7]
+
+    # Create a map of computed items
+    compute_map = {}
+    if hasattr(act, "compute"):
+        compute_map = {
+            comp.variableName: comp.jsExpression for comp in act.compute
+        }
+    act_data = []
+    var_name_list = []
+    # Process each item defined in addProperties
+    for item_def in parsed_activity_json["ui"]["addProperties"]:
+        item_path = item_def["isAbout"]
+        var_name = item_def["variableName"]
+        if var_name in var_name_list:
+            continue
+        else:
+            var_name_list.append(var_name)
+        # Get the item file path
+        if not _is_url(item_path):
+            full_item_path = Path(activity_path).parent / item_path
+        else:
+            full_item_path = item_path
+
+        item_json = load_file(
+            full_item_path,
+            started=True,
+            http_kwargs=http_kwargs,
+            fixoldschema=True,
+            compact=True,
+            compact_context=contextfile,
+        )
+        item_json.pop("@context", "")
+        item = Item(**item_json)
+        activity_preamble = (
+            act.preamble.get("en", "").strip()
+            if hasattr(act, "preamble")
+            else ""
+        )
+
+        # Check if this is a computed item
+        compute_expr = compute_map.get(var_name)
+
+        row_data = process_item(
+            item,
+            item_def,
+            activity_name,
+            activity_preamble,
+            contextfile,
+            http_kwargs,
+            compute_expr,
+        )
+        act_data.append(row_data)
+    return act_data
+
+
+def write_to_csv(csv_data, output_csv_filename):
+    headers = list(REDCAP_COLUMN_MAP.keys())
     # Writing to the CSV file
     with open(
         output_csv_filename, "w", newline="", encoding="utf-8"
@@ -390,41 +344,24 @@ def write_to_csv(csv_data, output_csv_filename):
                 activity_name = activity_name[:-7]
             redcap_row["Form Name"] = activity_name
 
-            # Map remaining fields
-            field_mappings = {
-                "preamble": "Section Header",
-                "field_type": "Field Type",
-                "field_label": "Field Label",
-                "choices": "Choices, Calculations, OR Slider Labels",
-                "field_notes": "Field Note",
-                "val_type_OR_slider": "Text Validation Type OR Show Slider Number",
-                "val_min": "Text Validation Min",
-                "val_max": "Text Validation Max",
-                "required": "Required Field?",
-                "isVis_logic": "Branching Logic (Show field only if...)",
-                "field_annotation": "Field Annotation",
-                "matrix_group": "Matrix Group Name",
-                "matrix_ranking": "Matrix Ranking?",
-            }
-
             # Add mapped fields only if they exist and aren't empty
-            for src_key, dest_key in field_mappings.items():
+            for src_key, dest_key in REDCAP_COLUMN_MAP_REVERSE.items():
                 if (
                     src_key in row
                     and row[src_key] is not None
                     and row[src_key] != ""
                 ):
                     # Special handling for visibility logic
-                    if src_key == "isVis_logic":
+                    if src_key == "visibility":
                         if (
                             row[src_key] is not True
                         ):  # Only add if not default True
                             redcap_row[dest_key] = row[src_key]
                     # Special handling for required field
-                    elif src_key == "required":
+                    elif src_key == "valueRequired":
                         redcap_row[dest_key] = "y" if row[src_key] else "n"
                     # Special handling for field annotation
-                    elif src_key == "field_annotation":
+                    elif src_key == "annotation":
                         current_annotation = redcap_row.get(dest_key, "")
                         if current_annotation:
                             redcap_row[dest_key] = (
