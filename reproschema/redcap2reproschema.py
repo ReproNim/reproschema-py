@@ -1,7 +1,7 @@
+import json
 import re
 from pathlib import Path
 from typing import Any, Dict
-import json
 
 import pandas as pd
 
@@ -24,7 +24,9 @@ from .redcap_mappings import (
 )
 
 
-def process_input_value_types(input_type_rc, value_type_rc) -> (str, str, dict):
+def process_input_value_types(
+    input_type_rc, value_type_rc
+) -> (str, str, dict):
     """
     Process input type and value type to determine the final input type and value type.
 
@@ -39,7 +41,7 @@ def process_input_value_types(input_type_rc, value_type_rc) -> (str, str, dict):
         additional_notes (dict): Additional notes about custom types, or None
     """
     additional_notes = None
-    
+
     # If input type in redcap is set but not recognized, raise an error
     if input_type_rc not in INPUT_TYPE_MAP:
         raise ValueError(
@@ -55,14 +57,16 @@ def process_input_value_types(input_type_rc, value_type_rc) -> (str, str, dict):
             value_type = get_value_type(value_type_rc)
         except ValueError:
             # If it fails, it's an unknown validation type
-            print(f"Warning: Unrecognized validation type '{value_type_rc}', treating as string")
+            print(
+                f"Warning: Unrecognized validation type '{value_type_rc}', treating as string"
+            )
             value_type = "xsd:string"
             additional_notes = {
                 "source": "redcap",
                 "column": "Text Validation Type OR Show Slider Number",
-                "value": value_type_rc
+                "value": value_type_rc,
             }
-            
+
         # Adjust input type based on validation
         if value_type == "xsd:date" and input_type_rc == "text":
             input_type = "date"
@@ -126,25 +130,33 @@ def process_response_options(row, input_type_rc, value_type) -> Dict[str, Any]:
             if choices:
                 # We're checking input_type_rc (REDCap type) here
                 if input_type_rc == "descriptive":
-                    print(f"Info: Preserving choices for descriptive field {row['item_name']}")
+                    print(
+                        f"Info: Preserving choices for descriptive field {row['item_name']}"
+                    )
                     # Store as additional notes instead of in response options
                     # Serialize the choices to a string to comply with additionalNotesObj model
                     additional_notes = {
                         "source": "redcap",
                         "column": "Choices, Calculations, OR Slider Labels (Descriptive Field)",
-                        "value": json.dumps(choices)  # Convert choices to a JSON string
+                        "value": json.dumps(
+                            choices
+                        ),  # Convert choices to a JSON string
                     }
                 else:
                     # For normal input types, process choices normally
-                    response_options.update({
-                        "choices": choices,
-                        "valueType": choices_val_type_l,
-                    })
+                    response_options.update(
+                        {
+                            "choices": choices,
+                            "valueType": choices_val_type_l,
+                        }
+                    )
             if input_type == "slider":
-                response_options.update({
-                    "minValue": 0,
-                    "maxValue": 100,
-                })
+                response_options.update(
+                    {
+                        "minValue": 0,
+                        "maxValue": 100,
+                    }
+                )
         elif input_type_rc in COMPUTE_LIST:
             pass  # taken care below, it's not really choices
         else:
@@ -152,7 +164,7 @@ def process_response_options(row, input_type_rc, value_type) -> Dict[str, Any]:
                 f"Warning: Unexpected input type for choices in {row['item_name']}: input type {input_type} "
                 f"(original in redcap: {input_type_rc}), values: {row.get('choices')}"
             )
-    
+
     for key in RESPONSE_COND:
         if row.get(key) is not None and str(row.get(key)).strip():
             # Min/max validations only apply to numeric types
@@ -161,24 +173,26 @@ def process_response_options(row, input_type_rc, value_type) -> Dict[str, Any]:
                     f"Warning: {key} is not supported for non-numeric type {value_type}. Skipping."
                 )
                 continue
-                
+
             try:
                 # Parse as float first to handle any numeric format
                 raw_value = float(row[key])
-                
+
                 # If it's a whole number, store as integer for cleaner JSON
                 # Otherwise, keep as float
                 if raw_value.is_integer():
                     parsed_value = int(raw_value)
                 else:
                     parsed_value = raw_value
-                
+
                 response_options[key] = parsed_value
-                
+
             except ValueError:
-                print(f"Warning: Value '{row[key]}' for {key} is not a valid number")
+                print(
+                    f"Warning: Value '{row[key]}' for {key} is not a valid number"
+                )
                 continue
-                
+
     return response_options, additional_notes
 
 
@@ -442,7 +456,9 @@ def process_row(
 
     # Add custom validation type note and choices notes if present
     if input_value_notes:
-        item_data.setdefault("additionalNotesObj", []).append(input_value_notes)
+        item_data.setdefault("additionalNotesObj", []).append(
+            input_value_notes
+        )
     if choices_notes:
         item_data.setdefault("additionalNotesObj", []).append(choices_notes)
 
@@ -452,11 +468,11 @@ def process_row(
 def process_csv(csv_file, encoding=None) -> (Dict[str, Any], list):
     """
     Process a REDCap CSV file and extract structured data for items and activities.
-    
+
     Args:
         csv_file: Path to the REDCap CSV file
         encoding (str, optional): Specific encoding to use for the CSV file
-        
+
     Returns:
         tuple: (activities, protocol_activities_order)
         activities: Dictionary containing activity data
@@ -467,20 +483,24 @@ def process_csv(csv_file, encoding=None) -> (Dict[str, Any], list):
             df = pd.read_csv(csv_file, encoding=encoding, low_memory=False)
             print(f"Using specified encoding: {encoding}")
         except UnicodeDecodeError:
-            raise ValueError(f"Failed to read CSV with specified encoding: {encoding}")
+            raise ValueError(
+                f"Failed to read CSV with specified encoding: {encoding}"
+            )
     else:
         # Try multiple encodings in order
-        encodings = ['utf-8-sig', 'latin-1', 'windows-1252', 'cp1252']
+        encodings = ["utf-8-sig", "latin-1", "windows-1252", "cp1252"]
         df = None
-        
+
         for encoding in encodings:
             try:
                 df = pd.read_csv(csv_file, encoding=encoding, low_memory=False)
                 print(f"Successfully read CSV with {encoding} encoding")
                 break
             except UnicodeDecodeError:
-                print(f"Failed to decode with {encoding}, trying next encoding...")
-        
+                print(
+                    f"Failed to decode with {encoding}, trying next encoding..."
+                )
+
         if df is None:
             raise ValueError(
                 "Failed to read CSV file with any of the attempted encodings. "
