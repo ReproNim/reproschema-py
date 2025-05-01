@@ -12,4 +12,4 @@ reproschema requires Python 3.10+
         reproschema2redcap.md #How to convert from resproschema to redcap
         redcap2reproschema.md #How to convert from redcap to reproscehma
         output2redcap.md #How to convert the output into redcap
-        reproschema2fhir.md #How to convert the reproschema into an FHIR Questionaire Resource
+        reproschema2fhir.md #How to convert the reproschema into an FHIR Questionnaire Resource

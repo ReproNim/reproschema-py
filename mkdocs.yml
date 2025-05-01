@@ -6,6 +6,6 @@ nav:
   - Converting from reproschema to redcap: reproschema2redcap.md
   - Converting from redcap to reproschema: redcap2reproschema.md
   - Converting the output into redcap: output2redcap.md
-  - Converting the reproschema into an FHIR Questionaire Resource: reproschema2fhir.md
+  - Converting the reproschema into an FHIR Questionnaire Resource: reproschema2fhir.md
 
 theme: readthedocs
