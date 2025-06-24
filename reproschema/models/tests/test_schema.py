@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 from pyld import jsonld
+from pydantic import ValidationError
 
 from ...jsonldutils import load_file
 from ...utils import start_server, stop_server
@@ -176,3 +177,88 @@ def test_item(tmp_path, server_http_kwargs):
     )
     del data_comp["@context"]
     assert item_dict == data_comp
+
+
+def test_canvas_activity_allows_extra_fields():
+    """Test that canvas activities allow backgroundImage (now an explicit field)."""
+    activity_dict = {
+        "category": "Activity",
+        "id": "canvas_activity.jsonld",
+        "prefLabel": {"en": "Canvas Drawing Activity"},
+        "description": {"en": "A canvas drawing activity"},
+        "schemaVersion": "1.0.0-rc4",
+        "version": "0.0.1",
+        "ui": {
+            "inputType": "canvas",
+            "addProperties": [
+                {
+                    "isAbout": "item1",
+                    "variableName": "canvas_item",
+                    "backgroundImage": "./images/drawaclock.png",
+                }
+            ],
+        },
+    }
+
+    # This should work fine
+    activity_obj = Activity(**activity_dict)
+    assert (
+        activity_obj.ui.addProperties[0].backgroundImage
+        == "./images/drawaclock.png"
+    )
+
+
+def test_background_image_always_allowed():
+    """Test that backgroundImage is always allowed regardless of inputType."""
+    activity_dict = {
+        "category": "Activity",
+        "id": "radio_activity_with_background.jsonld",
+        "prefLabel": {"en": "Radio Button Activity with Background"},
+        "description": {"en": "A radio button activity with background image"},
+        "schemaVersion": "1.0.0-rc4",
+        "version": "0.0.1",
+        "ui": {
+            "inputType": "radio",
+            "addProperties": [
+                {
+                    "isAbout": "item1",
+                    "variableName": "radio_item",
+                    # backgroundImage should be allowed for all activities
+                    "backgroundImage": "./images/some_image.png",
+                }
+            ],
+        },
+    }
+
+    # This should work fine - backgroundImage is now an explicit field
+    activity_obj = Activity(**activity_dict)
+    assert (
+        activity_obj.ui.addProperties[0].backgroundImage
+        == "./images/some_image.png"
+    )
+
+
+def test_activity_without_extra_fields_works():
+    """Test that activities without extra fields work normally regardless of input type."""
+    activity_dict = {
+        "category": "Activity",
+        "id": "normal_activity.jsonld",
+        "prefLabel": {"en": "Normal Activity"},
+        "description": {"en": "A normal activity without extra fields"},
+        "schemaVersion": "1.0.0-rc4",
+        "version": "0.0.1",
+        "ui": {
+            "inputType": "radio",
+            "addProperties": [
+                {
+                    "isAbout": "item1",
+                    "variableName": "normal_item",
+                    # No extra fields
+                }
+            ],
+        },
+    }
+
+    # This should work fine
+    activity_obj = Activity(**activity_dict)
+    assert activity_obj.ui.addProperties[0].variableName == "normal_item"

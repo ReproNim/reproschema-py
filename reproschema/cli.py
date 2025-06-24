@@ -302,3 +302,9 @@ def reproschema2fhir(reproschema_questionnaire, output):
 
         with open(output_path / f"{file_name}/{file_name}.json", "w+") as f:
             f.write(json.dumps(fhir_questionnaire))
+
+
+if __name__ == "__main__":
+    import sys
+
+    main(prog_name="reproschema")

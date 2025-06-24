@@ -10,7 +10,13 @@ from typing import Any, Dict, List, Literal, Optional, Union
 from pydantic.version import VERSION as PYDANTIC_VERSION
 
 if int(PYDANTIC_VERSION[0]) >= 2:
-    from pydantic import BaseModel, ConfigDict, Field, field_validator
+    from pydantic import (
+        BaseModel,
+        ConfigDict,
+        Field,
+        field_validator,
+        model_validator,
+    )
 else:
     from pydantic import BaseModel, Field, validator
 metamodel_version = "None"
@@ -178,6 +184,9 @@ class AdditionalProperty(Thing):
     An object to describe the various properties added to assessments and Items.
     """
 
+    # Override parent's extra="forbid" to allow extra fields
+    model_config = ConfigDict(extra="allow")
+
     allow: Optional[List[AllowedType]] = Field(
         default_factory=list,
         title="allow",
@@ -229,6 +238,14 @@ class AdditionalProperty(Thing):
         title="UI",
         description="An element to control UI specifications. Originally @nest in jsonld, but using a class in the model.",
     )
+
+    # Add backgroundImage as an explicit field to allow it
+    backgroundImage: Optional[str] = Field(
+        None,
+        title="backgroundImage",
+        description="Background image for drawing activities.",
+    )
+
     id: Optional[str] = Field(
         None,
         description="A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.",
