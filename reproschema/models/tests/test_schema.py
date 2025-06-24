@@ -3,8 +3,8 @@ import os
 from pathlib import Path
 
 import pytest
-from pyld import jsonld
 from pydantic import ValidationError
+from pyld import jsonld
 
 from ...jsonldutils import load_file
 from ...utils import start_server, stop_server
