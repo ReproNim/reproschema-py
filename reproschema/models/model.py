@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import re
-import sys
 from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum

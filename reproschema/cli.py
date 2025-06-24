@@ -305,6 +305,4 @@ def reproschema2fhir(reproschema_questionnaire, output):
 
 
 if __name__ == "__main__":
-    import sys
-
     main(prog_name="reproschema")
