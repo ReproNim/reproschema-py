@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import re
-import sys
 from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
@@ -10,7 +8,13 @@ from typing import Any, Dict, List, Literal, Optional, Union
 from pydantic.version import VERSION as PYDANTIC_VERSION
 
 if int(PYDANTIC_VERSION[0]) >= 2:
-    from pydantic import BaseModel, ConfigDict, Field, field_validator
+    from pydantic import (
+        BaseModel,
+        ConfigDict,
+        Field,
+        field_validator,
+        model_validator,
+    )
 else:
     from pydantic import BaseModel, Field, validator
 metamodel_version = "None"
@@ -178,6 +182,9 @@ class AdditionalProperty(Thing):
     An object to describe the various properties added to assessments and Items.
     """
 
+    # Override parent's extra="forbid" to allow extra fields
+    model_config = ConfigDict(extra="allow")
+
     allow: Optional[List[AllowedType]] = Field(
         default_factory=list,
         title="allow",
@@ -229,6 +236,31 @@ class AdditionalProperty(Thing):
         title="UI",
         description="An element to control UI specifications. Originally @nest in jsonld, but using a class in the model.",
     )
+
+    # Add backgroundImage as an explicit field to allow it
+    backgroundImage: Optional[str] = Field(
+        None,
+        title="backgroundImage",
+        description="Background image for drawing activities.",
+    )
+
+    @model_validator(mode="after")
+    def validate_only_background_image_extra(self):
+        """Validate that only backgroundImage is allowed as an extra field."""
+        # Get any extra fields that weren't explicitly defined
+        extra_fields = getattr(self, "__pydantic_extra__", {})
+
+        if extra_fields:
+            # Since backgroundImage is now an explicit field, any extra fields are not allowed
+            extra_field_names = list(extra_fields.keys())
+            raise ValueError(
+                f"Extra fields are not permitted in AdditionalProperty. "
+                f"Only 'backgroundImage' is allowed as an additional field, "
+                f"but found: {extra_field_names}"
+            )
+
+        return self
+
     id: Optional[str] = Field(
         None,
         description="A unique identifier for an entity. Must be either a CURIE shorthand for a URI or a complete URI.",
