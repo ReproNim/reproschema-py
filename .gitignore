@@ -134,3 +134,6 @@ dmypy.json
 
 # Pycharm
 .idea/
+
+# Internal documentation
+internal/
