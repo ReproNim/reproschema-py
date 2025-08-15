@@ -1,0 +1,74 @@
+# ReproSchema Python Library - Repository Documentation
+
+## Inherits From
+- Parent: ../../internal/CLAUDE.md (all shared practices apply)
+
+## Repository-Specific Details
+
+### Purpose
+Python library for working with ReproSchema - provides validation, conversion, and manipulation tools for ReproSchema documents.
+
+### Local Overrides
+- **Python version**: Minimum Python 3.8 (not 3.7)
+- **Testing**: Use pytest exclusively, maintain 90% coverage (higher than parent requirement)
+- **Type hints**: Required for all public APIs
+
+### Unique Patterns
+- CLI tool in `reproschema/cli.py`
+- Conversion utilities for REDCap, FHIR, and other formats
+- Pydantic models for schema validation
+- Custom JSON-LD utilities
+
+### Dependencies on Other Repos
+- Depends on: reproschema (core schema definitions)
+- Used by: reproschema-agents, reproschema-server
+
+### Key Commands
+```bash
+# Install in development mode
+pip install -e .
+
+# Run tests with coverage
+pytest --cov=reproschema --cov-report=html
+
+# Validate a schema
+reproschema validate <path-to-schema>
+
+# Convert REDCap to ReproSchema
+reproschema redcap2reproschema <csv-file> <output-dir>
+
+# Convert ReproSchema to REDCap
+reproschema reproschema2redcap <input-dir> <output-csv>
+```
+
+### Development Workflow
+1. Write tests first (TDD approach)
+2. Implement features with type hints
+3. Run full test suite
+4. Update CLI help text if adding commands
+5. Update README with examples
+
+### Testing Strategy
+- Unit tests for all converters
+- Integration tests for CLI commands
+- Test with real-world schemas from reproschema-library
+- Mock external dependencies
+
+### Release Process
+1. Update CHANGELOG.md
+2. Bump version in pyproject.toml
+3. Ensure tests pass on all Python versions
+4. Create GitHub release
+5. Auto-publish to PyPI via GitHub Actions
+## Lessons Learned
+
+### Template for New Lessons
+```markdown
+### [YYYY-MM-DD] - [Brief Description]
+**Problem**: [What challenge we faced]
+**Solution**: [How we solved it]
+**Transferable to**: [Which other repos might benefit]
+**Status**: [Shared/Local-only/Under-evaluation]
+```
+
+<!-- Add new lessons above this line -->
