@@ -7,6 +7,7 @@ nav:
     - CLI Usage: user_guide/cli_usage.md
     - Reproschema to REDCap: user_guide/reproschema2redcap.md
     - REDCap to Reproschema: user_guide/redcap2reproschema.md
+    - LORIS to Reproschema: user_guide/loris2reproschema.md
     - Output to REDCap: user_guide/output2redcap.md
     - Reproschema to FHIR: user_guide/reproschema2fhir.md
   - About: about.md
