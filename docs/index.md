@@ -1,15 +1,9 @@
 # Welcome to Reproschema-py
 
-For full documentation visit [Reproschema-py](https://github.com/ReproNim/reproschema-py).
-reproschema requires Python 3.10+
+The `reproschema-py` library provides a Python interface and a command-line tool to work with ReproSchema, a YAML-based framework for creating and managing reproducible research protocols.
 
-## Project layout
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        installation.md #A tutorial for installation.
-        cli_usage.md #Notes on CLI usage
-        reproschema2redcap.md #How to convert from reproschema to redcap
-        redcap2reproschema.md #How to convert from redcap to reproschema
-        output2redcap.md #How to convert the output into redcap
-        reproschema2fhir.md #How to convert the reproschema into an FHIR Questionnaire Resource
+This documentation will guide you through the installation process, explain how to use the command-line interface, and provide information for developers who want to contribute to the project.
+
+## Getting Started
+
+If you are new to `reproschema-py`, we recommend starting with the **[Installation](installation.md)** guide, followed by the **[User Guide](user_guide/index.md)** to learn about the available commands.
