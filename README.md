@@ -19,6 +19,11 @@ git clone https://github.com/<your github>/reproschema-py.git
 cd reproschema-py
 pip install -e .
 ```
+#### Notes on the reproschema model
+This repository uses the `pydantic` representation of the `reproschema` model, defined in [model.py](https://github.com/ReproNim/reproschema-py/blob/main/reproschema/models/model.py).
+The `pydantic` model is automatically generated from the LinkML model maintained in the [ReproNim/reproschema repository](https://github.com/ReproNim/reproschema).
+**All changes to the model should be made in the LinkML source in that repository.**
+
 #### Style
 This repo uses pre-commit to check styling.
 - Install pre-commit with pip: `pip install pre-commit`

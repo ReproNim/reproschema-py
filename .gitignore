@@ -135,7 +135,6 @@ dmypy.json
 # Pycharm
 .idea/
 
-# Serena IDE configuration
 .serena/
 
 # Internal documentation
