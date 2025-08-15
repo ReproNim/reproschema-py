@@ -13,7 +13,7 @@ ReproSchema Python library and CLI for working with ReproSchema format - a stand
 # Install in development mode
 pip install -e .
 
-# Install with all development dependencies  
+# Install with all development dependencies
 pip install -e ".[dev]"
 
 # Run pre-commit hooks
@@ -56,7 +56,7 @@ codespell
 - **reproschema/models/model.py**: Pydantic models auto-generated from LinkML schema. DO NOT modify directly - changes should be made in ReproNim/reproschema repository.
 - **reproschema/validate.py**: Schema validation using PyShacl
 - **reproschema/redcap2reproschema.py**: Convert REDCap CSV to ReproSchema format
-- **reproschema/reproschema2redcap.py**: Convert ReproSchema to REDCap CSV format  
+- **reproschema/reproschema2redcap.py**: Convert ReproSchema to REDCap CSV format
 - **reproschema/reproschema2fhir.py**: Convert ReproSchema to FHIR Questionnaire resources
 - **reproschema/output2redcap.py**: Process reproschema-ui output into REDCap CSV
 
