@@ -18,7 +18,7 @@ pip install -e .
 #### Style
 This repo uses pre-commit to check styling.
 - Install pre-commit with pip: `pip install pre-commit`
-- In order to use it with the repository, you have to run `run pre-commit install` in the root directory the first time you use it.
+- In order to use it with the repository, you have to run `pre-commit install` in the root directory the first time you use it.
 
 When pre-commit is used, you may have to run git commit twice,
 since pre-commit may make additional changes to your code for styling and will

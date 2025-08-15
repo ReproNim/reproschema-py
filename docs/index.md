@@ -9,7 +9,7 @@ reproschema requires Python 3.10+
         index.md  # The documentation homepage.
         installation.md #A tutorial for installation.
         cli_usage.md #Notes on CLI usage
-        reproschema2redcap.md #How to convert from resproschema to redcap
-        redcap2reproschema.md #How to convert from redcap to reproscehma
+        reproschema2redcap.md #How to convert from reproschema to redcap
+        redcap2reproschema.md #How to convert from redcap to reproschema
         output2redcap.md #How to convert the output into redcap
         reproschema2fhir.md #How to convert the reproschema into an FHIR Questionnaire Resource

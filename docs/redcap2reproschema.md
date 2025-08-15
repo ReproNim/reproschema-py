@@ -41,5 +41,5 @@ csv_path = "path-to/your_redcap_data_dic.csv"
 yaml_path = "path-to/your_redcap2rs.yaml"
 output_path = "path-to/directory_you_want_to_save_output"
 
-redcap2reproschema(csv_file, yaml_file, output_path)
+redcap2reproschema(csv_path, yaml_path, output_path)
 ```
