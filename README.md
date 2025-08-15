@@ -2,6 +2,10 @@
 
 # Reproschema Python library and Command Line Interface (CLI)
 
+The `reproschema-py` library provides a Python interface and a command-line tool to work with ReproSchema, a YAML-based framework for creating and managing reproducible research protocols.
+
+For more information, see the [full documentation](https://ReproNim.github.io/reproschema-py/).
+
 ## Installation
 
 reproschema requires Python 3.10+.
@@ -9,6 +13,8 @@ reproschema requires Python 3.10+.
 ```
 pip install reproschema
 ```
+
+## Developer Guide
 
 ### Developer installation
 
@@ -32,136 +38,3 @@ This repo uses pre-commit to check styling.
 When pre-commit is used, you may have to run git commit twice,
 since pre-commit may make additional changes to your code for styling and will
 not commit these changes by default.
-
-
-## CLI usage
-
-This package installs `reproschema` Command Line Interface (CLI).
-
-```
-$ reproschema --help
-
-$  A client to support interactions with ReproSchema
-
-  To see help for a specific command, run
-
-  reproschema COMMAND --help     e.g. reproschema validate --help
-
-Options:
-  --version
-  -l, --log-level [DEBUG|INFO|WARNING|ERROR|CRITICAL]
-                                  Log level name  [default: INFO]
-  --help                          Show this message and exit.
-
-Commands:
-  convert             Converts a path to a different format, jsonld,...
-  create
-  migrate             Updates to a new reproschema version
-  redcap2reproschema  Converts REDCap CSV files to Reproschema format.
-  reproschema2redcap  Converts reproschema protocol to REDCap CSV format.
-  serve
-  validate            Validates if the path has a valid reproschema format
-  reproschema2fhir       Generates FHIR questionnaire resources from reproschema activities
-  output2redcap  Generates redcap csv given the audio and survey data from reproschema ui
-```
-
-## `reproschema2redcap`
-
-### CLI Usage
-
-You can use this feature directly from the command line. To convert ReproSchema protocol to REDCap CSV format, use the following command
-
-```
-reproschema reproschema2redcap <input_dir_path> <output_csv_filename>
-```
-
-- `<input_dir_path>`: The path to the root folder of a protocol. For example, to convert the reproschema-demo-protocol provided by ReproNim, you can use the following commands:
-  ```bash
-  git clone https://github.com/ReproNim/reproschema-demo-protocol.git
-  cd reproschema-demo-protocol
-  pwd
-  ```
-  In this case,  the output from `pwd` (which shows your current directory path) should be your `<input_dir_path>`.
-- `<output_csv_filename>`: The name of the output CSV file where the converted data will be saved.
-
-### Python Function Usage
-
-You can also use the `reproschema2redcap` function from the `reproschema-py` package in your Python code.
-
-```python
-from reproschema import reproschema2redcap
-
-input_dir_path = "path-to/reproschema-demo-protocol"
-output_csv_filename = "output.csv"
-
-reproschema2redcap(input_dir_path, output_csv_filename)
-```
-
-## `redcap2reproschema`
-The `redcap2reproschema` function is designed to process a given REDCap CSV file and YAML configuration to generate the output in the reproschema format.
-
-### Prerequisites
-Before the conversion, ensure you have the following:
-
-**YAML Configuration File**:
-   - Download [templates/redcap2rs.yaml](templates/redcap2rs.yaml) and fill it out with your protocol details.
-
-### YAML File Configuration
-In the `templates/redcap2rs.yaml` file, provide the following information:
-
-- **protocol_name**: A unique identifier for your protocol. Use underscores for spaces and avoid special characters.
-- **protocol_display_name**: Name that will appear in the application.
-- **protocol_description**: A brief description of your protocol.
-- **redcap_version**: Version of your redcap file (you can customize it).
-
-Example:
-```yaml
-protocol_name: "My_Protocol"
-protocol_display_name: "Assessment Protocol"
-protocol_description: "This protocol is for assessing cognitive skills."
-redcap_version: "X.XX.X"
-```
-### CLI Usage
-
-The `redcap2reproschema` function has been integrated into a CLI tool, use the following command:
-```bash
-reproschema redcap2reproschema path/to/your_redcap_data_dic.csv path/to/your_redcap2rs.yaml
-```
-
-Optionally you can provide a path to the output directory (default is the current directory) by adding the option: `--output-path PATH`
-### Python Function Usage
-
-You can also use the `redcap2reproschema` function from the `reproschema-py` package in your Python code.
-
-```python
-from reproschema import redcap2reproschema
-
-csv_path = "path-to/your_redcap_data_dic.csv"
-yaml_path = "path-to/your_redcap2rs.yaml"
-output_path = "path-to/directory_you_want_to_save_output"
-
-redcap2reproschema(csv_file, yaml_file, output_path)
-```
-
-## `output2redcap`
-The `output2redcap` function is designed to process the output from reproschema-ui into a REDCap CSV file as seen [here](reproschema/example/redcap).
-
-
-### CLI Usage
-
-The `output2redcap` function has been integrated into a CLI tool, use the following command:
-```bash
-reproschema output2redcap ./path/to/your_reproschema-ui_files ./path/to/directory_you_want_to_save_output
-```
-
-## `reproschema2fhir`
-The `reproschema2fhir` function is designed to convert reproschema activities and items into a FHIR Questionnaire resource as seen [here](reproschema/example/fhir).
-
-### CLI Usage
-
-The `reproschema2fhir` function has been integrated into a CLI tool, use the following command:
-```bash
-reproschema reproschema2fhir ./path/to/your_reproschema_activities ./path/to/directory_you_want_to_save_output
-```
-### Notes
-1. The script requires an active internet connection to access the GitHub repository.
