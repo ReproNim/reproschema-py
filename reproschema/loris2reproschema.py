@@ -414,6 +414,17 @@ class ReproSchemaConverter:
         """
         try:
             self.log(f"Loading CSV file: {csv_file}")
+            
+            # Check file size limit (100MB = 104,857,600 bytes)
+            file_size = os.path.getsize(csv_file)
+            max_size = 100 * 1024 * 1024  # 100MB in bytes
+            if file_size > max_size:
+                raise ValueError(
+                    f"CSV file size ({file_size / (1024 * 1024):.1f} MB) exceeds the "
+                    f"maximum allowed size of {max_size / (1024 * 1024)} MB. "
+                    f"Please use a smaller file or increase the size limit."
+                )
+            self.log(f"File size check passed: {file_size / (1024 * 1024):.1f} MB")
 
             # Try multiple encodings if none specified
             if encoding:
@@ -1639,6 +1650,12 @@ class ReproSchemaConverter:
             Various exceptions with descriptive error messages.
         """
         try:
+            # Validate output path to prevent directory traversal
+            if ".." in output_path:
+                raise ValueError(
+                    f"Output path '{output_path}' contains directory traversal patterns"
+                )
+            
             # Get protocol name from config or use a default
             protocol_name = self.config.get("protocol_name", "LORIS_Protocol")
             # Sanitize protocol name for filesystem safety
