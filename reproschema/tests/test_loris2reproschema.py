@@ -52,10 +52,10 @@ def test_loris2reproschema(tmpdir):
 def test_loris2reproschema_missing_config(tmpdir):
     """Test handling of missing configuration file"""
     runner = CliRunner()
-    
+
     temp_csv_file = tmpdir.join(CSV_FILE_NAME)
     shutil.copy(CSV_TEST_FILE, str(temp_csv_file))
-    
+
     with tmpdir.as_cwd():
         result = runner.invoke(
             main,
@@ -65,7 +65,7 @@ def test_loris2reproschema_missing_config(tmpdir):
                 "nonexistent_config.yml",
             ],
         )
-        
+
         # Should fail with missing config file
         assert result.exit_code != 0
         assert "does not exist" in result.output.lower()
