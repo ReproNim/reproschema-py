@@ -174,6 +174,50 @@ def redcap2reproschema(csv_path, yaml_path, output_path):
 
 
 @main.command()
+@click.argument("csv_file", type=click.Path(exists=True, dir_okay=False))
+@click.argument("config_file", type=click.Path(exists=True, dir_okay=False))
+@click.option(
+    "--output-path",
+    type=click.Path(dir_okay=True, writable=True, resolve_path=True),
+    default=".",
+    show_default=True,
+    help="Path to the output directory, defaults to the current directory.",
+)
+@click.option(
+    "--encoding",
+    help="Encoding to use for reading the CSV file (e.g., utf-8, latin-1).",
+)
+@click.option(
+    "--analyze",
+    is_flag=True,
+    help="Only analyze the CSV file structure and exit without conversion.",
+)
+@click.option(
+    "--verbose",
+    is_flag=True,
+    help="Enable verbose logging.",
+)
+def loris2reproschema(
+    csv_file, config_file, output_path, encoding, analyze, verbose
+):
+    """
+    Converts LORIS CSV files to Reproschema format.
+    """
+    from .loris2reproschema import loris2reproschema as loris2rs
+
+    try:
+        loris2rs(
+            csv_file, config_file, output_path, encoding, analyze, verbose
+        )
+        if not analyze:
+            click.echo(
+                "Converted LORIS data dictionary to Reproschema format."
+            )
+    except Exception as e:
+        raise click.ClickException(f"Error during conversion: {e}")
+
+
+@main.command()
 @click.argument("input_path", type=click.Path(exists=True, dir_okay=True))
 @click.argument("output_csv_path", type=click.Path(writable=True))
 def reproschema2redcap(input_path, output_csv_path):

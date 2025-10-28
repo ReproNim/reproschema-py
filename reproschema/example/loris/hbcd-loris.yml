@@ -1,0 +1,65 @@
+# HBCD LORIS Configuration
+
+# Protocol information
+protocol_name: "HBCD_LORIS"
+protocol_display_name: "HEALthy Brain and Child Development Study"
+protocol_description: "Protocol for the HBCD study using LORIS data dictionary"
+loris_version: "1.0.0"
+protocol_preamble: "This protocol contains the HBCD assessment instruments from the LORIS data dictionary"
+
+# Domain/instrument column settings
+domain_column: "full_instrument_name"
+fallback_domain_column: "domain"
+default_domain: "General"
+
+# Schema context URL (defaults to ReproSchema standard URL if not specified)
+schema_context_url: "https://raw.githubusercontent.com/ReproNim/reproschema/main/releases/1.0.0/reproschema"
+
+# Column mappings - customized based on HBCD LORIS CSV format
+column_mappings:
+  # Main identifiers and structure
+  activity_name: "full_instrument_name"    # Primary grouping field
+  item_name: "name"                        # Field identifier
+  question: "question"                     # Question text
+
+  # Input type and validation
+  field_type: "field_type"                 # Type of input (dropdown, text, etc.)
+  validation: "data_type"                  # Data type validation
+  required: "loris_required"               # If field is required
+
+  # Response options
+  response_option_labels: "option_labels"  # Labels for choices
+  response_option_values: "option_values"  # Values for choices
+
+  # Additional metadata
+  description: "description"               # Field description
+  min_value: "redcap_text_validation_min"  # Min value if applicable
+  max_value: "redcap_text_validation_max"  # Max value if applicable
+  visibility: "redcap_branching_logic"     # Conditional display logic
+  annotation: "redcap_field_annotation"    # Additional annotations
+  matrix_group: "redcap_matrix_group_name" # Matrix group name
+
+# Additional columns to include as notes in the schema
+additional_notes_fields:
+  - "source_field"
+  - "source_from"
+  - "source_respondent"
+  - "study"
+  - "data_type"
+  - "data_scope"
+  - "field_category"
+  - "field_class"
+  - "coding_format"
+  - "collection_platform"
+  - "collection_required"
+  - "description_status"
+
+# Field type overrides - map specific HBCD types to correct ReproSchema input types
+field_type_overrides:
+  "Dropdown": "select"
+  "Multi-select": "selectMultiple"
+  "Text": "text"
+  "Dropdown, Multi-select": "selectMultiple"
+
+# Enable verbose logging
+verbose: true
