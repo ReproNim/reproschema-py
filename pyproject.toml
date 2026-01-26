@@ -42,7 +42,7 @@ doc = [
 docs = ["reproschema[doc]"]
 # Parquet support for nbdc2reproschema
 nbdc-parquet = [
-    "pyarrow >= 10.0.0",
+    "pyarrow >= 10.0.0"
 ]
 # For running unit and docstring tests
 test = [

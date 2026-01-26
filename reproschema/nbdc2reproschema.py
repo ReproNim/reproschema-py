@@ -12,6 +12,12 @@ from typing import Any, Dict, List, Optional, Tuple
 import pandas as pd
 import yaml
 
+from .context_url import CONTEXTFILE_URL
+from .convertutils import (
+    create_activity_schema,
+    create_protocol_schema,
+    parse_html,
+)
 from .nbdc_mappings import (
     NBDC_ADDITIONAL_NOTES_COLUMNS,
     NBDC_COLUMN_MAP,
@@ -20,12 +26,6 @@ from .nbdc_mappings import (
     get_nbdc_value_type,
     is_compute_field,
     is_readonly_field,
-)
-from .context_url import CONTEXTFILE_URL
-from .convertutils import (
-    create_activity_schema,
-    create_protocol_schema,
-    parse_html,
 )
 
 
@@ -135,7 +135,9 @@ def load_nbdc_data_rds(rds_path: Path) -> pd.DataFrame:
 
     result = pyreadr.read_r(str(rds_path))
     if len(result) != 1:
-        raise ValueError(f"Expected single object in RDS file, got {len(result)}")
+        raise ValueError(
+            f"Expected single object in RDS file, got {len(result)}"
+        )
 
     df = result[list(result.keys())[0]]
     return df
@@ -188,8 +190,16 @@ def process_row(
     """
     # Get type information (column names are mapped to internal names)
     # type_var is the mapped name for the original 'type_var' column
-    type_var = str(row.get("inputType", "")).strip().lower() if row.get("inputType") and pd.notna(row.get("inputType")) else ""
-    type_data = str(row.get("dataType", "")).strip().lower() if row.get("dataType") and pd.notna(row.get("dataType")) else ""
+    type_var = (
+        str(row.get("inputType", "")).strip().lower()
+        if row.get("inputType") and pd.notna(row.get("inputType"))
+        else ""
+    )
+    type_data = (
+        str(row.get("dataType", "")).strip().lower()
+        if row.get("dataType") and pd.notna(row.get("dataType"))
+        else ""
+    )
 
     # Determine input and value types
     input_type = get_nbdc_input_type(type_var, type_data)
@@ -247,7 +257,12 @@ def process_row(
 
     # Add additional notes from NBDC metadata
     for key in NBDC_ADDITIONAL_NOTES_COLUMNS:
-        if key in row and row.get(key) and pd.notna(row.get(key)) and str(row.get(key)).strip():
+        if (
+            key in row
+            and row.get(key)
+            and pd.notna(row.get(key))
+            and str(row.get(key)).strip()
+        ):
             notes_obj = {
                 "source": "nbdc",
                 "column": key,
@@ -424,7 +439,10 @@ def nbdc2reproschema(
     # Create protocol schema
     print(f"Creating protocol: {protocol_name}")
     create_protocol_schema(
-        protocol, protocol_activities_order, abs_folder_path, schema_context_url
+        protocol,
+        protocol_activities_order,
+        abs_folder_path,
+        schema_context_url,
     )
 
     print(f"OUTPUT DIRECTORY: {abs_folder_path}")
