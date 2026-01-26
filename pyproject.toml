@@ -16,7 +16,8 @@ dependencies = [
     "lxml",
     "pydantic >= 2.0",
     "pandas",
-    "fhir.resources>=v8.0.0"
+    "fhir.resources>=v8.0.0",
+    "pyreadr >= 0.4.9"
 ]
 description = "Reproschema Python library"
 # Version from setuptools_scm

@@ -218,6 +218,45 @@ def loris2reproschema(
 
 
 @main.command()
+@click.argument("rda_path", type=click.Path(exists=True, dir_okay=False))
+@click.argument("yaml_path", type=click.Path(exists=True, dir_okay=False))
+@click.argument("release", type=str)
+@click.option(
+    "--output-path",
+    type=click.Path(dir_okay=True, writable=True, resolve_path=True),
+    default=".",
+    show_default=True,
+    help="Path to the output directory, defaults to the current directory.",
+)
+@click.option(
+    "--study",
+    default="abcd",
+    show_default=True,
+    help="Study name in the RDA file (e.g., 'abcd', 'hbcd').",
+)
+@click.option(
+    "--use-rds",
+    type=click.Path(exists=True, dir_okay=False),
+    help="Path to pre-exported RDS file (skips RDA export).",
+)
+def nbdc2reproschema(rda_path, yaml_path, release, output_path, study, use_rds):
+    """
+    Converts NBDC RDA data dictionary to Reproschema format.
+
+    Example: reproschema nbdc2reproschema lst_dds.rda config.yaml 6.0
+    """
+    from .nbdc2reproschema import nbdc2reproschema as nbdc2rs
+
+    try:
+        nbdc2rs(rda_path, yaml_path, release, output_path, study, use_rds=use_rds)
+        click.echo(
+            f"Converted NBDC {study} release {release} to Reproschema format."
+        )
+    except Exception as e:
+        raise click.ClickException(f"Error during conversion: {e}")
+
+
+@main.command()
 @click.argument("input_path", type=click.Path(exists=True, dir_okay=True))
 @click.argument("output_csv_path", type=click.Path(writable=True))
 def reproschema2redcap(input_path, output_csv_path):
