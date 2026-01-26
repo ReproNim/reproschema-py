@@ -218,9 +218,8 @@ def loris2reproschema(
 
 
 @main.command()
-@click.argument("rda_path", type=click.Path(exists=True, dir_okay=False))
+@click.argument("input_file", type=click.Path(exists=True, dir_okay=False))
 @click.argument("yaml_path", type=click.Path(exists=True, dir_okay=False))
-@click.argument("release", type=str)
 @click.option(
     "--output-path",
     type=click.Path(dir_okay=True, writable=True, resolve_path=True),
@@ -229,29 +228,27 @@ def loris2reproschema(
     help="Path to the output directory, defaults to the current directory.",
 )
 @click.option(
-    "--study",
-    default="abcd",
-    show_default=True,
-    help="Study name in the RDA file (e.g., 'abcd', 'hbcd').",
+    "--input-format",
+    default=None,
+    type=click.Choice(["auto", "parquet", "csv", "rds"]),
+    help="Input file format (default: auto-detect)",
 )
-@click.option(
-    "--use-rds",
-    type=click.Path(exists=True, dir_okay=False),
-    help="Path to pre-exported RDS file (skips RDA export).",
-)
-def nbdc2reproschema(rda_path, yaml_path, release, output_path, study, use_rds):
+def nbdc2reproschema(input_file, yaml_path, output_path, input_format):
     """
-    Converts NBDC RDA data dictionary to Reproschema format.
+    Converts NBDC data dictionary (Parquet/CSV/RDS) to Reproschema format.
 
-    Example: reproschema nbdc2reproschema lst_dds.rda config.yaml 6.0
+    Example: reproschema nbdc2reproschema abcd_6.0.parquet config.yml
+
+    The input format is auto-detected from the file extension:
+    - .parquet: Parquet format (preferred, fastest)
+    - .csv: CSV format
+    - .rds: R RDS format (requires pyreadr)
     """
     from .nbdc2reproschema import nbdc2reproschema as nbdc2rs
 
     try:
-        nbdc2rs(rda_path, yaml_path, release, output_path, study, use_rds=use_rds)
-        click.echo(
-            f"Converted NBDC {study} release {release} to Reproschema format."
-        )
+        nbdc2rs(input_file, yaml_path, output_path, input_format)
+        click.echo(f"Converted NBDC data to Reproschema format.")
     except Exception as e:
         raise click.ClickException(f"Error during conversion: {e}")
 

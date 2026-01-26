@@ -1,25 +1,21 @@
 """
-Convert NBDC data dictionary from R RDS format to ReproSchema format.
+Convert NBDC data dictionary to ReproSchema format.
 
 This module handles conversion of NBDC (Neurodata Without Borders/Data Coordinating Center)
-study data from R RDS files exported from NBDCtoolsData to ReproSchema JSON-LD.
+study data from various formats (Parquet, CSV, RDS) to ReproSchema JSON-LD.
 """
 
 import json
-import subprocess
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
+import yaml
 
 from .nbdc_mappings import (
     NBDC_ADDITIONAL_NOTES_COLUMNS,
     NBDC_COLUMN_MAP,
-    NBDC_COLUMN_MAP_REVERSE,
     NBDC_COLUMN_REQUIRED,
-    NBDC_COMPUTE_TYPES,
-    NBDC_INPUT_TYPE_MAP,
-    NBDC_READONLY_TYPES,
     get_nbdc_input_type,
     get_nbdc_value_type,
     is_compute_field,
@@ -30,47 +26,96 @@ from .convertutils import (
     create_activity_schema,
     create_protocol_schema,
     parse_html,
-    read_check_yaml_config,
 )
 
 
-def export_rda_to_rds(rda_path: Path, study: str, release: str, output_dir: Path) -> Path:
+def read_nbdc_config(config_file: Path) -> Dict[str, Any]:
     """
-    Export NBDC data from RDA to RDS format using R.
+    Read and validate the NBDC YAML configuration file.
 
     Args:
-        rda_path: Path to lst_dds.rda file
-        study: Study name (e.g., "abcd", "hbcd")
-        release: Release version (e.g., "6.0")
-        output_dir: Directory to save the RDS file
+        config_file: Path to the YAML configuration file
 
     Returns:
-        Path to the exported RDS file
+        Dictionary containing the configuration
+
+    Raises:
+        FileNotFoundError: If the config file doesn't exist
+        ValueError: If the YAML is invalid or missing required fields
+        yaml.YAMLError: If the config file has invalid YAML syntax
     """
-    output_rds = output_dir / f"{study}_{release.replace('.', '_')}.rds"
+    try:
+        with open(config_file, "r") as f:
+            config = yaml.safe_load(f)
+            # Validate required fields
+            required_fields = ["protocol_name"]
+            missing = [
+                field for field in required_fields if field not in config
+            ]
+            if missing:
+                raise ValueError(
+                    f"Missing required fields in config: {', '.join(missing)}"
+                )
+            return config
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Configuration file not found: {config_file}")
+    except yaml.YAMLError as e:
+        raise ValueError(f"Invalid YAML in configuration file: {str(e)}")
 
-    # R script to export the data
-    r_script = f"""
-    library(tidyverse)
-    load('{rda_path}')
-    df <- lst_dds${study}$'{release}'
-    saveRDS(df, '{output_rds}')
+
+def detect_input_format(file_path: Path) -> str:
+    """Detect input format from file extension.
+
+    Args:
+        file_path: Path to the input file
+
+    Returns:
+        Format string: "parquet", "csv", or "rds"
     """
-
-    # Run R script
-    result = subprocess.run(
-        ["R", "--slave", "-e", r_script],
-        capture_output=True,
-        text=True,
-    )
-
-    if result.returncode != 0:
-        raise RuntimeError(f"Failed to export RDA to RDS: {result.stderr}")
-
-    return output_rds
+    ext = file_path.suffix.lower()
+    format_map = {
+        ".parquet": "parquet",
+        ".csv": "csv",
+        ".rds": "rds",
+    }
+    return format_map.get(ext, "csv")
 
 
-def load_nbdc_data(rds_path: Path) -> pd.DataFrame:
+def load_nbdc_data_parquet(file_path: Path) -> pd.DataFrame:
+    """Load NBDC data from Parquet file.
+
+    Args:
+        file_path: Path to the Parquet file
+
+    Returns:
+        DataFrame containing the NBDC data dictionary
+
+    Raises:
+        ImportError: If pyarrow is not installed
+    """
+    try:
+        import pyarrow.parquet as pq
+    except ImportError:
+        raise ImportError(
+            "pyarrow is required to read Parquet files. "
+            "Install it with: pip install pyarrow"
+        )
+    return pd.read_parquet(file_path)
+
+
+def load_nbdc_data_csv(file_path: Path) -> pd.DataFrame:
+    """Load NBDC data from CSV file.
+
+    Args:
+        file_path: Path to the CSV file
+
+    Returns:
+        DataFrame containing the NBDC data dictionary
+    """
+    return pd.read_csv(file_path)
+
+
+def load_nbdc_data_rds(rds_path: Path) -> pd.DataFrame:
     """
     Load NBDC data from RDS file using pyreadr.
 
@@ -96,31 +141,75 @@ def load_nbdc_data(rds_path: Path) -> pd.DataFrame:
     return df
 
 
+def load_nbdc_data(file_path: Path, input_format: str = None) -> pd.DataFrame:
+    """Load NBDC data from file (auto-detect format).
+
+    Args:
+        file_path: Path to the input file
+        input_format: Format hint ("parquet", "csv", "rds").
+                     If None, format is auto-detected from file extension.
+
+    Returns:
+        DataFrame containing the NBDC data dictionary
+
+    Raises:
+        ValueError: If the format is not supported
+    """
+    if input_format is None:
+        input_format = detect_input_format(file_path)
+
+    loaders = {
+        "parquet": load_nbdc_data_parquet,
+        "csv": load_nbdc_data_csv,
+        "rds": load_nbdc_data_rds,
+    }
+
+    if input_format not in loaders:
+        raise ValueError(f"Unsupported format: {input_format}")
+
+    return loaders[input_format](file_path)
+
+
 def process_row(
     row: Dict[str, Any], activity_label: str
-) -> Dict[str, Any]:
+) -> Tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
     """
     Process a single row of NBDC data and return structured data for an item.
 
     Args:
         row: Dictionary containing all fields from the NBDC data row
+               Note: Columns should already be mapped using NBDC_COLUMN_MAP
         activity_label: Label of the activity this item belongs to
 
     Returns:
-        Dictionary containing structured data for the item
+        tuple: (item_data, compute)
+        item_data: Dictionary containing structured data for the item
+        compute: Dictionary with compute info if this is a computed field, else None
     """
-    # Get type information
-    type_var = str(row.get("type_var", "")).strip().lower() if row.get("type_var") else ""
-    type_data = str(row.get("type_data", "")).strip().lower() if row.get("type_data") else ""
+    # Get type information (column names are mapped to internal names)
+    # type_var is the mapped name for the original 'type_var' column
+    type_var = str(row.get("inputType", "")).strip().lower() if row.get("inputType") and pd.notna(row.get("inputType")) else ""
+    type_data = str(row.get("dataType", "")).strip().lower() if row.get("dataType") and pd.notna(row.get("dataType")) else ""
 
     # Determine input and value types
     input_type = get_nbdc_input_type(type_var, type_data)
     value_type = get_nbdc_value_type(type_data or type_var)
 
-    # Get item name
-    item_name = row.get("name", "")
-    if not item_name:
-        raise ValueError("Row missing required 'name' column")
+    # Get item name (mapped from 'name' to 'item_name')
+    item_name = row.get("item_name", "")
+    if not item_name or (isinstance(item_name, str) and not item_name.strip()):
+        raise ValueError("Row missing required 'item_name' column")
+
+    item_name = str(item_name).strip()
+
+    # Check if this is a computed field
+    is_computed = is_compute_field(type_var)
+    compute = None
+    if is_computed:
+        compute = {
+            "variableName": item_name,
+            "isAbout": f"items/{item_name}",
+        }
 
     # Create base item structure
     item_data = {
@@ -129,22 +218,19 @@ def process_row(
         "prefLabel": {"en": item_name},
     }
 
-    # Add question if available
-    question = row.get("label")
-    if question and str(question).strip():
+    # Add question if available (mapped from 'label' to 'question')
+    question = row.get("question")
+    if question and pd.notna(question) and str(question).strip():
         item_data["question"] = parse_html(str(question))
 
     # Add instruction if available
     instruction = row.get("instruction")
-    if instruction and str(instruction).strip():
-        item_data["question"] = item_data.get("question", {})
-        if isinstance(item_data["question"], dict):
-            item_data["question"]["en"] = str(instruction).strip()
-        else:
-            item_data["instruction"] = {"en": str(instruction).strip()}
+    if instruction and pd.notna(instruction) and str(instruction).strip():
+        # Add as a separate property, not overwrite question
+        item_data["instruction"] = {"en": str(instruction).strip()}
 
     # For compute fields, use description instead of question
-    if is_compute_field(type_var):
+    if is_computed:
         if "question" in item_data:
             item_data["description"] = item_data.pop("question")
 
@@ -159,14 +245,9 @@ def process_row(
     response_options = {"valueType": [value_type]}
     item_data["responseOptions"] = response_options
 
-    # Add unit if available
-    unit = row.get("unit")
-    if unit and str(unit).strip():
-        item_data["unit"] = {"en": str(unit).strip()}
-
     # Add additional notes from NBDC metadata
     for key in NBDC_ADDITIONAL_NOTES_COLUMNS:
-        if key in row and row.get(key) and str(row.get(key)).strip():
+        if key in row and row.get(key) and pd.notna(row.get(key)) and str(row.get(key)).strip():
             notes_obj = {
                 "source": "nbdc",
                 "column": key,
@@ -182,10 +263,10 @@ def process_row(
     }
     item_data.setdefault("additionalNotesObj", []).append(notes_obj)
 
-    return item_data
+    return item_data, compute
 
 
-def process_nbdc_data(df: pd.DataFrame) -> (Dict[str, Any], list):
+def process_nbdc_data(df: pd.DataFrame) -> Tuple[Dict[str, Any], list]:
     """
     Process NBDC data dictionary and extract structured data for items and activities.
 
@@ -197,9 +278,11 @@ def process_nbdc_data(df: pd.DataFrame) -> (Dict[str, Any], list):
         activities: Dictionary containing activity data
         protocol_activities_order: List of activity names in order
     """
-    # Replace NaN with empty string
-    df = df.astype(str).replace("nan", "")
-    df = df.fillna("")
+    # Make a copy to avoid modifying the original
+    df = df.copy()
+
+    # Filter out rows with empty names first (before string conversion)
+    df = df[df["name"].notna() & (df["name"].astype(str).str.strip() != "")]
 
     # Validate required columns
     missing_columns = set(NBDC_COLUMN_REQUIRED) - set(df.columns)
@@ -216,25 +299,44 @@ def process_nbdc_data(df: pd.DataFrame) -> (Dict[str, Any], list):
     protocol_activities_order = []
 
     for activity_name, group in df_mapped.groupby("activity_name", sort=False):
-        if not activity_name or activity_name == "" or activity_name == "nan":
+        # Skip empty activity names
+        if pd.isna(activity_name) or not str(activity_name).strip():
             print("WARNING: Some rows have no activity name, skipping")
             continue
 
         items = []
         items_order = []
+        act_addProperties = []
+        act_compute = []
 
         for _, row in group.iterrows():
             try:
-                item = process_row(row, activity_name)
+                item, compute = process_row(row.to_dict(), activity_name)
                 items.append(item)
-                items_order.append(f"items/{item['id']}")
+
+                # Create addProperties for each item
+                add_property = {
+                    "variableName": item["id"],
+                    "isAbout": f"items/{item['id']}",
+                    "isVis": True,
+                }
+
+                if compute:
+                    act_compute.append(compute)
+                    add_property["isVis"] = False
+                else:
+                    items_order.append(f"items/{item['id']}")
+
+                act_addProperties.append(add_property)
+
             except Exception as e:
-                print(f"Warning: Failed to process row {row.get('name', '<unknown>')}: {e}")
+                item_name = row.get("item_name", row.get("name", "<unknown>"))
+                print(f"Warning: Failed to process row {item_name}: {e}")
                 continue
 
         # Get activity label
         activity_label = group.iloc[0].get("activity_label", activity_name)
-        if activity_label and str(activity_label).strip() and str(activity_label) != "nan":
+        if pd.notna(activity_label) and str(activity_label).strip():
             activity_label = str(activity_label).strip()
         else:
             activity_label = activity_name
@@ -242,6 +344,8 @@ def process_nbdc_data(df: pd.DataFrame) -> (Dict[str, Any], list):
         activities[activity_name] = {
             "items": items,
             "order": items_order,
+            "compute": act_compute,
+            "addProperties": act_addProperties,
             "label": activity_label,
         }
         protocol_activities_order.append(activity_name)
@@ -250,39 +354,40 @@ def process_nbdc_data(df: pd.DataFrame) -> (Dict[str, Any], list):
 
 
 def nbdc2reproschema(
-    rda_file: str,
+    input_file: str,
     yaml_file: str,
-    release: str,
     output_path: str = ".",
-    study: str = "abcd",
+    input_format: str = None,
     schema_context_url: Optional[str] = None,
-    use_rds: Optional[str] = None,
 ):
     """
     Convert NBDC data dictionary to ReproSchema format.
 
     Args:
-        rda_file: Path to lst_dds.rda file
+        input_file: Path to input file (Parquet, CSV, or RDS)
         yaml_file: Path to YAML configuration file
-        release: NBDC release version (e.g., "6.0", "6.1")
         output_path: Path to output directory (default: current directory)
-        study: Study name (default: "abcd")
+        input_format: Input format hint ("parquet", "csv", "rds").
+                     If None, format is auto-detected from file extension.
         schema_context_url: URL for schema context (optional)
-        use_rds: Path to pre-exported RDS file (optional, skips RDA export)
     """
     # Validate paths
-    rda_path = Path(rda_file)
+    input_path = Path(input_file)
     yaml_path = Path(yaml_file)
     output_dir = Path(output_path)
 
-    if not rda_path.exists():
-        raise FileNotFoundError(f"RDA file not found: {rda_file}")
+    if not input_path.exists():
+        raise FileNotFoundError(f"Input file not found: {input_file}")
     if not yaml_path.exists():
         raise FileNotFoundError(f"YAML file not found: {yaml_file}")
 
     # Read protocol configuration
-    protocol = read_check_yaml_config(yaml_path)
+    protocol = read_nbdc_config(yaml_path)
     protocol_name = protocol.get("protocol_name", "NBDC").replace(" ", "_")
+
+    # Add redcap_version for protocol schema (use NBDC data version or default)
+    if "redcap_version" not in protocol:
+        protocol["redcap_version"] = protocol.get("version", "1.0.0")
 
     # Set up output directory
     abs_folder_path = output_dir / protocol_name
@@ -292,20 +397,13 @@ def nbdc2reproschema(
     if schema_context_url is None:
         schema_context_url = CONTEXTFILE_URL
 
-    # Load NBDC data
-    if use_rds:
-        # Use pre-exported RDS file
-        rds_path = Path(use_rds)
-        print(f"Using pre-exported RDS file: {rds_path}")
-    else:
-        # Export RDA to RDS first
-        print(f"Exporting RDA to RDS format...")
-        rds_path = export_rda_to_rds(rda_path, study, release, output_dir)
-        print(f"Exported to: {rds_path}")
+    # Detect format if not specified
+    if input_format is None:
+        input_format = detect_input_format(input_path)
 
-    # Load data from RDS
-    print(f"Loading NBDC data for {study} release {release}...")
-    df = load_nbdc_data(rds_path)
+    # Load NBDC data
+    print(f"Loading NBDC data from {input_file} (format: {input_format})...")
+    df = load_nbdc_data(input_path, input_format)
     print(f"Loaded {len(df)} rows")
 
     # Process data
@@ -319,7 +417,7 @@ def nbdc2reproschema(
             activity_name,
             activity_data,
             abs_folder_path,
-            f"{study.upper()} {release}",
+            input_path.stem,
             schema_context_url,
         )
 

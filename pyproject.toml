@@ -29,7 +29,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
-all = ["reproschema[doc]", "reproschema[test]"]
+all = ["reproschema[doc]", "reproschema[test]", "reproschema[nbdc-parquet]"]
 dev = ["reproschema[doc]", "reproschema[test]", "black", "pre-commit"]
 doc = [
     "packaging",
@@ -40,6 +40,10 @@ doc = [
     "sphinxcontrib-versioning"
 ]
 docs = ["reproschema[doc]"]
+# Parquet support for nbdc2reproschema
+nbdc-parquet = [
+    "pyarrow >= 10.0.0",
+]
 # For running unit and docstring tests
 test = [
     "pytest >= 4.4.0",
