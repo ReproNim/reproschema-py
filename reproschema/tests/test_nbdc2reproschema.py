@@ -80,7 +80,8 @@ class TestCLI:
             config = yaml.safe_load(f)
 
         assert "protocol_name" in config
-        assert config["protocol_name"] == "ABCD_6.0"
+        assert config["protocol_name"] == "ABCD"
+        assert config.get("version") == "6.0"
 
     def test_nbdc2reproschema_missing_input_file(self, tmpdir):
         """Test handling of missing input file."""

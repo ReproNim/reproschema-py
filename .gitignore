@@ -143,3 +143,10 @@ internal/
 
 # Claude files
 CLAUDE.md
+
+# ReproSchema converter output folders (generated output)
+*_LORIS/
+*_NBDC/
+# Protocol output folders - typically named after protocol from config
+HBCD_*/
+ABCD_*/
