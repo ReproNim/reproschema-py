@@ -1037,14 +1037,16 @@ class ReproSchemaConverter:
 
         # Check annotation for readonly/hidden
         annotation_col = self.column_mappings.get("annotation")
-        if annotation_col and annotation_col in row and row[annotation_col]:
-            annotation = row[annotation_col].upper()
-            if (
-                "@READONLY" in annotation
-                or "@HIDDEN" in annotation
-                or "@CALCTEXT" in annotation
-            ):
-                item_data["ui"]["readonlyValue"] = True
+        if annotation_col and annotation_col in row:
+            annotation_val = row[annotation_col]
+            if pd.notna(annotation_val) and annotation_val:
+                annotation = annotation_val.upper()
+                if (
+                    "@READONLY" in annotation
+                    or "@HIDDEN" in annotation
+                    or "@CALCTEXT" in annotation
+                ):
+                    item_data["ui"]["readonlyValue"] = True
 
         # Add required flag
         required_col = self.column_mappings["required"]
@@ -1102,10 +1104,12 @@ class ReproSchemaConverter:
         }
 
         # Handle visibility based on annotation
-        if annotation_col and annotation_col in row and row[annotation_col]:
-            annotation = row[annotation_col].upper()
-            if "@HIDDEN" in annotation:
-                addProperties["isVis"] = False
+        if annotation_col and annotation_col in row:
+            annotation_val = row[annotation_col]
+            if pd.notna(annotation_val) and annotation_val:
+                annotation = annotation_val.upper()
+                if "@HIDDEN" in annotation:
+                    addProperties["isVis"] = False
 
         # Computed fields are typically hidden
         if compute:

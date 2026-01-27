@@ -284,13 +284,15 @@ def process_preamble(
     """
     preamble, preamble_gr, preamble_ind = None, None, None
     # checking if preamble is set in the current row
-    if row.get("preamble") and str(row.get("preamble")).strip():
+    preamble_val = row.get("preamble")
+    if pd.notna(preamble_val) and preamble_val and str(preamble_val).strip():
         preamble = parse_html(row["preamble"])
         # setting the preamble index to 0 for new preamble
         preamble_ind = 0
         # checking if a group is set in the current row
-        if row.get("matrixGroup") and str(row.get("matrixGroup")).strip():
-            preamble_gr = str(row.get("matrixGroup")).strip()
+        matrix_group_val = row.get("matrixGroup")
+        if pd.notna(matrix_group_val) and matrix_group_val and str(matrix_group_val).strip():
+            preamble_gr = str(matrix_group_val).strip()
         # if group is not set, and the item is a descriptive type, I use preamble only for this row, will not be propagated
         elif input_type_rc == "descriptive":
             preamble_ind = None
@@ -304,20 +306,20 @@ def process_preamble(
             preamble = preamble_previous
             # sometimes the group is set in the row after the preamble, so check again for the group
             if preamble_ind_previous == 0:
-                if (
-                    row.get("matrixGroup")
-                    and str(row.get("matrixGroup")).strip()
-                ):
-                    preamble_gr = str(row.get("matrixGroup")).strip()
+                matrix_group_val = row.get("matrixGroup")
+                if pd.notna(matrix_group_val) and matrix_group_val and str(matrix_group_val).strip():
+                    preamble_gr = str(matrix_group_val).strip()
             preamble_ind = preamble_ind_previous + 1
         # if the preamble from the previous row is set to the specific group, the current row should be in the same group
-        elif (
-            row.get("matrixGroup")
-            and str(row.get("matrixGroup")).strip() == preamble_gr_previous
-        ):
-            preamble = preamble_previous
-            preamble_gr = preamble_gr_previous
-            preamble_ind = preamble_ind_previous + 1
+        else:
+            matrix_group_val = row.get("matrixGroup")
+            if (
+                pd.notna(matrix_group_val) and matrix_group_val
+                and str(matrix_group_val).strip() == preamble_gr_previous
+            ):
+                preamble = preamble_previous
+                preamble_gr = preamble_gr_previous
+                preamble_ind = preamble_ind_previous + 1
 
     # setting the preamble used for the specific row/item
     if preamble:
@@ -356,8 +358,10 @@ def process_row(
         addProperties: Dictionary containing additional properties for the activity schema
     """
     # processing input type and value type that will be used by reproschema, and original one from redcap
-    input_type_rc = str(row.get("inputType", "")).strip().lower()
-    value_type_rc = str(row.get("validation", "")).strip().lower()
+    input_type_raw = row.get("inputType")
+    input_type_rc = str(input_type_raw).strip().lower() if pd.notna(input_type_raw) else ""
+    value_type_raw = row.get("validation")
+    value_type_rc = str(value_type_raw).strip().lower() if pd.notna(value_type_raw) else ""
     if not input_type_rc:
         input_type_rc = "text"
 
@@ -378,8 +382,9 @@ def process_row(
     item_data["responseOptions"] = response_options
 
     # setting readonly to true based on annotation and field type
-    if row.get("annotation"):
-        annotation = row.get("annotation").upper()
+    annotation = row.get("annotation")
+    if pd.notna(annotation) and annotation:
+        annotation = annotation.upper()
         if (
             "@READONLY" in annotation
             or "@HIDDEN" in annotation
@@ -392,13 +397,16 @@ def process_row(
     # adding information from all "unprocessed" columns to the additionalNotesObj
     for key_orig in ADDITIONAL_NOTES_LIST:
         key = REDCAP_COLUMN_MAP.get(key_orig)
-        if row.get(key) and str(row.get(key)).strip():
-            notes_obj = {
-                "source": "redcap",
-                "column": key_orig,
-                "value": str(row.get(key)).strip(),
-            }
-            item_data.setdefault("additionalNotesObj", []).append(notes_obj)
+        value = row.get(key)
+        if pd.notna(value) and value:
+            value_str = str(value).strip()
+            if value_str:
+                notes_obj = {
+                    "source": "redcap",
+                    "column": key_orig,
+                    "value": value_str,
+                }
+                item_data.setdefault("additionalNotesObj", []).append(notes_obj)
 
     # processing preamble
     item_preamble, preamble_info_propagate = process_preamble(
@@ -413,10 +421,9 @@ def process_row(
     if input_type_rc in COMPUTE_LIST:
         condition = normalize_condition(row.get("choices"))
         compute = {"variableName": row["item_name"], "jsExpression": condition}
-    elif (
-        row.get("annotation") and "@CALCTEXT" in row.get("annotation").upper()
-    ):
-        calc_text = row.get("annotation")
+    annotation = row.get("annotation")
+    if pd.notna(annotation) and annotation and "@CALCTEXT" in annotation.upper():
+        calc_text = annotation
         match = re.search(r"@CALCTEXT\((.*)\)", normalize_condition(calc_text))
         if match:
             js_expression = match.group(1)
@@ -439,26 +446,28 @@ def process_row(
         "valueRequired": False,
         "isVis": True,
     }
-    if row.get("valueRequired") and str(
-        row.get("valueRequired")
-    ).strip().lower() in ["y", "yes", "true"]:
-        addProperties["valueRequired"] = True
-    elif row.get("valueRequired") and str(
-        row.get("valueRequired")
-    ).strip().lower() not in ["n", "no", "false"]:
-        print(
-            f"Warning: Unexpected value for valueRequired in {row['item_name']}: {row.get('valueRequired')}"
-        )
+    value_required = row.get("valueRequired")
+    if pd.notna(value_required) and value_required:
+        value_required_str = str(value_required).strip().lower()
+        if value_required_str in ["y", "yes", "true"]:
+            addProperties["valueRequired"] = True
+        elif value_required_str not in ["n", "no", "false"]:
+            print(
+                f"Warning: Unexpected value for valueRequired in {row['item_name']}: {value_required}"
+            )
 
-    if row.get("annotation") and (
-        "@READONLY" in row.get("annotation").upper()
-        or "@HIDDEN" in row.get("annotation").upper()
+    annotation = row.get("annotation")
+    if pd.notna(annotation) and annotation and (
+        "@READONLY" in annotation.upper()
+        or "@HIDDEN" in annotation.upper()
     ):
         addProperties["isVis"] = False
     elif compute:
         addProperties["isVis"] = False
-    elif row.get("visibility"):
-        addProperties["isVis"] = normalize_condition(row.get("visibility"))
+    else:
+        visibility = row.get("visibility")
+        if pd.notna(visibility) and visibility:
+            addProperties["isVis"] = normalize_condition(visibility)
 
     # Add custom validation type note and choices notes if present
     if input_value_notes:
