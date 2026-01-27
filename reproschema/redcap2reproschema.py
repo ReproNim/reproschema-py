@@ -291,7 +291,11 @@ def process_preamble(
         preamble_ind = 0
         # checking if a group is set in the current row
         matrix_group_val = row.get("matrixGroup")
-        if pd.notna(matrix_group_val) and matrix_group_val and str(matrix_group_val).strip():
+        if (
+            pd.notna(matrix_group_val)
+            and matrix_group_val
+            and str(matrix_group_val).strip()
+        ):
             preamble_gr = str(matrix_group_val).strip()
         # if group is not set, and the item is a descriptive type, I use preamble only for this row, will not be propagated
         elif input_type_rc == "descriptive":
@@ -307,14 +311,19 @@ def process_preamble(
             # sometimes the group is set in the row after the preamble, so check again for the group
             if preamble_ind_previous == 0:
                 matrix_group_val = row.get("matrixGroup")
-                if pd.notna(matrix_group_val) and matrix_group_val and str(matrix_group_val).strip():
+                if (
+                    pd.notna(matrix_group_val)
+                    and matrix_group_val
+                    and str(matrix_group_val).strip()
+                ):
                     preamble_gr = str(matrix_group_val).strip()
             preamble_ind = preamble_ind_previous + 1
         # if the preamble from the previous row is set to the specific group, the current row should be in the same group
         else:
             matrix_group_val = row.get("matrixGroup")
             if (
-                pd.notna(matrix_group_val) and matrix_group_val
+                pd.notna(matrix_group_val)
+                and matrix_group_val
                 and str(matrix_group_val).strip() == preamble_gr_previous
             ):
                 preamble = preamble_previous
@@ -359,9 +368,13 @@ def process_row(
     """
     # processing input type and value type that will be used by reproschema, and original one from redcap
     input_type_raw = row.get("inputType")
-    input_type_rc = str(input_type_raw).strip().lower() if pd.notna(input_type_raw) else ""
+    input_type_rc = (
+        str(input_type_raw).strip().lower() if pd.notna(input_type_raw) else ""
+    )
     value_type_raw = row.get("validation")
-    value_type_rc = str(value_type_raw).strip().lower() if pd.notna(value_type_raw) else ""
+    value_type_rc = (
+        str(value_type_raw).strip().lower() if pd.notna(value_type_raw) else ""
+    )
     if not input_type_rc:
         input_type_rc = "text"
 
@@ -406,7 +419,9 @@ def process_row(
                     "column": key_orig,
                     "value": value_str,
                 }
-                item_data.setdefault("additionalNotesObj", []).append(notes_obj)
+                item_data.setdefault("additionalNotesObj", []).append(
+                    notes_obj
+                )
 
     # processing preamble
     item_preamble, preamble_info_propagate = process_preamble(
@@ -422,7 +437,11 @@ def process_row(
         condition = normalize_condition(row.get("choices"))
         compute = {"variableName": row["item_name"], "jsExpression": condition}
     annotation = row.get("annotation")
-    if pd.notna(annotation) and annotation and "@CALCTEXT" in annotation.upper():
+    if (
+        pd.notna(annotation)
+        and annotation
+        and "@CALCTEXT" in annotation.upper()
+    ):
         calc_text = annotation
         match = re.search(r"@CALCTEXT\((.*)\)", normalize_condition(calc_text))
         if match:
@@ -457,9 +476,13 @@ def process_row(
             )
 
     annotation = row.get("annotation")
-    if pd.notna(annotation) and annotation and (
-        "@READONLY" in annotation.upper()
-        or "@HIDDEN" in annotation.upper()
+    if (
+        pd.notna(annotation)
+        and annotation
+        and (
+            "@READONLY" in annotation.upper()
+            or "@HIDDEN" in annotation.upper()
+        )
     ):
         addProperties["isVis"] = False
     elif compute:
