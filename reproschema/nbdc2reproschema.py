@@ -417,7 +417,9 @@ def nbdc2reproschema(
         input_format = detect_input_format(input_path)
 
     # Load NBDC data
-    logger.info("Loading NBDC data from %s (format: %s)", input_file, input_format)
+    logger.info(
+        "Loading NBDC data from %s (format: %s)", input_file, input_format
+    )
     df = load_nbdc_data(input_path, input_format)
     logger.info("Loaded %d rows", len(df))
 
