@@ -1699,7 +1699,7 @@ class ReproSchemaConverter:
             # Save quality report
             self.save_quality_report(abs_output_path)
 
-            self.log(f"Conversion completed successfully.")
+            self.log("Conversion completed successfully.")
             self.log(f"Output written to: {abs_output_path}")
             self.log(
                 f"Generated: 1 protocol, {len(activities)} activities, and {sum(len(data['items']) for data in activities.values())} items"

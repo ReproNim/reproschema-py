@@ -111,9 +111,10 @@ class TestCLI:
         # Create a dummy input file first
         import pandas as pd
 
-        input_file = tmpdir.join("dummy.parquet")
+        # Use CSV instead of parquet to avoid requiring pyarrow
+        input_file = tmpdir.join("dummy.csv")
         df = pd.DataFrame({"a": [1]})
-        df.to_parquet(str(input_file))
+        df.to_csv(str(input_file), index=False)
 
         with tmpdir.as_cwd():
             result = runner.invoke(

@@ -5,12 +5,9 @@ This module handles conversion of NBDC (Neurodata Without Borders/Data Coordinat
 study data from various formats (Parquet, CSV, RDS) to ReproSchema JSON-LD.
 """
 
-import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
-
-logger = logging.getLogger(__name__)
+from typing import Any, Dict, Optional, Tuple
 
 import pandas as pd
 import yaml
@@ -30,6 +27,8 @@ from .nbdc_mappings import (
     is_compute_field,
     is_readonly_field,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def read_nbdc_config(config_file: Path) -> Dict[str, Any]:
@@ -97,7 +96,7 @@ def load_nbdc_data_parquet(file_path: Path) -> pd.DataFrame:
         ImportError: If pyarrow is not installed
     """
     try:
-        import pyarrow.parquet as pq
+        import pyarrow.parquet  # noqa: F401
     except ImportError:
         raise ImportError(
             "pyarrow is required to read Parquet files. "
