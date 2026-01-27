@@ -765,9 +765,7 @@ class ReproSchemaConverter:
                     # Remove brackets and split by commas
                     labels = [
                         label_str.strip()
-                        for label_str in str(labels_str)
-                        .strip("[]")
-                        .split(",")
+                        for label_str in str(labels_str).strip("[]").split(",")
                     ]
                     values = [
                         v.strip()

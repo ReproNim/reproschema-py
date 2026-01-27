@@ -208,7 +208,9 @@ class TestHBCD:
         hbcd_yaml = os.path.join(
             os.path.dirname(__file__), "..", "example", "nbdc", "hbcd.yml"
         )
-        assert os.path.exists(hbcd_yaml), f"HBCD config file not found: {hbcd_yaml}"
+        assert os.path.exists(
+            hbcd_yaml
+        ), f"HBCD config file not found: {hbcd_yaml}"
 
     def test_summary_score_type_mapping(self):
         """Test that 'summary score' type_var maps correctly to number."""
@@ -229,14 +231,20 @@ class TestHBCD:
         runner = CliRunner()
 
         # Create test data matching HBCD structure (with summary score)
-        test_data = pd.DataFrame({
-            "name": ["item1", "item2", "item3"],
-            "table_name": ["activity1", "activity1", "activity1"],
-            "label": ["Question 1", "Question 2", "Score"],
-            "type_var": ["item", "administrative", "summary score"],  # HBCD types
-            "data_type": ["string", "string", "integer"],
-            "instruction": ["", "", ""],
-        })
+        test_data = pd.DataFrame(
+            {
+                "name": ["item1", "item2", "item3"],
+                "table_name": ["activity1", "activity1", "activity1"],
+                "label": ["Question 1", "Question 2", "Score"],
+                "type_var": [
+                    "item",
+                    "administrative",
+                    "summary score",
+                ],  # HBCD types
+                "data_type": ["string", "string", "integer"],
+                "instruction": ["", "", ""],
+            }
+        )
 
         input_file = tmpdir.join("hbcd_test_data.csv")
         test_data.to_csv(input_file, index=False)
@@ -260,5 +268,7 @@ class TestHBCD:
                 ],
             )
 
-            assert result.exit_code == 0, f"Command failed with: {result.output}"
+            assert (
+                result.exit_code == 0
+            ), f"Command failed with: {result.output}"
             assert os.path.isdir("HBCD_Test")
