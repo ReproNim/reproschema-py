@@ -13,4 +13,4 @@ protocol_display_name: "NIMH collection"
 # Provide a brief description of your protocol.
 protocol_description: "Minimal list of data collection instruments that would be ideal for use by all mental health researchers conducting clinical research to facilitate and harmonize mental health data collection."
 
-redcap_version: "unknown"
+source_version: "unknown"

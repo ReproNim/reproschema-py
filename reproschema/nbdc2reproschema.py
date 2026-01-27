@@ -399,9 +399,9 @@ def nbdc2reproschema(
     protocol = read_nbdc_config(yaml_path)
     protocol_name = protocol.get("protocol_name", "NBDC").replace(" ", "_")
 
-    # Add redcap_version for protocol schema (use NBDC data version or default)
-    if "redcap_version" not in protocol:
-        protocol["redcap_version"] = protocol.get("version", "1.0.0")
+    # Add source_version for protocol schema (use NBDC data version or default)
+    if "source_version" not in protocol:
+        protocol["source_version"] = protocol.get("version", "1.0.0")
 
     # Set up output directory
     abs_folder_path = output_dir / protocol_name
@@ -433,7 +433,7 @@ def nbdc2reproschema(
             activity_name,
             activity_data,
             abs_folder_path,
-            input_path.stem,
+            protocol.get("version", "1.0.0"),
             schema_context_url,
         )
 

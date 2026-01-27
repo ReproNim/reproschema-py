@@ -639,7 +639,7 @@ def redcap2reproschema(
             activity_name,
             activity_data,
             abs_folder_path,
-            protocol.get("redcap_version"),
+            protocol.get("source_version"),
             schema_context_url,
         )
 
