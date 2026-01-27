@@ -198,3 +198,67 @@ class TestIntegration:
         # Create a small test RDS file first
         # This test would use a pre-exported RDS file
         pass
+
+
+class TestHBCD:
+    """Tests specific to HBCD data conversion."""
+
+    def test_hbcd_config_exists(self):
+        """Test that HBCD config file exists."""
+        hbcd_yaml = os.path.join(
+            os.path.dirname(__file__), "..", "example", "nbdc", "hbcd.yml"
+        )
+        assert os.path.exists(hbcd_yaml), f"HBCD config file not found: {hbcd_yaml}"
+
+    def test_summary_score_type_mapping(self):
+        """Test that 'summary score' type_var maps correctly to number."""
+        from ..nbdc_mappings import get_nbdc_input_type
+
+        assert get_nbdc_input_type("summary score") == "number"
+
+    def test_derived_item_type_mapping(self):
+        """Test that 'derived item' type_var maps correctly to number."""
+        from ..nbdc_mappings import get_nbdc_input_type
+
+        assert get_nbdc_input_type("derived item") == "number"
+
+    def test_hbcd_with_csv_fixture(self, tmpdir):
+        """Test nbdc2reproschema with HBCD-like CSV data."""
+        import pandas as pd
+
+        runner = CliRunner()
+
+        # Create test data matching HBCD structure (with summary score)
+        test_data = pd.DataFrame({
+            "name": ["item1", "item2", "item3"],
+            "table_name": ["activity1", "activity1", "activity1"],
+            "label": ["Question 1", "Question 2", "Score"],
+            "type_var": ["item", "administrative", "summary score"],  # HBCD types
+            "data_type": ["string", "string", "integer"],
+            "instruction": ["", "", ""],
+        })
+
+        input_file = tmpdir.join("hbcd_test_data.csv")
+        test_data.to_csv(input_file, index=False)
+
+        # Create HBCD YAML config
+        yaml_content = {
+            "protocol_name": "HBCD_Test",
+            "protocol_display_name": "HBCD Test Protocol",
+        }
+        temp_yaml_file = tmpdir.join("hbcd_test_config.yml")
+        with open(str(temp_yaml_file), "w") as f:
+            yaml.dump(yaml_content, f)
+
+        with tmpdir.as_cwd():
+            result = runner.invoke(
+                main,
+                [
+                    "nbdc2reproschema",
+                    str(input_file),
+                    str(temp_yaml_file),
+                ],
+            )
+
+            assert result.exit_code == 0, f"Command failed with: {result.output}"
+            assert os.path.isdir("HBCD_Test")

@@ -11,6 +11,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+.claude/
 build/
 develop-eggs/
 dist/
@@ -135,7 +136,10 @@ dmypy.json
 # Pycharm
 .idea/
 
-.serena/
+.serena*/
 
 # Internal documentation
 internal/
+
+# Claude files
+CLAUDE.md

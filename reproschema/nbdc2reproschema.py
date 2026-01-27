@@ -6,8 +6,11 @@ study data from various formats (Parquet, CSV, RDS) to ReproSchema JSON-LD.
 """
 
 import json
+import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+logger = logging.getLogger(__name__)
 
 import pandas as pd
 import yaml
@@ -45,7 +48,7 @@ def read_nbdc_config(config_file: Path) -> Dict[str, Any]:
         yaml.YAMLError: If the config file has invalid YAML syntax
     """
     try:
-        with open(config_file, "r") as f:
+        with open(config_file, "r", encoding="utf-8") as f:
             config = yaml.safe_load(f)
             # Validate required fields
             required_fields = ["protocol_name"]
@@ -233,12 +236,6 @@ def process_row(
     if question and pd.notna(question) and str(question).strip():
         item_data["question"] = parse_html(str(question))
 
-    # Add instruction if available
-    instruction = row.get("instruction")
-    if instruction and pd.notna(instruction) and str(instruction).strip():
-        # Add as a separate property, not overwrite question
-        item_data["instruction"] = {"en": str(instruction).strip()}
-
     # For compute fields, use description instead of question
     if is_computed:
         if "question" in item_data:
@@ -256,6 +253,9 @@ def process_row(
     item_data["responseOptions"] = response_options
 
     # Add additional notes from NBDC metadata
+    # Note: 'instruction' is included in NBDC_ADDITIONAL_NOTES_COLUMNS and will be
+    # added to additionalNotesObj rather than as a separate top-level property.
+    # This preserves the instruction information while following ReproSchema conventions.
     for key in NBDC_ADDITIONAL_NOTES_COLUMNS:
         if (
             key in row
@@ -316,7 +316,7 @@ def process_nbdc_data(df: pd.DataFrame) -> Tuple[Dict[str, Any], list]:
     for activity_name, group in df_mapped.groupby("activity_name", sort=False):
         # Skip empty activity names
         if pd.isna(activity_name) or not str(activity_name).strip():
-            print("WARNING: Some rows have no activity name, skipping")
+            logger.warning("Some rows have no activity name, skipping")
             continue
 
         items = []
@@ -346,7 +346,7 @@ def process_nbdc_data(df: pd.DataFrame) -> Tuple[Dict[str, Any], list]:
 
             except Exception as e:
                 item_name = row.get("item_name", row.get("name", "<unknown>"))
-                print(f"Warning: Failed to process row {item_name}: {e}")
+                logger.warning("Failed to process row %s: %s", item_name, e)
                 continue
 
         # Get activity label
@@ -417,17 +417,17 @@ def nbdc2reproschema(
         input_format = detect_input_format(input_path)
 
     # Load NBDC data
-    print(f"Loading NBDC data from {input_file} (format: {input_format})...")
+    logger.info("Loading NBDC data from %s (format: %s)", input_file, input_format)
     df = load_nbdc_data(input_path, input_format)
-    print(f"Loaded {len(df)} rows")
+    logger.info("Loaded %d rows", len(df))
 
     # Process data
     activities, protocol_activities_order = process_nbdc_data(df)
-    print(f"Found {len(activities)} activities")
+    logger.info("Found %d activities", len(activities))
 
     # Create activity schemas
     for activity_name, activity_data in activities.items():
-        print(f"Creating activity: {activity_name}")
+        logger.info("Creating activity: %s", activity_name)
         create_activity_schema(
             activity_name,
             activity_data,
@@ -437,7 +437,7 @@ def nbdc2reproschema(
         )
 
     # Create protocol schema
-    print(f"Creating protocol: {protocol_name}")
+    logger.info("Creating protocol: %s", protocol_name)
     create_protocol_schema(
         protocol,
         protocol_activities_order,
@@ -445,5 +445,5 @@ def nbdc2reproschema(
         schema_context_url,
     )
 
-    print(f"OUTPUT DIRECTORY: {abs_folder_path}")
+    logger.info("OUTPUT DIRECTORY: %s", abs_folder_path)
     return abs_folder_path

@@ -213,8 +213,11 @@ def loris2reproschema(
             click.echo(
                 "Converted LORIS data dictionary to Reproschema format."
             )
-    except Exception as e:
+    except (FileNotFoundError, ValueError, pd.errors.ParserError) as e:
         raise click.ClickException(f"Error during conversion: {e}")
+    except Exception as e:
+        # Log unexpected exceptions for debugging
+        raise click.ClickException(f"Unexpected error during conversion: {e}")
 
 
 @main.command()
@@ -248,9 +251,12 @@ def nbdc2reproschema(input_file, yaml_path, output_path, input_format):
 
     try:
         nbdc2rs(input_file, yaml_path, output_path, input_format)
-        click.echo(f"Converted NBDC data to Reproschema format.")
-    except Exception as e:
+        click.echo("Converted NBDC data to Reproschema format.")
+    except (FileNotFoundError, ValueError, ImportError) as e:
         raise click.ClickException(f"Error during conversion: {e}")
+    except Exception as e:
+        # Log unexpected exceptions for debugging
+        raise click.ClickException(f"Unexpected error during conversion: {e}")
 
 
 @main.command()

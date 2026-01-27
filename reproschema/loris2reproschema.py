@@ -148,7 +148,7 @@ def load_config(config_file: str) -> Dict[str, Any]:
         yaml.YAMLError: If the config file has invalid YAML syntax.
     """
     try:
-        with open(config_file, "r") as f:
+        with open(config_file, "r", encoding="utf-8") as f:
             config = yaml.safe_load(f)
             # Validate required fields
             required_fields = ["protocol_name"]
@@ -754,49 +754,31 @@ class ReproSchemaConverter:
                         )
                         return [], ["xsd:string"]
 
-                except (ValueError, SyntaxError) as e_ast:
+                except (ValueError, SyntaxError):
+                    # ast.literal_eval failed - fall back to string splitting
+                    # Using simple split instead of json.loads to avoid issues
+                    # with apostrophes in labels (e.g., "don't know")
                     self.log(
-                        f"ast.literal_eval failed for {item_name}: {str(e_ast)}, trying json.loads",
+                        f"ast.literal_eval failed for {item_name}, falling back to split",
                         "DEBUG",
                     )
-                    try:
-                        import json
-
-                        # Replace single quotes with double for JSON compatibility
-                        labels_json = str(labels_str).replace("'", '"')
-                        values_json = str(values_str).replace("'", '"')
-
-                        labels = json.loads(labels_json)
-                        values = json.loads(values_json)
-                        if len(labels) != len(values):
-                            self.log(
-                                f"Warning: Mismatch in number of labels and values for {item_name} after json.loads. Labels: {labels_str}, Values: {values_str}",
-                                "WARNING",
-                            )
-                            return [], ["xsd:string"]
-                    except Exception as e_json:
-                        # If JSON parsing fails, fall back to string splitting
+                    # Remove brackets and split by commas
+                    labels = [
+                        label_str.strip()
+                        for label_str in str(labels_str)
+                        .strip("[]")
+                        .split(",")
+                    ]
+                    values = [
+                        v.strip()
+                        for v in str(values_str).strip("[]").split(",")
+                    ]
+                    if len(labels) != len(values):
                         self.log(
-                            f"JSON parsing failed for {item_name}: {str(e_json)}, falling back to split",
-                            "DEBUG",
+                            f"Warning: Mismatch in number of labels and values for {item_name} after string split. Labels: {labels_str}, Values: {values_str}",
+                            "WARNING",
                         )
-                        # Remove brackets and split by commas
-                        labels = [
-                            label_str.strip()
-                            for label_str in str(labels_str)
-                            .strip("[]")
-                            .split(",")
-                        ]
-                        values = [
-                            v.strip()
-                            for v in str(values_str).strip("[]").split(",")
-                        ]
-                        if len(labels) != len(values):
-                            self.log(
-                                f"Warning: Mismatch in number of labels and values for {item_name} after string split. Labels: {labels_str}, Values: {values_str}",
-                                "WARNING",
-                            )
-                            return [], ["xsd:string"]
+                        return [], ["xsd:string"]
             elif "|" in str(labels_str):
                 # Split by pipe character
                 labels = [
@@ -1490,7 +1472,7 @@ class ReproSchemaConverter:
             output_path.parent
             / f"quality_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         )
-        with open(report_file, "w") as f:
+        with open(report_file, "w", encoding="utf-8") as f:
             json.dump(self.quality_report, f, indent=2)
         self.log(f"Quality report saved to: {report_file}")
 

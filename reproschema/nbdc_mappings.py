@@ -35,8 +35,18 @@ NBDC_COLUMN_MAP = {
 NBDC_COLUMN_MAP_REVERSE = {v: k for k, v in NBDC_COLUMN_MAP.items()}
 
 # NBDC input types to ReproSchema input types
-# Based on NBDC type_var values
+# Based on NBDC type_var values from ABCD/HBCD data dictionaries
+# The actual type_var values in ABCD data are: administrative, derived, item, item (summary score)
+# These describe the field category, not the UI input type
+# We also include traditional input type mappings for compatibility
 NBDC_INPUT_TYPE_MAP = {
+    # NBDC field categories (type_var values)
+    "administrative": "static",  # Administrative fields are read-only
+    "derived": "number",  # Derived/calculated fields
+    "derived item": "number",  # ABCD derived items are computed
+    "item": "text",  # Default for standard items (may be overridden by type_data)
+    "summary score": "number",  # Summary scores are numeric
+    "item (summary score)": "number",  # Deprecated: use "summary score" (kept for compatibility)
     # Text inputs
     "text": "text",
     "alphanumeric": "text",
@@ -70,6 +80,7 @@ NBDC_INPUT_TYPE_MAP = {
 }
 
 # NBDC data types to XSD value types
+# These come from the type_data column in NBDC data dictionaries
 NBDC_VALUE_TYPE_MAP = {
     "integer": "xsd:integer",
     "float": "xsd:decimal",
@@ -80,10 +91,13 @@ NBDC_VALUE_TYPE_MAP = {
     "alphanumeric": "xsd:string",
     "date": "xsd:date",
     "datetime": "xsd:dateTime",
+    "timestamp": "xsd:dateTime",
     "time": "xsd:time",
     "boolean": "xsd:boolean",
     "email": "xsd:string",
     "file": "xsd:anyURI",
+    "double": "xsd:decimal",
+    "interval": "xsd:string",  # Time interval
 }
 
 # Required columns for NBDC data dictionary
@@ -115,14 +129,17 @@ NBDC_ADDITIONAL_NOTES_COLUMNS = [
 ]
 
 # NBDC-specific field types that should be read-only or computed
+# These are based on the type_var column values in ABCD/HBCD data
 NBDC_COMPUTE_TYPES = [
     "calculated",
     "computed",
+    "derived",  # ABCD derived fields are computed
 ]
 
 NBDC_READONLY_TYPES = [
     "descriptive",
     "note",
+    "administrative",  # ABCD administrative fields are read-only
 ]
 
 
