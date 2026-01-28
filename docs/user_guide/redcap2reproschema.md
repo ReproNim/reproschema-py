@@ -13,14 +13,14 @@ In the `templates/redcap2rs.yaml` file, provide the following information:
 - **protocol_name**: A unique identifier for your protocol. Use underscores for spaces and avoid special characters.
 - **protocol_display_name**: Name that will appear in the application.
 - **protocol_description**: A brief description of your protocol.
-- **redcap_version**: Version of your redcap file (you can customize it).
+- **source_version**: Version of your source data file (you can customize it).
 
 Example:
 ```yaml
 protocol_name: "My_Protocol"
 protocol_display_name: "Assessment Protocol"
 protocol_description: "This protocol is for assessing cognitive skills."
-redcap_version: "X.XX.X"
+source_version: "X.XX.X"
 ```
 ### CLI Usage
 

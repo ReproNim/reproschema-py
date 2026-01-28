@@ -13,4 +13,4 @@ protocol_display_name: "Your protocol display name"
 # Provide a brief description of your protocol.
 protocol_description: "Description for your protocol"  # Example: "This protocol is for ..."
 
-redcap_version: "x.y.z" # Example: "3.0.0"
+source_version: "x.y.z" # Example: "3.0.0"

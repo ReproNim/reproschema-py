@@ -12,7 +12,7 @@ from .models import Activity, Item, Protocol, write_obj_jsonld
 PROTOCOL_KEYS_REQUIRED = [
     "protocol_name",
     "protocol_display_name",
-    "redcap_version",
+    "source_version",
 ]
 
 
@@ -23,6 +23,9 @@ def read_check_yaml_config(yaml_path: str) -> Dict[str, Any]:
             protocol = yaml.safe_load(f)
     except yaml.YAMLError as e:
         raise ValueError(f"Invalid YAML file: {str(e)}")
+    # Backward compatibility: support legacy configs using redcap_version
+    if "redcap_version" in protocol and "source_version" not in protocol:
+        protocol["source_version"] = protocol["redcap_version"]
     if set(PROTOCOL_KEYS_REQUIRED) - set(protocol.keys()):
         raise ValueError(
             f"Missing required keys in YAML file: {set(PROTOCOL_KEYS_REQUIRED) - set(protocol.keys())}"
@@ -160,7 +163,7 @@ def create_activity_schema(
     activity_name: str,
     activity_data: Dict[str, Any],
     output_path: Path,
-    redcap_version: str,
+    source_version: str,
     contextfile_url: str = CONTEXTFILE_URL,
 ):
     json_ld = {
@@ -168,7 +171,7 @@ def create_activity_schema(
         "id": f"{activity_name}_schema",
         "prefLabel": {"en": activity_name},
         "schemaVersion": get_context_version(contextfile_url),
-        "version": redcap_version,
+        "version": source_version,
         "ui": {
             "order": activity_data[
                 "order"
@@ -216,7 +219,7 @@ def create_protocol_schema(
         "prefLabel": {"en": protocol_data["protocol_display_name"]},
         "description": {"en": protocol_data.get("protocol_description", "")},
         "schemaVersion": get_context_version(contextfile_url),
-        "version": protocol_data["redcap_version"],
+        "version": protocol_data["source_version"],
         "ui": {
             "addProperties": [
                 {

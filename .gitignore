@@ -11,6 +11,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+.claude/
 build/
 develop-eggs/
 dist/
@@ -135,10 +136,17 @@ dmypy.json
 # Pycharm
 .idea/
 
-.serena/
+.serena*/
 
 # Internal documentation
 internal/
 
-# Claude configuration
+# Claude files
 CLAUDE.md
+
+# ReproSchema converter output folders (generated output)
+*_LORIS/
+*_NBDC/
+# Protocol output folders - typically named after protocol from config
+HBCD_*/
+ABCD_*/

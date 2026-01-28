@@ -13,4 +13,4 @@ protocol_display_name: "redcap protocols"
 # Provide a brief description of your protocol.
 protocol_description: "testing"  # Example: "This protocol is for ..."
 
-redcap_version: "3.0.0"
+source_version: "3.0.0"

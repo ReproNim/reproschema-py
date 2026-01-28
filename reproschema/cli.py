@@ -174,6 +174,95 @@ def redcap2reproschema(csv_path, yaml_path, output_path):
 
 
 @main.command()
+@click.argument("csv_file", type=click.Path(exists=True, dir_okay=False))
+@click.argument("config_file", type=click.Path(exists=True, dir_okay=False))
+@click.option(
+    "--output-path",
+    type=click.Path(dir_okay=True, writable=True, resolve_path=True),
+    default=".",
+    show_default=True,
+    help="Path to the output directory, defaults to the current directory.",
+)
+@click.option(
+    "--encoding",
+    help="Encoding to use for reading the CSV file (e.g., utf-8, latin-1).",
+)
+@click.option(
+    "--analyze",
+    is_flag=True,
+    help="Only analyze the CSV file structure and exit without conversion.",
+)
+@click.option(
+    "--verbose",
+    is_flag=True,
+    help="Enable verbose logging.",
+)
+def loris2reproschema(
+    csv_file, config_file, output_path, encoding, analyze, verbose
+):
+    """
+    Converts LORIS CSV files to Reproschema format.
+    """
+    from .loris2reproschema import loris2reproschema as loris2rs
+
+    try:
+        loris2rs(
+            csv_file, config_file, output_path, encoding, analyze, verbose
+        )
+        if not analyze:
+            click.echo(
+                "Converted LORIS data dictionary to Reproschema format."
+            )
+    except (FileNotFoundError, ValueError, pd.errors.ParserError) as e:
+        raise click.ClickException(f"Error during conversion: {e}")
+    except Exception as e:
+        lgr.exception("Unexpected error during LORIS conversion")
+        raise click.ClickException(f"Unexpected error during conversion: {e}")
+
+
+@main.command()
+@click.argument("input_file", type=click.Path(exists=True, dir_okay=False))
+@click.argument("yaml_path", type=click.Path(exists=True, dir_okay=False))
+@click.option(
+    "--output-path",
+    type=click.Path(dir_okay=True, writable=True, resolve_path=True),
+    default=".",
+    show_default=True,
+    help="Path to the output directory, defaults to the current directory.",
+)
+@click.option(
+    "--input-format",
+    default=None,
+    type=click.Choice(["auto", "parquet", "csv", "rds"]),
+    help="Input file format (default: auto-detect)",
+)
+def nbdc2reproschema(input_file, yaml_path, output_path, input_format):
+    """
+    Converts NBDC data dictionary (Parquet/CSV/RDS) to Reproschema format.
+
+    Example: reproschema nbdc2reproschema abcd_6.0.parquet config.yml
+
+    The input format is auto-detected from the file extension:
+    - .parquet: Parquet format (preferred, fastest)
+    - .csv: CSV format
+    - .rds: R RDS format (requires pyreadr)
+    """
+    from .nbdc2reproschema import nbdc2reproschema as nbdc2rs
+
+    try:
+        # Map the user-facing "auto" choice to None so the converter can auto-detect
+        if input_format == "auto":
+            input_format = None
+        nbdc2rs(input_file, yaml_path, output_path, input_format)
+        click.echo("Converted NBDC data to Reproschema format.")
+    except (FileNotFoundError, ValueError, ImportError) as e:
+        raise click.ClickException(f"Error during conversion: {e}")
+    except Exception as e:
+        lgr.exception("Unexpected error during NBDC conversion")
+        raise click.ClickException(f"Unexpected error during conversion: {e}")
+
+
+@main.command()
 @click.argument("input_path", type=click.Path(exists=True, dir_okay=True))
 @click.argument("output_csv_path", type=click.Path(writable=True))
 def reproschema2redcap(input_path, output_csv_path):

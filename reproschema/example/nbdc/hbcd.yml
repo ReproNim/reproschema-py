@@ -1,0 +1,15 @@
+# HBCD NBDC Configuration
+
+# Protocol information
+protocol_name: "HBCD"
+protocol_display_name: "HEALthy Brain and Child Development Study"
+protocol_description: "Protocol for HBCD using NBDC data dictionary"
+protocol_preamble: "This protocol contains the HBCD assessment instruments from NBDC data dictionary"
+# Version information (kept separate from protocol_name for folder/schema naming)
+version: "1.0"
+
+# Schema context URL (defaults to ReproSchema standard URL if not specified)
+schema_context_url: "https://raw.githubusercontent.com/ReproNim/reproschema/main/releases/1.0.0/reproschema"
+
+# Enable verbose logging
+verbose: true
