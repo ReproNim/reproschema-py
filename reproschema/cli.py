@@ -250,6 +250,9 @@ def nbdc2reproschema(input_file, yaml_path, output_path, input_format):
     from .nbdc2reproschema import nbdc2reproschema as nbdc2rs
 
     try:
+        # Map the user-facing "auto" choice to None so the converter can auto-detect
+        if input_format == "auto":
+            input_format = None
         nbdc2rs(input_file, yaml_path, output_path, input_format)
         click.echo("Converted NBDC data to Reproschema format.")
     except (FileNotFoundError, ValueError, ImportError) as e:

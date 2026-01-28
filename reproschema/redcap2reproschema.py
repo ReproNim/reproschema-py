@@ -198,8 +198,6 @@ def process_response_options(row, input_type_rc, value_type) -> Dict[str, Any]:
 
 def process_choices(choices_str, item_name):
     # Handle NaN values from pandas (empty cells in CSV)
-    import pandas as pd
-
     if pd.isna(choices_str) or not choices_str:
         return None, None
 

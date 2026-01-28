@@ -49,6 +49,11 @@ def read_nbdc_config(config_file: Path) -> Dict[str, Any]:
     try:
         with open(config_file, "r", encoding="utf-8") as f:
             config = yaml.safe_load(f)
+            # Handle empty YAML file (returns None)
+            if config is None:
+                raise ValueError(
+                    "Configuration file is empty. Please provide a valid YAML configuration."
+                )
             # Validate required fields
             required_fields = ["protocol_name"]
             missing = [
@@ -58,6 +63,10 @@ def read_nbdc_config(config_file: Path) -> Dict[str, Any]:
                 raise ValueError(
                     f"Missing required fields in config: {', '.join(missing)}"
                 )
+            # Ensure protocol_display_name is available for downstream use
+            # Default to protocol_name if not explicitly provided
+            if "protocol_display_name" not in config:
+                config["protocol_display_name"] = config["protocol_name"]
             return config
     except FileNotFoundError:
         raise FileNotFoundError(f"Configuration file not found: {config_file}")
@@ -295,7 +304,14 @@ def process_nbdc_data(df: pd.DataFrame) -> Tuple[Dict[str, Any], list]:
     # Make a copy to avoid modifying the original
     df = df.copy()
 
-    # Filter out rows with empty names first (before string conversion)
+    # Validate required columns before accessing them
+    missing_columns = set(NBDC_COLUMN_REQUIRED) - set(df.columns)
+    if missing_columns:
+        raise ValueError(
+            f"Missing required columns: {', '.join(missing_columns)}"
+        )
+
+    # Filter out rows with empty names (after validation)
     df = df[df["name"].notna() & (df["name"].astype(str).str.strip() != "")]
 
     # Check if DataFrame is empty after filtering
@@ -303,13 +319,6 @@ def process_nbdc_data(df: pd.DataFrame) -> Tuple[Dict[str, Any], list]:
         raise ValueError(
             "No valid rows found after filtering empty names. "
             "Please check your input data."
-        )
-
-    # Validate required columns
-    missing_columns = set(NBDC_COLUMN_REQUIRED) - set(df.columns)
-    if missing_columns:
-        raise ValueError(
-            f"Missing required columns: {', '.join(missing_columns)}"
         )
 
     # Map column names using NBDC_COLUMN_MAP
@@ -433,14 +442,14 @@ def nbdc2reproschema(
     activities, protocol_activities_order = process_nbdc_data(df)
     logger.info("Found %d activities", len(activities))
 
-    # Create activity schemas
+    # Create activity schemas (use source_version consistently)
     for activity_name, activity_data in activities.items():
         logger.info("Creating activity: %s", activity_name)
         create_activity_schema(
             activity_name,
             activity_data,
             abs_folder_path,
-            protocol.get("version", "1.0.0"),
+            protocol["source_version"],
             schema_context_url,
         )
 

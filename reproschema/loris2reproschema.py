@@ -21,10 +21,13 @@ Example config.yaml:
 """
 
 import ast
+import hashlib
 import json
+import logging
 import os
 import re
 import shutil
+import traceback
 import warnings
 from datetime import datetime
 from pathlib import Path
@@ -36,6 +39,9 @@ from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
 
 # Suppress common BeautifulSoup warning
 warnings.filterwarnings("ignore", category=MarkupResemblesLocatorWarning)
+
+# Module logger
+logger = logging.getLogger(__name__)
 
 # Context URL for ReproSchema
 CONTEXTFILE_URL = "https://raw.githubusercontent.com/ReproNim/reproschema/main/releases/1.0.0/reproschema"
@@ -355,9 +361,20 @@ class ReproSchemaConverter:
         }
 
     def log(self, message: str, level: str = "INFO") -> None:
-        """Simple logging function"""
+        """Log using the standard logging module."""
+        # Map string levels to logging levels
+        level_map = {
+            "DEBUG": logging.DEBUG,
+            "INFO": logging.INFO,
+            "WARNING": logging.WARNING,
+            "ERROR": logging.ERROR,
+            "CRITICAL": logging.CRITICAL,
+        }
+        log_level = level_map.get(level.upper(), logging.INFO)
+
+        # If verbose mode, show all messages; otherwise filter INFO in normal operation
         if self.verbose or level != "INFO":
-            print(f"[{level}] {message}")
+            logger.log(log_level, message)
 
     def analyze_csv_headers(self, df: pd.DataFrame) -> Dict[str, List[str]]:
         """
@@ -925,8 +942,6 @@ class ReproSchemaConverter:
                 item_name = row["source_field"]
             else:
                 # Generate a unique name as last resort
-                import hashlib
-
                 item_hash = hashlib.md5(str(row).encode()).hexdigest()[:8]
                 item_name = f"item_{item_hash}"
                 self.log(
@@ -1253,8 +1268,6 @@ class ReproSchemaConverter:
                         f"Error processing item in domain {domain_str}: {str(e)}",
                         "ERROR",
                     )
-                    import traceback
-
                     self.log(traceback.format_exc(), "DEBUG")
 
             # Create activity data
@@ -1721,8 +1734,6 @@ class ReproSchemaConverter:
 
         except Exception as e:
             self.log(f"Error during conversion: {str(e)}", "ERROR")
-            import traceback
-
             traceback.print_exc()
             raise
 
