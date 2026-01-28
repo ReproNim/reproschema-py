@@ -119,6 +119,27 @@ ADDITIONAL_NOTES_LIST = [
 ]
 
 
+def sanitize_name(name: str) -> str:
+    """
+    Sanitize a name for filesystem safety.
+
+    Replaces all non-alphanumeric characters (except underscore) with underscore,
+    collapses multiple consecutive underscores into a single underscore, and
+    removes leading and trailing underscores.
+
+    Args:
+        name: The name to sanitize.
+
+    Returns:
+        The sanitized name safe for use in filenames and IDs.
+    """
+    # Step 1: Replace all non-alphanumeric characters (except underscore) with underscore
+    safe = re.sub(r"[^a-zA-Z0-9_]", "_", str(name))
+    # Step 2: Collapse multiple consecutive underscores into a single underscore
+    # Step 3: Remove leading and trailing underscores
+    return re.sub(r"_+", "_", safe).strip("_")
+
+
 def get_context_version(context_url: str) -> str:
     """
     Extracts the version from the context URL.
@@ -933,12 +954,7 @@ class ReproSchemaConverter:
                         break
 
         # Clean up item name for use as an ID
-        # Step 1: Replace all non-alphanumeric characters (except underscore) with underscore
-        item_id = re.sub(r"[^a-zA-Z0-9_]", "_", str(item_name))
-        # Step 2: Collapse multiple consecutive underscores into a single underscore
-        # Step 3: Remove leading and trailing underscores
-        # Example: "__item__name___" becomes "item_name"
-        item_id = re.sub(r"_+", "_", item_id).strip("_")
+        item_id = sanitize_name(item_name)
 
         # Get question text - first try question, then fall back to description if needed
         question_col = self.column_mappings["question"]
@@ -1306,12 +1322,8 @@ class ReproSchemaConverter:
             )
 
         # Handle special characters in activity name
-        # Step 1: Replace all non-alphanumeric characters (except underscore) with underscore
-        safe_activity_name = re.sub(r"[^a-zA-Z0-9_]", "_", str(activity_name))
-        # Step 2: Collapse multiple consecutive underscores into a single underscore
-        # Step 3: Remove leading and trailing underscores
         # Example: "BFY - Benefits/Services, Economic Stress" becomes "BFY_Benefits_Services_Economic_Stress"
-        safe_activity_name = re.sub(r"_+", "_", safe_activity_name).strip("_")
+        safe_activity_name = sanitize_name(activity_name)
 
         # Create activity schema
         activity_schema = {
@@ -1376,18 +1388,11 @@ class ReproSchemaConverter:
             output_path (Path): The base output path.
         """
         # Handle special characters in protocol name
-        # Convert to filesystem-safe name by replacing special characters with underscores
-        safe_protocol_name = re.sub(r"[^a-zA-Z0-9_]", "_", protocol_name)
-        # Clean up multiple underscores for better readability
-        safe_protocol_name = re.sub(r"_+", "_", safe_protocol_name).strip("_")
+        safe_protocol_name = sanitize_name(protocol_name)
 
         # Create safe activity names
         # Apply same sanitization to all activity names for consistency
-        safe_activities = []
-        for act in activities:
-            safe_name = re.sub(r"[^a-zA-Z0-9_]", "_", str(act))
-            safe_name = re.sub(r"_+", "_", safe_name).strip("_")
-            safe_activities.append(safe_name)
+        safe_activities = [sanitize_name(act) for act in activities]
 
         # Create protocol schema
         protocol_schema = {
@@ -1645,11 +1650,7 @@ class ReproSchemaConverter:
             # Get protocol name from config or use a default
             protocol_name = self.config.get("protocol_name", "LORIS_Protocol")
             # Sanitize protocol name for filesystem safety
-            safe_protocol_name = re.sub(r"[^a-zA-Z0-9_]", "_", protocol_name)
-            # Clean up multiple underscores for better readability
-            safe_protocol_name = re.sub(r"_+", "_", safe_protocol_name).strip(
-                "_"
-            )
+            safe_protocol_name = sanitize_name(protocol_name)
 
             # Prepare absolute output path
             abs_output_path = Path(output_path) / safe_protocol_name

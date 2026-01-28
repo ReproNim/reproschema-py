@@ -191,7 +191,7 @@ def process_row(
         compute: Dictionary with compute info if this is a computed field, else None
     """
     # Get type information (column names are mapped to internal names)
-    # type_var is the mapped name for the original 'type_var' column
+    # After NBDC_COLUMN_MAP renaming: 'type_var' -> 'inputType', 'type_data' -> 'dataType'
     type_var = (
         str(row.get("inputType", "")).strip().lower()
         if row.get("inputType") and pd.notna(row.get("inputType"))
@@ -297,6 +297,13 @@ def process_nbdc_data(df: pd.DataFrame) -> Tuple[Dict[str, Any], list]:
 
     # Filter out rows with empty names first (before string conversion)
     df = df[df["name"].notna() & (df["name"].astype(str).str.strip() != "")]
+
+    # Check if DataFrame is empty after filtering
+    if len(df) == 0:
+        raise ValueError(
+            "No valid rows found after filtering empty names. "
+            "Please check your input data."
+        )
 
     # Validate required columns
     missing_columns = set(NBDC_COLUMN_REQUIRED) - set(df.columns)

@@ -16,8 +16,7 @@ dependencies = [
     "lxml",
     "pydantic >= 2.0",
     "pandas",
-    "fhir.resources>=v8.0.0",
-    "pyreadr >= 0.4.9"
+    "fhir.resources>=v8.0.0"
 ]
 description = "Reproschema Python library"
 # Version from setuptools_scm
@@ -29,7 +28,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
-all = ["reproschema[doc]", "reproschema[test]", "reproschema[nbdc-parquet]"]
+all = ["reproschema[doc]", "reproschema[test]", "reproschema[nbdc-parquet]", "reproschema[nbdc-rds]"]
 dev = ["reproschema[doc]", "reproschema[test]", "black", "pre-commit"]
 doc = [
     "packaging",
@@ -43,6 +42,10 @@ docs = ["reproschema[doc]"]
 # Parquet support for nbdc2reproschema
 nbdc-parquet = [
     "pyarrow >= 10.0.0"
+]
+# RDS support for nbdc2reproschema (legacy R format)
+nbdc-rds = [
+    "pyreadr >= 0.4.9"
 ]
 # For running unit and docstring tests
 test = [
