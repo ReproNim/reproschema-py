@@ -660,7 +660,9 @@ def redcap2reproschema(
     for activity_name, activity_data in activities.items():
         # Get version with backward compatibility for old configs
         # Prefer "source_version" but fall back to "redcap_version" for legacy configs
-        version = protocol.get("source_version") or protocol.get("redcap_version", "1.0.0")
+        version = protocol.get("source_version") or protocol.get(
+            "redcap_version", "1.0.0"
+        )
         create_activity_schema(
             activity_name,
             activity_data,
