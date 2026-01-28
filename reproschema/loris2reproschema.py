@@ -177,6 +177,11 @@ def load_config(config_file: str) -> Dict[str, Any]:
     try:
         with open(config_file, "r", encoding="utf-8") as f:
             config = yaml.safe_load(f)
+            # Handle empty YAML file (returns None)
+            if config is None:
+                raise ValueError(
+                    "Configuration file is empty. Please provide a valid YAML configuration."
+                )
             # Validate required fields
             required_fields = ["protocol_name"]
             missing = [

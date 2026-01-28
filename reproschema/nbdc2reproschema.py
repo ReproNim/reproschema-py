@@ -265,16 +265,14 @@ def process_row(
     # added to additionalNotesObj rather than as a separate top-level property.
     # This preserves the instruction information while following ReproSchema conventions.
     for key in NBDC_ADDITIONAL_NOTES_COLUMNS:
-        if (
-            key in row
-            and row.get(key)
-            and pd.notna(row.get(key))
-            and str(row.get(key)).strip()
-        ):
+        # Map original NBDC column name to the renamed column used in row
+        lookup_key = NBDC_COLUMN_MAP.get(key, key)
+        value = row.get(lookup_key)
+        if value and pd.notna(value) and str(value).strip():
             notes_obj = {
                 "source": "nbdc",
                 "column": key,
-                "value": str(row.get(key)).strip(),
+                "value": str(value).strip(),
             }
             item_data.setdefault("additionalNotesObj", []).append(notes_obj)
 

@@ -14,6 +14,7 @@ NBDC_COLUMN_MAP = {
     # Data type properties
     "type_var": "inputType",  # Field/input type
     "type_data": "dataType",  # Data type
+    "data_type": "dataType",  # Data type (alias for common CSV naming)
     "type_level": "levelType",  # Level type
     "type_field": "fieldType",  # Field type metadata
     # Display properties
