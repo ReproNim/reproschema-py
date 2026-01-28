@@ -23,6 +23,9 @@ def read_check_yaml_config(yaml_path: str) -> Dict[str, Any]:
             protocol = yaml.safe_load(f)
     except yaml.YAMLError as e:
         raise ValueError(f"Invalid YAML file: {str(e)}")
+    # Backward compatibility: support legacy configs using redcap_version
+    if "redcap_version" in protocol and "source_version" not in protocol:
+        protocol["source_version"] = protocol["redcap_version"]
     if set(PROTOCOL_KEYS_REQUIRED) - set(protocol.keys()):
         raise ValueError(
             f"Missing required keys in YAML file: {set(PROTOCOL_KEYS_REQUIRED) - set(protocol.keys())}"

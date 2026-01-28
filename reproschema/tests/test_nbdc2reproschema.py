@@ -170,8 +170,6 @@ class TestCLI:
                 ],
             )
 
-            print("Command output:", result.output)
-
             assert (
                 result.exit_code == 0
             ), f"Command failed with: {result.output}"

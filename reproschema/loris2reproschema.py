@@ -541,7 +541,7 @@ class ReproSchemaConverter:
         except pd.errors.ParserError:
             raise pd.errors.ParserError(f"Error parsing CSV file: {csv_file}")
         except Exception as e:
-            raise Exception(f"Error loading CSV: {str(e)}")
+            raise Exception(f"Error loading CSV: {str(e)}") from e
 
     def preprocess_fields(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -1808,4 +1808,4 @@ def loris2reproschema(
 
     except Exception as e:
         print(f"Error: {str(e)}")
-        raise e
+        raise
