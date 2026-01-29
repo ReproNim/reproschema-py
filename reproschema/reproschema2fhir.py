@@ -27,7 +27,7 @@ def add_enable_when(condition: str):
 
     for i in condition:
         # the exact order of the regex matters as otherwise '<' will be parsed instead of '<='
-        (id, operator, answer_string) = r.split(r"(==|>=|<=|!=|>|<)", i)
+        id, operator, answer_string = r.split(r"(==|>=|<=|!=|>|<)", i)
         if operator == "==":
             operator = "="
         # regex to that removes parentheses
@@ -246,7 +246,7 @@ def parse_reproschema_items(
             question_visibility[curr_item["linkId"]], str
         ):
             isVis = question_visibility[curr_item["linkId"]]
-            (enable_when, behave) = add_enable_when(isVis)
+            enable_when, behave = add_enable_when(isVis)
             curr_item["enableWhen"] = enable_when
             if behave != "None":
                 curr_item["enableBehavior"] = behave
