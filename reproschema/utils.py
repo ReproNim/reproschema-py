@@ -16,12 +16,15 @@ class LoggingRequestHandler(SimpleHTTPRequestHandler):
         lgr.debug(format % args)
 
 
-def simple_http_server(host="localhost", port=4001, path="."):
+def simple_http_server(host="localhost", port=0, path="."):
     """
     From: https://stackoverflow.com/a/38943044
+
+    Uses port 0 by default to let the OS assign an available port.
     """
 
     server = HTTPServer((host, port), LoggingRequestHandler)
+    actual_port = server.server_address[1]
     thread = threading.Thread(target=server.serve_forever)
     thread.deamon = True
 
@@ -30,18 +33,22 @@ def simple_http_server(host="localhost", port=4001, path="."):
     def start():
         os.chdir(path)
         thread.start()
-        lgr.debug("starting server on port {}".format(server.server_port))
+        lgr.debug("starting server on port {}".format(actual_port))
 
     def stop():
         os.chdir(cwd)
         server.shutdown()
         server.socket.close()
-        lgr.debug("stopping server on port {}".format(server.server_port))
+        lgr.debug("stopping server on port {}".format(actual_port))
 
-    return start, stop, port
+    return start, stop, actual_port
 
 
-def start_server(port=8000, path=None, tmpdir=None):
+def start_server(port=0, path=None, tmpdir=None):
+    """Start an HTTP server for serving local files.
+
+    Uses port 0 by default to let the OS assign an available port.
+    """
     if path is None:
         path = os.getcwd()
     requests_cache.install_cache(tmpdir or mkdtemp())
