@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>REDCap to Reproschema - reproschema-py</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "REDCap to Reproschema";
+        var mkdocs_page_input_path = "user_guide/redcap2reproschema.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> reproschema-py
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../installation/">Installation</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cli_usage/">CLI Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reproschema2redcap/">Reproschema to REDCap</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">REDCap to Reproschema</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#yaml-file-configuration">YAML File Configuration</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#cli-usage">CLI Usage</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#python-function-usage">Python Function Usage</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../loris2reproschema/">LORIS to Reproschema</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../output2redcap/">Output to REDCap</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reproschema2fhir/">Reproschema to FHIR</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../about/">About</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">reproschema-py</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">User Guide</li>
+      <li class="breadcrumb-item active">REDCap to Reproschema</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h2 id="redcap2reproschema"><code>redcap2reproschema</code></h2>
+<p>The <code>redcap2reproschema</code> function is designed to process a given REDCap CSV file and YAML configuration to generate the output in the reproschema format.</p>
+<h3 id="prerequisites">Prerequisites</h3>
+<p>Before the conversion, ensure you have the following:</p>
+<p><strong>YAML Configuration File</strong>:
+   - Download <a href="templates/redcap2rs.yaml">templates/redcap2rs.yaml</a> and fill it out with your protocol details.</p>
+<h3 id="yaml-file-configuration">YAML File Configuration</h3>
+<p>In the <code>templates/redcap2rs.yaml</code> file, provide the following information:</p>
+<ul>
+<li><strong>protocol_name</strong>: A unique identifier for your protocol. Use underscores for spaces and avoid special characters.</li>
+<li><strong>protocol_display_name</strong>: Name that will appear in the application.</li>
+<li><strong>protocol_description</strong>: A brief description of your protocol.</li>
+<li><strong>source_version</strong>: Version of your source data file (you can customize it).</li>
+</ul>
+<p>Example:</p>
+<pre><code class="language-yaml">protocol_name: &quot;My_Protocol&quot;
+protocol_display_name: &quot;Assessment Protocol&quot;
+protocol_description: &quot;This protocol is for assessing cognitive skills.&quot;
+source_version: &quot;X.XX.X&quot;
+</code></pre>
+<h3 id="cli-usage">CLI Usage</h3>
+<p>The <code>redcap2reproschema</code> function has been integrated into a CLI tool, use the following command:</p>
+<pre><code class="language-bash">reproschema redcap2reproschema path/to/your_redcap_data_dic.csv path/to/your_redcap2rs.yaml
+</code></pre>
+<p>Optionally you can provide a path to the output directory (default is the current directory) by adding the option: <code>--output-path PATH</code></p>
+<h3 id="python-function-usage">Python Function Usage</h3>
+<p>You can also use the <code>redcap2reproschema</code> function from the <code>reproschema-py</code> package in your Python code.</p>
+<pre><code class="language-python">from reproschema import redcap2reproschema
+
+csv_path = &quot;path-to/your_redcap_data_dic.csv&quot;
+yaml_path = &quot;path-to/your_redcap2rs.yaml&quot;
+output_path = &quot;path-to/directory_you_want_to_save_output&quot;
+
+redcap2reproschema(csv_path, yaml_path, output_path)
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../reproschema2redcap/" class="btn btn-neutral float-left" title="Reproschema to REDCap"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../loris2reproschema/" class="btn btn-neutral float-right" title="LORIS to Reproschema">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../reproschema2redcap/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../loris2reproschema/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

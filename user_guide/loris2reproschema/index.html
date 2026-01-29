@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>LORIS to Reproschema - reproschema-py</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "LORIS to Reproschema";
+        var mkdocs_page_input_path = "user_guide/loris2reproschema.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> reproschema-py
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../installation/">Installation</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cli_usage/">CLI Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reproschema2redcap/">Reproschema to REDCap</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../redcap2reproschema/">REDCap to Reproschema</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">LORIS to Reproschema</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#arguments">Arguments</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#options">Options</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#configuration-file">Configuration File</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#example">Example</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../output2redcap/">Output to REDCap</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reproschema2fhir/">Reproschema to FHIR</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../about/">About</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">reproschema-py</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">User Guide</li>
+      <li class="breadcrumb-item active">LORIS to Reproschema</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="loris-to-reproschema-conversion">LORIS to ReproSchema Conversion</h1>
+<p>The <code>reproschema loris2reproschema</code> command converts a LORIS data dictionary in CSV format to the ReproSchema format.</p>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-bash">reproschema loris2reproschema [OPTIONS] CSV_FILE CONFIG_FILE
+</code></pre>
+<h3 id="arguments">Arguments</h3>
+<ul>
+<li><code>CSV_FILE</code>: Path to the LORIS data dictionary CSV file. (Required)</li>
+<li><code>CONFIG_FILE</code>: Path to the YAML configuration file. (Required)</li>
+</ul>
+<h3 id="options">Options</h3>
+<ul>
+<li><code>--output-path PATH</code>: Path to the output directory. Defaults to the current directory.</li>
+<li><code>--encoding TEXT</code>: Encoding to use for reading the CSV file (e.g., <code>utf-8</code>, <code>latin-1</code>).</li>
+<li><code>--analyze</code>: Only analyze the CSV file structure and exit without conversion.</li>
+<li><code>--verbose</code>: Enable verbose logging.</li>
+<li><code>--help</code>: Show the help message and exit.</li>
+</ul>
+<h2 id="configuration-file">Configuration File</h2>
+<p>The conversion process is controlled by a YAML configuration file. This file specifies how to map the columns in your LORIS CSV to ReproSchema fields, and provides metadata for the protocol.</p>
+<p>Here is an example of a configuration file:</p>
+<pre><code class="language-yaml"># Protocol information
+protocol_name: &quot;HBCD_LORIS&quot;
+protocol_display_name: &quot;HEALthy Brain and Child Development Study&quot;
+protocol_description: &quot;Protocol for the HBCD study using LORIS data dictionary&quot;
+loris_version: &quot;1.0.0&quot;
+
+# Column mappings from LORIS CSV to ReproSchema
+column_mappings:
+  activity_name: &quot;full_instrument_name&quot;
+  item_name: &quot;name&quot;
+  question: &quot;question&quot;
+  field_type: &quot;field_type&quot;
+  response_option_labels: &quot;option_labels&quot;
+  response_option_values: &quot;option_values&quot;
+</code></pre>
+<h2 id="example">Example</h2>
+<p>To convert a LORIS CSV file named <code>HBCD_LORIS.csv</code> using a configuration file <code>hbcd-loris.yml</code>, you would run:</p>
+<pre><code class="language-bash">reproschema loris2reproschema HBCD_LORIS.csv hbcd-loris.yml --output-path my-protocol
+</code></pre>
+<p>This will create a new directory named <code>my-protocol/HBCD_LORIS</code> containing the ReproSchema representation of your protocol.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../redcap2reproschema/" class="btn btn-neutral float-left" title="REDCap to Reproschema"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../output2redcap/" class="btn btn-neutral float-right" title="Output to REDCap">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../redcap2reproschema/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../output2redcap/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
