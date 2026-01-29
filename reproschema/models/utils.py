@@ -13,7 +13,9 @@ from .model import (
 def identify_model_class(category):
     # Normalize prefixed forms to full URIs
     if category.startswith("reproschema:"):
-        category = category.replace("reproschema:", "http://schema.repronim.org/")
+        category = category.replace(
+            "reproschema:", "http://schema.repronim.org/"
+        )
 
     if (
         category == "http://schema.repronim.org/Field"
