@@ -45,7 +45,9 @@ def load_odc_instrument(file_path: Path) -> Dict[str, Any]:
         raise ValueError(f"Invalid JSON in ODC instrument file: {str(e)}")
 
 
-def process_options(options: Dict[str, Any], value_type: str) -> List[Dict[str, Any]]:
+def process_options(
+    options: Dict[str, Any], value_type: str
+) -> List[Dict[str, Any]]:
     """
     Convert ODC options to ReproSchema choices.
 
@@ -74,15 +76,14 @@ def process_options(options: Dict[str, Any], value_type: str) -> List[Dict[str, 
             except ValueError:
                 pass
 
-        choices.append({
-            "name": {"en": str(label)},
-            "value": processed_val
-        })
+        choices.append({"name": {"en": str(label)}, "value": processed_val})
 
     return choices
 
 
-def process_field(name: str, field_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+def process_field(
+    name: str, field_data: Dict[str, Any]
+) -> List[Dict[str, Any]]:
     """
     Process a single ODC field and return one or more ReproSchema items.
 
@@ -102,7 +103,10 @@ def process_field(name: str, field_data: Dict[str, Any]) -> List[Dict[str, Any]]
     if kind == "number-record" and variant == "likert":
         return process_likert(name, field_data)
     if kind == "dynamic":
-        logger.warning("Skipping dynamic field '%s': dynamic rendering not supported", name)
+        logger.warning(
+            "Skipping dynamic field '%s': dynamic rendering not supported",
+            name,
+        )
         return []
 
     # Simple field processing
@@ -114,7 +118,7 @@ def process_field(name: str, field_data: Dict[str, Any]) -> List[Dict[str, Any]]
         "id": name,
         "prefLabel": {"en": name},
         "ui": {"inputType": input_type},
-        "responseOptions": {"valueType": [value_type]}
+        "responseOptions": {"valueType": [value_type]},
     }
 
     # Add question/label
@@ -130,7 +134,9 @@ def process_field(name: str, field_data: Dict[str, Any]) -> List[Dict[str, Any]]
     # Add choices if applicable
     options = field_data.get("options")
     if options:
-        item["responseOptions"]["choices"] = process_options(options, value_type)
+        item["responseOptions"]["choices"] = process_options(
+            options, value_type
+        )
 
     # Handle multiple choice
     if is_multiple_choice(kind, variant):
@@ -146,14 +152,16 @@ def process_field(name: str, field_data: Dict[str, Any]) -> List[Dict[str, Any]]
     # Add metadata to additionalNotesObj
     notes = [
         {"source": "odc", "column": "kind", "value": kind},
-        {"source": "odc", "column": "variant", "value": variant}
+        {"source": "odc", "column": "variant", "value": variant},
     ]
     item["additionalNotesObj"] = notes
 
     return [item]
 
 
-def process_record_array(name: str, field_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+def process_record_array(
+    name: str, field_data: Dict[str, Any]
+) -> List[Dict[str, Any]]:
     """
     Process an ODC record-array field into prefixed items.
 
@@ -173,17 +181,21 @@ def process_record_array(name: str, field_data: Dict[str, Any]) -> List[Dict[str
         prefixed_name = f"{name}_{sub_name}"
         sub_items = process_field(prefixed_name, sub_field)
         for item in sub_items:
-            item.setdefault("additionalNotesObj", []).append({
-                "source": "odc",
-                "column": "record-array-parent",
-                "value": name
-            })
+            item.setdefault("additionalNotesObj", []).append(
+                {
+                    "source": "odc",
+                    "column": "record-array-parent",
+                    "value": name,
+                }
+            )
             items.append(item)
 
     return items
 
 
-def process_likert(name: str, field_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+def process_likert(
+    name: str, field_data: Dict[str, Any]
+) -> List[Dict[str, Any]]:
     """
     Process an ODC likert field into multiple items (one per row).
 
@@ -213,14 +225,14 @@ def process_likert(name: str, field_data: Dict[str, Any]) -> List[Dict[str, Any]
             "ui": {"inputType": "radio"},
             "responseOptions": {
                 "valueType": ["xsd:integer"],
-                "choices": process_options(options, "xsd:integer")
-            }
+                "choices": process_options(options, "xsd:integer"),
+            },
         }
 
         item["additionalNotesObj"] = [
             {"source": "odc", "column": "likert-parent", "value": name},
             {"source": "odc", "column": "kind", "value": "number-record"},
-            {"source": "odc", "column": "variant", "value": "likert"}
+            {"source": "odc", "column": "variant", "value": "likert"},
         ]
         items.append(item)
 
@@ -268,11 +280,13 @@ def odc2reproschema(
         for item in processed_items:
             all_items.append(item)
             items_order.append(f"items/{item['id']}")
-            add_properties.append({
-                "variableName": item["id"],
-                "isAbout": f"items/{item['id']}",
-                "isVis": True
-            })
+            add_properties.append(
+                {
+                    "variableName": item["id"],
+                    "isAbout": f"items/{item['id']}",
+                    "isVis": True,
+                }
+            )
 
     # Prepare activity data
     activity_data = {
@@ -281,7 +295,7 @@ def odc2reproschema(
         "addProperties": add_properties,
         "compute": [],  # TODO: Handle measures
         "label": title,
-        "description": description
+        "description": description,
     }
 
     # Set up output directory
@@ -294,11 +308,7 @@ def odc2reproschema(
 
     # Create activity schema
     create_activity_schema(
-        name,
-        activity_data,
-        abs_folder_path,
-        version,
-        schema_context_url
+        name, activity_data, abs_folder_path, version, schema_context_url
     )
 
     # Create dummy protocol info for create_protocol_schema
@@ -306,14 +316,11 @@ def odc2reproschema(
         "protocol_name": name,
         "protocol_display_name": title,
         "protocol_description": description,
-        "source_version": version
+        "source_version": version,
     }
 
     create_protocol_schema(
-        protocol_info,
-        [name],
-        abs_folder_path,
-        schema_context_url
+        protocol_info, [name], abs_folder_path, schema_context_url
     )
 
     logger.info("Conversion complete. Output: %s", abs_folder_path)

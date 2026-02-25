@@ -392,6 +392,7 @@ def reproschema2fhir(reproschema_questionnaire, output):
         with open(output_path / f"{file_name}/{file_name}.json", "w+") as f:
             f.write(json.dumps(fhir_questionnaire))
 
+
 @main.command()
 @click.argument("input_file", type=click.Path(exists=True, dir_okay=False))
 @click.option(
