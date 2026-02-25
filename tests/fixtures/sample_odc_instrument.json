@@ -1,0 +1,137 @@
+{
+  "__runtimeVersion": 1,
+  "kind": "FORM",
+  "language": "en",
+  "internal": {
+    "name": "sample_clinical_assessment",
+    "edition": 1
+  },
+  "details": {
+    "title": "Sample Clinical Assessment",
+    "description": "A comprehensive test instrument demonstrating all ODC field types",
+    "license": "CC-BY-4.0",
+    "tags": ["clinical", "assessment", "test"]
+  },
+  "clientDetails": {
+    "title": "Clinical Assessment Form",
+    "instructions": ["Please answer all questions honestly.", "This should take about 5 minutes."],
+    "estimatedDuration": 300
+  },
+  "validationSchema": {},
+  "content": {
+    "patient_name": {
+      "kind": "string",
+      "variant": "input",
+      "label": "Patient Name",
+      "description": "Full name of the patient"
+    },
+    "notes": {
+      "kind": "string",
+      "variant": "textarea",
+      "label": "Additional Notes",
+      "description": "Any additional notes or comments"
+    },
+    "age": {
+      "kind": "number",
+      "variant": "input",
+      "label": "Age",
+      "description": "Patient age in years",
+      "min": 0,
+      "max": 120
+    },
+    "pain_level": {
+      "kind": "number",
+      "variant": "slider",
+      "label": "Pain Level",
+      "description": "Rate your pain from 0 to 10",
+      "min": 0,
+      "max": 10
+    },
+    "consent": {
+      "kind": "boolean",
+      "variant": "checkbox",
+      "label": "I consent to this assessment"
+    },
+    "assessment_date": {
+      "kind": "date",
+      "label": "Assessment Date",
+      "description": "Date of the assessment"
+    },
+    "gender": {
+      "kind": "string",
+      "variant": "radio",
+      "label": "Gender",
+      "options": {
+        "male": "Male",
+        "female": "Female",
+        "other": "Other",
+        "prefer_not_to_say": "Prefer not to say"
+      }
+    },
+    "symptoms": {
+      "kind": "set",
+      "variant": "listbox",
+      "label": "Select all symptoms",
+      "options": {
+        "headache": "Headache",
+        "nausea": "Nausea",
+        "fatigue": "Fatigue",
+        "dizziness": "Dizziness",
+        "fever": "Fever"
+      }
+    },
+    "medication_frequency": {
+      "kind": "string",
+      "variant": "select",
+      "label": "How often do you take medication?",
+      "options": {
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "Monthly",
+        "rarely": "Rarely"
+      }
+    },
+    "satisfaction_likert": {
+      "kind": "number-record",
+      "variant": "likert",
+      "label": "Satisfaction Assessment",
+      "items": {
+        "overall": {"label": "Overall satisfaction"},
+        "wait_time": {"label": "Wait time satisfaction"},
+        "staff_helpfulness": {"label": "Staff helpfulness"}
+      },
+      "options": {
+        "1": "Very Dissatisfied",
+        "2": "Dissatisfied",
+        "3": "Neutral",
+        "4": "Satisfied",
+        "5": "Very Satisfied"
+      }
+    },
+    "medical_history": {
+      "kind": "record-array",
+      "label": "Medical History",
+      "description": "List of previous medical conditions",
+      "fieldset": {
+        "condition": {
+          "kind": "string",
+          "variant": "input",
+          "label": "Condition Name"
+        },
+        "year_diagnosed": {
+          "kind": "number",
+          "variant": "input",
+          "label": "Year Diagnosed",
+          "min": 1900,
+          "max": 2026
+        },
+        "treated": {
+          "kind": "boolean",
+          "variant": "checkbox",
+          "label": "Treated?"
+        }
+      }
+    }
+  },
+  "measures": {}
+}
