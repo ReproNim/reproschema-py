@@ -5,7 +5,7 @@ Convert OpenDataCapture (ODC) form instrument to ReproSchema format.
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from .context_url import CONTEXTFILE_URL
 from .convertutils import (
@@ -14,7 +14,6 @@ from .convertutils import (
     parse_html,
 )
 from .odc_mappings import (
-    ODC_COLUMN_MAP,
     get_odc_input_type,
     get_odc_value_type,
     is_multiple_choice,
@@ -69,12 +68,22 @@ def process_options(
             try:
                 processed_val = int(val)
             except ValueError:
-                pass
+                logger.warning(
+                    "Could not convert option value '%s' to integer, "
+                    "using string fallback",
+                    str(val),
+                )
+                processed_val = str(val)
         elif "decimal" in value_type or "float" in value_type:
             try:
                 processed_val = float(val)
             except ValueError:
-                pass
+                logger.warning(
+                    "Could not convert option value '%s' to float, "
+                    "using string fallback",
+                    str(val),
+                )
+                processed_val = str(val)
 
         choices.append({"name": {"en": str(label)}, "value": processed_val})
 
@@ -94,8 +103,9 @@ def process_field(
     Returns:
         List of ReproSchema item dictionaries
     """
-    kind = field_data.get("kind", "string")
-    variant = field_data.get("variant")
+    # Normalize kind and variant
+    kind = field_data.get("kind", "string").lower().strip()
+    variant = (field_data.get("variant") or "").lower().strip() or None
 
     # Handle special complex fields
     if kind == "record-array":
@@ -124,12 +134,12 @@ def process_field(
     # Add question/label
     label = field_data.get("label")
     if label:
-        item["question"] = {"en": str(label)}
+        item["question"] = {"en": str(parse_html(label))}
 
     # Add description/hint
     description = field_data.get("description")
     if description:
-        item["description"] = {"en": str(description)}
+        item["description"] = {"en": str(parse_html(description))}
 
     # Add choices if applicable
     options = field_data.get("options")
@@ -265,12 +275,19 @@ def odc2reproschema(
     internal = data.get("internal", {})
 
     name = instrument_name or internal.get("name") or input_path.stem
+    name = name.strip().replace(" ", "_")
     title = details.get("title") or name
     description = details.get("description") or ""
     version = str(internal.get("edition", "1"))
 
     # Process content
     content = data.get("content", {})
+    if not isinstance(content, dict):
+        raise ValueError(
+            f"ODC instrument 'content' must be a dictionary, "
+            f"got {type(content).__name__}"
+        )
+
     all_items = []
     items_order = []
     add_properties = []

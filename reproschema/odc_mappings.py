@@ -1,5 +1,9 @@
 # Mappings for converting OpenDataCapture (ODC) form instrument to ReproSchema
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 # ODC field categories (kind) to XSD value types
 ODC_VALUE_TYPE_MAP = {
     "string": "xsd:string",
@@ -76,10 +80,13 @@ def get_odc_input_type(kind: str, variant: str = None) -> str:
         # Default for the kind if variant not matched
         if "None" in variants:
             return variants["None"]
-        # If no default, pick the first one if it exists
-        if variants:
-            return list(variants.values())[0]
 
+    logger.debug(
+        "No matching input type for kind='%s' variant='%s', "
+        "falling back to 'text'",
+        kind,
+        variant,
+    )
     return "text"
 
 
@@ -119,7 +126,6 @@ def is_multiple_choice(kind: str, variant: str = None) -> bool:
         return False
 
     kind = kind.lower().strip()
-    variant = str(variant).lower().strip() if variant else ""
 
     # 'set' in ODC always allows multiple choices
     if kind == "set":
