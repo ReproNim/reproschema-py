@@ -1,0 +1,2016 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "__runtimeVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "clientDetails": {
+      "type": "object",
+      "properties": {
+        "estimatedDuration": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "instructions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "content": {
+      "anyOf": [
+        {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "deps": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "dynamic"
+                  },
+                  "render": {}
+                },
+                "required": [
+                  "deps",
+                  "kind",
+                  "render"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "anyOf": [
+                  {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "description": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "disabled": {
+                            "type": "boolean"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "record-array"
+                          },
+                          "label": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "fieldset": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "dynamic"
+                                    },
+                                    "render": {}
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "render"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "description": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "disabled": {
+                                          "type": "boolean"
+                                        },
+                                        "kind": {
+                                          "type": "string",
+                                          "const": "date"
+                                        },
+                                        "label": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "label"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "description": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "disabled": {
+                                          "type": "boolean"
+                                        },
+                                        "kind": {
+                                          "type": "string",
+                                          "const": "set"
+                                        },
+                                        "label": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "options": {
+                                          "type": "object",
+                                          "propertyNames": {
+                                            "type": "string"
+                                          },
+                                          "additionalProperties": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          }
+                                        },
+                                        "variant": {
+                                          "type": "string",
+                                          "enum": [
+                                            "listbox",
+                                            "select"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "label",
+                                        "options",
+                                        "variant"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "anyOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "description": {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            "disabled": {
+                                              "type": "boolean"
+                                            },
+                                            "kind": {
+                                              "type": "string",
+                                              "const": "string"
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            "options": {
+                                              "type": "object",
+                                              "propertyNames": {
+                                                "type": "string"
+                                              },
+                                              "additionalProperties": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "variant": {
+                                              "type": "string",
+                                              "enum": [
+                                                "radio",
+                                                "select"
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "kind",
+                                            "label",
+                                            "options",
+                                            "variant"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "description": {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            "disabled": {
+                                              "type": "boolean"
+                                            },
+                                            "kind": {
+                                              "type": "string",
+                                              "const": "string"
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            "variant": {
+                                              "type": "string",
+                                              "enum": [
+                                                "input",
+                                                "password",
+                                                "textarea"
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "kind",
+                                            "label",
+                                            "variant"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "anyOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "description": {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            "disabled": {
+                                              "type": "boolean"
+                                            },
+                                            "kind": {
+                                              "type": "string",
+                                              "const": "number"
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            "max": {
+                                              "type": "integer",
+                                              "minimum": -9007199254740991,
+                                              "maximum": 9007199254740991
+                                            },
+                                            "min": {
+                                              "type": "integer",
+                                              "minimum": -9007199254740991,
+                                              "maximum": 9007199254740991
+                                            },
+                                            "variant": {
+                                              "type": "string",
+                                              "const": "slider"
+                                            }
+                                          },
+                                          "required": [
+                                            "kind",
+                                            "label",
+                                            "max",
+                                            "min",
+                                            "variant"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "description": {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            "disabled": {
+                                              "type": "boolean"
+                                            },
+                                            "kind": {
+                                              "type": "string",
+                                              "const": "number"
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            "max": {
+                                              "type": "number"
+                                            },
+                                            "min": {
+                                              "type": "number"
+                                            },
+                                            "variant": {
+                                              "type": "string",
+                                              "const": "input"
+                                            }
+                                          },
+                                          "required": [
+                                            "kind",
+                                            "label",
+                                            "variant"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "description": {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            "disabled": {
+                                              "type": "boolean"
+                                            },
+                                            "kind": {
+                                              "type": "string",
+                                              "const": "number"
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            "options": {
+                                              "type": "object",
+                                              "propertyNames": {
+                                                "type": "string"
+                                              },
+                                              "additionalProperties": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "variant": {
+                                              "type": "string",
+                                              "enum": [
+                                                "radio",
+                                                "select"
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "kind",
+                                            "label",
+                                            "options",
+                                            "variant"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "anyOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "description": {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            "disabled": {
+                                              "type": "boolean"
+                                            },
+                                            "kind": {
+                                              "type": "string",
+                                              "const": "boolean"
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            "variant": {
+                                              "type": "string",
+                                              "const": "checkbox"
+                                            }
+                                          },
+                                          "required": [
+                                            "kind",
+                                            "label",
+                                            "variant"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "description": {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            "disabled": {
+                                              "type": "boolean"
+                                            },
+                                            "kind": {
+                                              "type": "string",
+                                              "const": "boolean"
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1
+                                            },
+                                            "options": {
+                                              "type": "object",
+                                              "properties": {
+                                                "false": {
+                                                  "type": "string",
+                                                  "minLength": 1
+                                                },
+                                                "true": {
+                                                  "type": "string",
+                                                  "minLength": 1
+                                                }
+                                              },
+                                              "required": [
+                                                "false",
+                                                "true"
+                                              ],
+                                              "additionalProperties": false
+                                            },
+                                            "variant": {
+                                              "type": "string",
+                                              "const": "radio"
+                                            }
+                                          },
+                                          "required": [
+                                            "kind",
+                                            "label",
+                                            "variant"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "label",
+                          "fieldset"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "description": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "disabled": {
+                            "type": "boolean"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "number-record"
+                          },
+                          "label": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "items": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {
+                              "type": "object",
+                              "properties": {
+                                "description": {
+                                  "type": "string"
+                                },
+                                "label": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "label"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "options": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "number"
+                            },
+                            "additionalProperties": {
+                              "type": "string"
+                            }
+                          },
+                          "variant": {
+                            "type": "string",
+                            "const": "likert"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "label",
+                          "items",
+                          "options",
+                          "variant"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  },
+                  {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "description": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "disabled": {
+                            "type": "boolean"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "date"
+                          },
+                          "label": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "label"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "description": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "disabled": {
+                            "type": "boolean"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "set"
+                          },
+                          "label": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "options": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {
+                              "type": "string",
+                              "minLength": 1
+                            }
+                          },
+                          "variant": {
+                            "type": "string",
+                            "enum": [
+                              "listbox",
+                              "select"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "label",
+                          "options",
+                          "variant"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "description": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "disabled": {
+                                "type": "boolean"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "const": "string"
+                              },
+                              "label": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "options": {
+                                "type": "object",
+                                "propertyNames": {
+                                  "type": "string"
+                                },
+                                "additionalProperties": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "variant": {
+                                "type": "string",
+                                "enum": [
+                                  "radio",
+                                  "select"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "label",
+                              "options",
+                              "variant"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "description": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "disabled": {
+                                "type": "boolean"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "const": "string"
+                              },
+                              "label": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "variant": {
+                                "type": "string",
+                                "enum": [
+                                  "input",
+                                  "password",
+                                  "textarea"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "label",
+                              "variant"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "description": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "disabled": {
+                                "type": "boolean"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "const": "number"
+                              },
+                              "label": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "max": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "min": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "variant": {
+                                "type": "string",
+                                "const": "slider"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "label",
+                              "max",
+                              "min",
+                              "variant"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "description": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "disabled": {
+                                "type": "boolean"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "const": "number"
+                              },
+                              "label": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "max": {
+                                "type": "number"
+                              },
+                              "min": {
+                                "type": "number"
+                              },
+                              "variant": {
+                                "type": "string",
+                                "const": "input"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "label",
+                              "variant"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "description": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "disabled": {
+                                "type": "boolean"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "const": "number"
+                              },
+                              "label": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "options": {
+                                "type": "object",
+                                "propertyNames": {
+                                  "type": "string"
+                                },
+                                "additionalProperties": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "variant": {
+                                "type": "string",
+                                "enum": [
+                                  "radio",
+                                  "select"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "label",
+                              "options",
+                              "variant"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "description": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "disabled": {
+                                "type": "boolean"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "const": "boolean"
+                              },
+                              "label": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "variant": {
+                                "type": "string",
+                                "const": "checkbox"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "label",
+                              "variant"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "description": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "disabled": {
+                                "type": "boolean"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "const": "boolean"
+                              },
+                              "label": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "options": {
+                                "type": "object",
+                                "properties": {
+                                  "false": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "true": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "false",
+                                  "true"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "variant": {
+                                "type": "string",
+                                "const": "radio"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "label",
+                              "variant"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "fields": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "deps": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "kind": {
+                          "type": "string",
+                          "const": "dynamic"
+                        },
+                        "render": {}
+                      },
+                      "required": [
+                        "deps",
+                        "kind",
+                        "render"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "anyOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "description": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "disabled": {
+                                  "type": "boolean"
+                                },
+                                "kind": {
+                                  "type": "string",
+                                  "const": "record-array"
+                                },
+                                "label": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "fieldset": {
+                                  "type": "object",
+                                  "propertyNames": {
+                                    "type": "string"
+                                  },
+                                  "additionalProperties": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "kind": {
+                                            "type": "string",
+                                            "const": "dynamic"
+                                          },
+                                          "render": {}
+                                        },
+                                        "required": [
+                                          "kind",
+                                          "render"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "anyOf": [
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "description": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              },
+                                              "disabled": {
+                                                "type": "boolean"
+                                              },
+                                              "kind": {
+                                                "type": "string",
+                                                "const": "date"
+                                              },
+                                              "label": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "label"
+                                            ],
+                                            "additionalProperties": false
+                                          },
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "description": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              },
+                                              "disabled": {
+                                                "type": "boolean"
+                                              },
+                                              "kind": {
+                                                "type": "string",
+                                                "const": "set"
+                                              },
+                                              "label": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              },
+                                              "options": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                  "type": "string"
+                                                },
+                                                "additionalProperties": {
+                                                  "type": "string",
+                                                  "minLength": 1
+                                                }
+                                              },
+                                              "variant": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "listbox",
+                                                  "select"
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "label",
+                                              "options",
+                                              "variant"
+                                            ],
+                                            "additionalProperties": false
+                                          },
+                                          {
+                                            "anyOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "description": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                  },
+                                                  "disabled": {
+                                                    "type": "boolean"
+                                                  },
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "string"
+                                                  },
+                                                  "label": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                  },
+                                                  "options": {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                      "type": "string"
+                                                    },
+                                                    "additionalProperties": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    }
+                                                  },
+                                                  "variant": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "radio",
+                                                      "select"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind",
+                                                  "label",
+                                                  "options",
+                                                  "variant"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "description": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                  },
+                                                  "disabled": {
+                                                    "type": "boolean"
+                                                  },
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "string"
+                                                  },
+                                                  "label": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                  },
+                                                  "variant": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "input",
+                                                      "password",
+                                                      "textarea"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind",
+                                                  "label",
+                                                  "variant"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "anyOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "description": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                  },
+                                                  "disabled": {
+                                                    "type": "boolean"
+                                                  },
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "number"
+                                                  },
+                                                  "label": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                  },
+                                                  "max": {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                  },
+                                                  "min": {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                  },
+                                                  "variant": {
+                                                    "type": "string",
+                                                    "const": "slider"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind",
+                                                  "label",
+                                                  "max",
+                                                  "min",
+                                                  "variant"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "description": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                  },
+                                                  "disabled": {
+                                                    "type": "boolean"
+                                                  },
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "number"
+                                                  },
+                                                  "label": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                  },
+                                                  "max": {
+                                                    "type": "number"
+                                                  },
+                                                  "min": {
+                                                    "type": "number"
+                                                  },
+                                                  "variant": {
+                                                    "type": "string",
+                                                    "const": "input"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind",
+                                                  "label",
+                                                  "variant"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "description": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                  },
+                                                  "disabled": {
+                                                    "type": "boolean"
+                                                  },
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "number"
+                                                  },
+                                                  "label": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                  },
+                                                  "options": {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                      "type": "string"
+                                                    },
+                                                    "additionalProperties": {
+                                                      "type": "string",
+                                                      "minLength": 1
+                                                    }
+                                                  },
+                                                  "variant": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "radio",
+                                                      "select"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind",
+                                                  "label",
+                                                  "options",
+                                                  "variant"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "anyOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "description": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                  },
+                                                  "disabled": {
+                                                    "type": "boolean"
+                                                  },
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "boolean"
+                                                  },
+                                                  "label": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                  },
+                                                  "variant": {
+                                                    "type": "string",
+                                                    "const": "checkbox"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind",
+                                                  "label",
+                                                  "variant"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "description": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                  },
+                                                  "disabled": {
+                                                    "type": "boolean"
+                                                  },
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "boolean"
+                                                  },
+                                                  "label": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                  },
+                                                  "options": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                      "false": {
+                                                        "type": "string",
+                                                        "minLength": 1
+                                                      },
+                                                      "true": {
+                                                        "type": "string",
+                                                        "minLength": 1
+                                                      }
+                                                    },
+                                                    "required": [
+                                                      "false",
+                                                      "true"
+                                                    ],
+                                                    "additionalProperties": false
+                                                  },
+                                                  "variant": {
+                                                    "type": "string",
+                                                    "const": "radio"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind",
+                                                  "label",
+                                                  "variant"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "label",
+                                "fieldset"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "description": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "disabled": {
+                                  "type": "boolean"
+                                },
+                                "kind": {
+                                  "type": "string",
+                                  "const": "number-record"
+                                },
+                                "label": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "items": {
+                                  "type": "object",
+                                  "propertyNames": {
+                                    "type": "string"
+                                  },
+                                  "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                      "description": {
+                                        "type": "string"
+                                      },
+                                      "label": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "label"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "options": {
+                                  "type": "object",
+                                  "propertyNames": {
+                                    "type": "number"
+                                  },
+                                  "additionalProperties": {
+                                    "type": "string"
+                                  }
+                                },
+                                "variant": {
+                                  "type": "string",
+                                  "const": "likert"
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "label",
+                                "items",
+                                "options",
+                                "variant"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "description": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "disabled": {
+                                  "type": "boolean"
+                                },
+                                "kind": {
+                                  "type": "string",
+                                  "const": "date"
+                                },
+                                "label": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "label"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "description": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "disabled": {
+                                  "type": "boolean"
+                                },
+                                "kind": {
+                                  "type": "string",
+                                  "const": "set"
+                                },
+                                "label": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "options": {
+                                  "type": "object",
+                                  "propertyNames": {
+                                    "type": "string"
+                                  },
+                                  "additionalProperties": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "variant": {
+                                  "type": "string",
+                                  "enum": [
+                                    "listbox",
+                                    "select"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "label",
+                                "options",
+                                "variant"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "description": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "disabled": {
+                                      "type": "boolean"
+                                    },
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "string"
+                                    },
+                                    "label": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "options": {
+                                      "type": "object",
+                                      "propertyNames": {
+                                        "type": "string"
+                                      },
+                                      "additionalProperties": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "variant": {
+                                      "type": "string",
+                                      "enum": [
+                                        "radio",
+                                        "select"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "label",
+                                    "options",
+                                    "variant"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "description": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "disabled": {
+                                      "type": "boolean"
+                                    },
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "string"
+                                    },
+                                    "label": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "variant": {
+                                      "type": "string",
+                                      "enum": [
+                                        "input",
+                                        "password",
+                                        "textarea"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "label",
+                                    "variant"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
+                            },
+                            {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "description": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "disabled": {
+                                      "type": "boolean"
+                                    },
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "number"
+                                    },
+                                    "label": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "max": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "min": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "variant": {
+                                      "type": "string",
+                                      "const": "slider"
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "label",
+                                    "max",
+                                    "min",
+                                    "variant"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "description": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "disabled": {
+                                      "type": "boolean"
+                                    },
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "number"
+                                    },
+                                    "label": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "max": {
+                                      "type": "number"
+                                    },
+                                    "min": {
+                                      "type": "number"
+                                    },
+                                    "variant": {
+                                      "type": "string",
+                                      "const": "input"
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "label",
+                                    "variant"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "description": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "disabled": {
+                                      "type": "boolean"
+                                    },
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "number"
+                                    },
+                                    "label": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "options": {
+                                      "type": "object",
+                                      "propertyNames": {
+                                        "type": "string"
+                                      },
+                                      "additionalProperties": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "variant": {
+                                      "type": "string",
+                                      "enum": [
+                                        "radio",
+                                        "select"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "label",
+                                    "options",
+                                    "variant"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
+                            },
+                            {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "description": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "disabled": {
+                                      "type": "boolean"
+                                    },
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "boolean"
+                                    },
+                                    "label": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "variant": {
+                                      "type": "string",
+                                      "const": "checkbox"
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "label",
+                                    "variant"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "description": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "disabled": {
+                                      "type": "boolean"
+                                    },
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "boolean"
+                                    },
+                                    "label": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "options": {
+                                      "type": "object",
+                                      "properties": {
+                                        "false": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "true": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "false",
+                                        "true"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "variant": {
+                                      "type": "string",
+                                      "const": "radio"
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "label",
+                                    "variant"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "fields"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    "details": {
+      "type": "object",
+      "properties": {
+        "estimatedDuration": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "instructions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authors": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "license": {
+          "type": "string"
+        },
+        "referenceUrl": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uri"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceUrl": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uri"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "title",
+        "description",
+        "license"
+      ],
+      "additionalProperties": false
+    },
+    "id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "const": "FORM"
+    },
+    "language": {
+      "type": "string",
+      "const": "en"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "defaultMeasureVisibility": {
+      "type": "string",
+      "enum": [
+        "hidden",
+        "visible"
+      ]
+    },
+    "internal": {
+      "type": "object",
+      "properties": {
+        "edition": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "edition",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "measures": {
+      "anyOf": [
+        {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "hidden": {
+                    "type": "boolean"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "computed"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "value": {}
+                },
+                "required": [
+                  "kind",
+                  "label",
+                  "value"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "hidden": {
+                    "type": "boolean"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "const"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "ref": {
+                    "type": "string"
+                  },
+                  "visibility": {
+                    "type": "string",
+                    "enum": [
+                      "hidden",
+                      "visible"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "ref"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "validationSchema": {},
+    "initialValues": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    }
+  },
+  "required": [
+    "__runtimeVersion",
+    "content",
+    "details",
+    "kind",
+    "language",
+    "tags",
+    "internal",
+    "measures",
+    "validationSchema"
+  ],
+  "additionalProperties": false
+}

@@ -391,3 +391,33 @@ def reproschema2fhir(reproschema_questionnaire, output):
 
         with open(output_path / f"{file_name}/{file_name}.json", "w+") as f:
             f.write(json.dumps(fhir_questionnaire))
+
+
+@main.command()
+@click.argument("input_file", type=click.Path(exists=True, dir_okay=False))
+@click.option(
+    "--output-path",
+    type=click.Path(dir_okay=True, writable=True, resolve_path=True),
+    default=".",
+    show_default=True,
+    help="Path to the output directory, defaults to the current directory.",
+)
+@click.option(
+    "--instrument-name",
+    default=None,
+    help="Override instrument name",
+)
+def odc2reproschema(input_file, output_path, instrument_name):
+    """
+    Converts OpenDataCapture (ODC) form instrument to Reproschema format.
+    """
+    from .odc2reproschema import odc2reproschema as odc2rs
+
+    try:
+        odc2rs(input_file, output_path, instrument_name)
+        click.echo("Converted OpenDataCapture data to Reproschema format.")
+    except (FileNotFoundError, ValueError) as e:
+        raise click.ClickException(f"Error during conversion: {e}")
+    except Exception as e:
+        lgr.exception("Unexpected error during ODC conversion")
+        raise click.ClickException(f"Unexpected error during conversion: {e}")
