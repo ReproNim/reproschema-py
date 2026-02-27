@@ -49,7 +49,7 @@ reproschema odc2reproschema input.json --output-path ./output --instrument-name 
 **Arguments:**
 - `INPUT_FILE`: Path to the ODC JSON instrument file (required)
 - `--output-path`, `-o`: Directory to save ReproSchema output (default: current directory)
-- `--instrument-name`, `-n`: Name for the ReproSchema activity/protocol (default: uses `internal.name` from ODC file)
+- `--instrument-name`, `-n`: Name for the ReproSchema activity/protocol (optional, defaults to `internal.name` from ODC file)
 
 **Output Structure:**
 ```
