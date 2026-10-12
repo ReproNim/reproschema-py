@@ -3,7 +3,7 @@ build-backend = "hatchling.build"
 requires = ["hatchling", "hatch-vcs"]
 
 [project]
-authors = [{name = "Repronim developers", email = "info@repronim.org"}]
+authors = [{ name = "Repronim developers", email = "info@repronim.org" }]
 dependencies = [
     "click",
     "etelemetry",
@@ -21,8 +21,8 @@ dependencies = [
 description = "Reproschema Python library"
 # Version from setuptools_scm
 dynamic = ["version"]
-license = {text = "Apache License, 2.0"}
-maintainers = [{name = "Repronim developers", email = "info@repronim.org"}]
+license = { text = "Apache License, 2.0" }
+maintainers = [{ name = "Repronim developers", email = "info@repronim.org" }]
 name = "reproschema"
 readme = "README.md"
 requires-python = ">=3.10"
